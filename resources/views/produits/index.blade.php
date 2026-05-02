@@ -6,6 +6,9 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h4 class="mb-0">Liste des Produits</h4>
+        <a href="{{ route('produits.create') }}" class="btn btn-primary">
+            <i class="bx bx-plus"></i> Ajouter un Produit
+        </a>
     </div>
 
     <div class="card-body">
@@ -24,7 +27,7 @@
                         <th>Prix unitaire</th>
                         <th>Statut</th>
                         <th>Tri</th>
-                        <!-- <th>Actions</th> -->
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,11 +36,11 @@
                             <td>{{ $produit->nom }}</td>
                             <td>{{ $produit->type }}</td>
                             <td>{{ $produit->unite_mesure }}</td>
-                            <td>{{ $produit->quantite }}</td>
+                            <td>{{ $produit->quantite ?? 0 }}</td>
                             <td>{{ number_format($produit->prix_unitaire, 2, ',', ' ') }} FCFA</td>
                             <td>{{ ucfirst($produit->statut) }}</td>
-                            <td>{{ $produit->trie->nom ?? 'N/A' }}</td>
-                            <!-- <td class="text-nowrap">
+                            <td>{{ $produit->trie->type_dechet ?? 'N/A' }}</td>
+                            <td class="text-nowrap">
                                 <a href="{{ route('produits.edit', $produit) }}" class="btn btn-sm btn-warning me-2" title="Modifier">
                                     <i class="bx bx-edit"></i>
                                 </a>
@@ -48,7 +51,7 @@
                                         <i class="bx bx-trash"></i>
                                     </button>
                                 </form>
-                            </td> -->
+                            </td>
                         </tr>
                     @empty
                         <tr>

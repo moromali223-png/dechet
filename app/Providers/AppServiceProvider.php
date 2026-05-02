@@ -2,8 +2,13 @@
 
 namespace App\Providers;
 
-use App\Models\Abonnements;
+use App\Models\Abonnement;
+use App\Models\Declaration;
+use App\Models\Planification;
 use App\Observers\AbonnementsObserver;
+use App\Policies\DeclarationPolicy;
+use App\Policies\PlanificationPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Enregistrement de l'Observer
-        Abonnements::observe(AbonnementsObserver::class);
+        Abonnement::observe(AbonnementsObserver::class);
+
+        Gate::policy(Declaration::class, DeclarationPolicy::class);
+        Gate::policy(Planification::class, PlanificationPolicy::class);
     }
 }

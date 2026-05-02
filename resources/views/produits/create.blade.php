@@ -31,7 +31,12 @@
 
         <div class="mb-3">
             <label for="unite_mesure">Unité de mesure</label>
-            <input type="text" name="unite_mesure" id="unite_mesure" class="form-control" value="{{ old('unite_mesure') }}" required>
+            <select name="unite_mesure" id="unite_mesure" class="form-control" required>
+                <option value="kg" {{ old('unite_mesure') == 'kg' ? 'selected' : '' }}>Kilogramme (kg)</option>
+                <option value="tonne" {{ old('unite_mesure') == 'tonne' ? 'selected' : '' }}>Tonne (t)</option>
+                <option value="litre" {{ old('unite_mesure') == 'litre' ? 'selected' : '' }}>Litre (L)</option>
+                <option value="piece" {{ old('unite_mesure') == 'piece' ? 'selected' : '' }}>Pièce</option>
+            </select>
         </div>
 
         <div class="mb-3">

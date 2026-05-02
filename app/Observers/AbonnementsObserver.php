@@ -2,27 +2,44 @@
 
 namespace App\Observers;
 
-use App\Models\Abonnements;
+use App\Models\Abonnement;
 use App\Models\Paiement;
 
 class AbonnementsObserver
 {
     /**
-     * Créer automatiquement un paiement quand un abonnement est créé
+     * Après création d'un abonnement
      */
-    public function created(Abonnements $abonnement): void
+    public function created(Abonnement $abonnement): void
     {
-        // Protection au cas où le montant est null
-        $montant = $abonnement->montant ?? 0;
-
+        // Création automatique du paiement
         Paiement::create([
-            'type_paiement'      => 'abonnement',                    // ← Utilisation de ta colonne existante
+            'type_paiement'      => 'abonnement',
             'abonnement_id'      => $abonnement->id,
             'commande_id'        => null,
-            'mode_paiement'      => 'mobile_money',                  // Tu peux changer plus tard
-            'montant'            => $montant,
-            'statut'             => 'valide',                        // ou 'en_attente' si tu veux
+            'mode_paiement'      => 'mobile_money',
+            'montant'            => $abonnement->montant ?? 0,
+            'statut'             => 'valide',
             'reference_paiement' => 'ABO-' . strtoupper(uniqid()),
         ]);
+
+        // Génération de la première planification
+        if ($abonnement->statut === 'actif') {
+            $abonnement->generateNextPlanification();
+        }
+    }
+
+    /**
+     * Après modification d'un abonnement
+     */
+    public function updated(Abonnement $abonnement): void
+    {
+        // Activation de l'abonnement
+        if (
+            $abonnement->wasChanged('statut') &&
+            $abonnement->statut === 'actif'
+        ) {
+            $abonnement->generateNextPlanification();
+        }
     }
 }

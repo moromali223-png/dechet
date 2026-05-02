@@ -20,15 +20,28 @@
         @csrf
 
         <div class="mb-3">
-            <label for="commande_id" class="form-label">Commande liée</label>
-            <select name="commande_id" id="commande_id" class="form-select">
+            <label for="commande_id" class="form-label">Lier à une Commande</label>
+            <select name="commande_id" id="commande_id" class="form-select" onchange="if(this.value) document.getElementById('abonnement_id').value=''">
                 <option value="">Aucune</option>
                 @foreach($commandes as $commande)
                     <option value="{{ $commande->id }}" {{ old('commande_id') == $commande->id ? 'selected' : '' }}>
-                        {{ $commande->code_commande }} - {{ $commande->client->name ?? 'Client inconnu' }}
+                        {{ $commande->code_commande }} - {{ $commande->client->user->name ?? $commande->client->name ?? 'Client' }}
                     </option>
                 @endforeach
             </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="abonnement_id" class="form-label">OU Lier à un Abonnement</label>
+            <select name="abonnement_id" id="abonnement_id" class="form-select" onchange="if(this.value) document.getElementById('commande_id').value=''">
+                <option value="">-- Aucun abonnement --</option>
+                @foreach($abonnements as $abonnement)
+                    <option value="{{ $abonnement->id }}" {{ old('abonnement_id') == $abonnement->id ? 'selected' : '' }}>
+                        ABO-#{{ $abonnement->id }} - {{ $abonnement->client->user->name ?? $abonnement->client->name ?? 'Client' }}
+                    </option>
+                @endforeach
+            </select>
+            <small class="text-muted">Sélectionner l'un ou l'autre. Le champ opposé sera vidé automatiquement.</small>
         </div>
 
         <div class="mb-3">

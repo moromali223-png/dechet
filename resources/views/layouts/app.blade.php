@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}">
      <link rel="stylesheet" href="{{ asset('css/ecoflux.css') }}"> 
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}">
-    
+
     @stack('styles')
     
     <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
@@ -21,21 +21,28 @@
 <body>
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
-            
-            @include('layouts.partials.sidebar')
-
+            @php $role = strtolower(auth()->user()->role ?? ''); @endphp
+            @if($role === 'admin')
+                @include('layouts.partials.sidebar')
+            @elseif($role === 'collecteur')
+                @include('layouts.partials.sidebar-collecteur')
+            @elseif($role === 'agent')
+                @include('layouts.partials.sidebar-agent')
+            @elseif($role === 'client')
+                @include('layouts.partials.sidebar-client')
+            @endif
             <div class="layout-page">
                 
-                @if(Route::currentRouteName() === 'dashboard')
+                
                     @include('layouts.partials.navbar')
-                @endif
+              
 
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
                         @yield('content')
                     </div>
 
-                    @if(Route::currentRouteName() === 'dashboard')
+                    @if(str_starts_with(Route::currentRouteName(), 'dashboard'))
                         @include('layouts.partials.footer')
                     @endif
 

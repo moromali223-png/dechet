@@ -35,7 +35,9 @@
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
+                            <th>Client</th>
                             <th>Commande</th>
+                            <th>Abonnement</th>
                             <th>Mode de paiement</th>
                             <th class="text-end">Montant</th>
                             <th>Statut</th>
@@ -47,7 +49,23 @@
                         @forelse($paiements as $paiement)
                             <tr>
                                 <td><strong>{{ $paiement->id }}</strong></td>
-                                <td>{{ $paiement->commande->code_commande ?? 'Aucune commande' }}</td>
+                                <td>
+                                    @if($paiement->commande && $paiement->commande->client)
+                                        {{ $paiement->commande->client->user->name ?? $paiement->commande->client->name ?? 'Client inconnu' }}
+                                    @elseif($paiement->abonnement && $paiement->abonnement->client)
+                                        {{ $paiement->abonnement->client->user->name ?? $paiement->abonnement->client->name ?? 'Client inconnu' }}
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>{{ $paiement->commande->code_commande ?? '-' }}</td>
+                                <td>
+                                    @if($paiement->abonnement_id)
+                                        <span class="badge bg-info text-dark">ABO-{{ $paiement->abonnement_id }}</span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td>{{ ucfirst(str_replace('_', ' ', $paiement->mode_paiement)) }}</td>
                                 <td class="text-end fw-bold text-success">
                                     {{ number_format($paiement->montant, 2, ',', ' ') }} FCFA
@@ -95,7 +113,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-4">
+                                <td colspan="9" class="text-center text-muted py-4">
                                     Aucun paiement trouvé.
                                 </td>
                             </tr>

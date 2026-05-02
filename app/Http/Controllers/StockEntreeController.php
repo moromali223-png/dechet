@@ -33,16 +33,22 @@ class StockEntreeController extends Controller
         $request->validate([
             'stock_id' => 'required|exists:stocks,id',
             'quantite' => 'required|numeric|min:0.01',
-            'source' => 'required|string|max:100',
+            'source' => 'required|in:Source du produit,Retour client,Retour de stock,Fournisseur,Ajustement inventaire,Autre',
             'description' => 'nullable|string|max:255',
+            'client_nom' => 'nullable|string|max:100', // Nouveau champ optionnel pour le nom du client
         ]);
 
         try {
+            $description = $request->description;
+            if ($request->source === 'Retour client' && $request->client_nom) {
+                $description = 'Retour du client : '.$request->client_nom.'. '.($description ?? '');
+            }
+
             $this->stockService->entreeStock(
                 $request->stock_id,
                 $request->quantite,
                 $request->source,
-                $request->description
+                $description
             );
 
             return redirect()->route('stock.entree.create')

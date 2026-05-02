@@ -1,100 +1,108 @@
+/* ==================== DASHBOARD HEADER ==================== */
+
 .dashboard-header {
     background: linear-gradient(135deg, #667eea 0%, #4ba281 100%);
     border-radius: 20px;
-    padding: 2.5rem;
+    padding: 2.5rem 2.5rem 2rem;
     margin-bottom: 2rem;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
 }
 
 .dashboard-header::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: inherit;
     background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    animation: shimmer 3s infinite linear;
+    animation: shimmer 25s infinite linear;
+    pointer-events: none;
 }
 
 @keyframes shimmer {
-    0% { background-position: -200px 0; }
-    100% { background-position: calc(200px + 100%) 0; }
+    0% { background-position: 0 0; }
+    100% { background-position: 200px 200px; }
 }
 
+/* Bienvenue */
 .welcome-section {
     position: relative;
     z-index: 2;
 }
 
 .welcome-title {
-    font-size: 2.2rem;
+    font-size: 2.25rem;
     font-weight: 700;
     color: white;
     margin-bottom: 0.5rem;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
 .welcome-subtitle {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.92);
     font-size: 1.1rem;
-    margin-bottom: 0;
-    font-weight: 400;
 }
 
-/* Barre de recherche moderne */
-.search-modern {
-    position: relative;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 50px;
-    padding: 12px 20px;
+/* ====================== HEADER ACTIONS ====================== */
+.header-actions {
+    position: absolute;
+    top: 28px;
+    right: 32px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    min-width: 320px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    gap: 16px;
+    z-index: 1060;           /* Augmenté */
+}
+
+/* IMPORTANT : Amélioration pour le dropdown */
+.header-actions .dropdown {
+    position: relative;      /* Très important */
+}
+
+.header-actions .dropdown-menu {
+    position: absolute;
+    top: 100%;               /* Juste en dessous du bouton */
+    right: 0;                /* Aligné à droite */
+    margin-top: 8px;
+    z-index: 1070;           /* Plus haut que tout le reste */
+    transform: translateY(5px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+}
+
+/* Quand le dropdown est ouvert par Bootstrap */
+.header-actions .dropdown-menu.show {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Style du bouton profil (user-menu) */
+.user-menu {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 8px 18px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
 }
 
-.search-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+/* Notification reste inchangée */
+.top-icon {
+    position: relative;
+    z-index: 10;   /* Pour éviter les conflits */
 }
 
-.search-modern i {
-    color: #6c757d;
-    font-size: 18px;
-    transition: color 0.3s ease;
-}
-
-.search-modern input {
-    border: none;
-    background: transparent;
-    outline: none;
-    flex: 1;
-    font-size: 14px;
-    color: #495057;
-    font-weight: 500;
-}
-
-.search-modern input::placeholder {
-    color: #6c757d;
-    font-weight: 400;
-}
-
-.search-modern:focus-within {
-    background: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.2);
-}
-
-.search-modern:focus-within i {
-    color: #667eea;
-}
-
-/* Icônes du header */
+/* Icône Notification */
 .top-icon {
     position: relative;
     width: 48px;
@@ -106,19 +114,18 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     backdrop-filter: blur(10px);
 }
 
 .top-icon:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    transform: translateY(-3px) scale(1.06);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
 .top-icon i {
-    font-size: 20px;
+    font-size: 21px;
     color: #495057;
-    transition: color 0.3s ease;
 }
 
 .top-icon:hover i {
@@ -127,38 +134,42 @@
 
 .top-icon .badge {
     position: absolute;
-    top: -8px;
-    right: -8px;
+    top: -6px;
+    right: -6px;
     background: #dc3545;
     color: white;
     font-size: 11px;
     font-weight: 700;
-    padding: 4px 8px;
-    border-radius: 20px;
-    min-width: 20px;
-    height: 20px;
+    min-width: 19px;
+    height: 19px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
     border: 2px solid white;
-    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.4);
 }
 
-/* Menu utilisateur */
+/* Menu Utilisateur (Profil) */
 .user-menu {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 16px;
-    padding: 8px 16px;
+    padding: 8px 18px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     text-decoration: none;
+    color: inherit;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255,255,255,0.3);
 }
 
 .user-menu:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     background: rgba(255, 255, 255, 0.98);
 }
 
@@ -167,18 +178,19 @@
     height: 36px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(255, 255, 255, 0.8);
+    border: 2px solid #fff;
 }
 
 .user-menu span {
-    color: #2d3748;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 14.5px;
+    color: #2d3748;
+    white-space: nowrap;
 }
 
 .user-menu i {
     color: #718096;
-    font-size: 16px;
+    font-size: 17px;
     transition: transform 0.3s ease;
 }
 
@@ -186,41 +198,38 @@
     transform: rotate(180deg);
 }
 
-/* Dropdown menu */
+/* Dropdown Menu */
 .dropdown-menu {
-    border-radius: 12px;
     border: none;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-    padding: 8px 0;
-    min-width: 200px;
-    margin-top: 8px;
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.95);
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+    padding: 10px 0;
+    min-width: 220px;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(12px);
+    margin-top: 6px;
+}
+
+.dropdown-header {
+    padding: 12px 20px;
 }
 
 .dropdown-item {
-    padding: 12px 16px;
-    font-size: 14px;
+    padding: 12px 20px;
+    font-size: 14.5px;
     color: #4a5568;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
+    gap: 12px;
 }
 
 .dropdown-item:hover {
-    background: rgba(102, 126, 234, 0.1);
+    background: rgba(102, 126, 234, 0.08);
     color: #667eea;
-    transform: translateX(4px);
-}
-
-.dropdown-item i {
-    width: 18px;
-    margin-right: 12px;
-    font-size: 16px;
 }
 
 .dropdown-item.text-danger:hover {
-    background: rgba(220, 53, 69, 0.1);
+    background: rgba(220, 53, 69, 0.08);
     color: #dc3545;
 }
 
@@ -229,90 +238,57 @@
     border-color: rgba(0,0,0,0.08);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .dashboard-header {
-        padding: 2rem 1.5rem;
-        margin-bottom: 1.5rem;
-    }
+/* Barre de recherche */
+.search-modern {
+    margin-top: 0.1rem;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 18px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
 
-    .welcome-title {
-        font-size: 1.8rem;
-    }
+.search-modern:hover,
+.search-modern:focus-within {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
 
-    .welcome-subtitle {
-        font-size: 1rem;
-    }
+.search-modern i {
+    font-size: 22px;
+    color: #6c757d;
+}
 
+.search-modern input {
+    border: none;
+    background: transparent;
+    outline: none;
+    flex: 1;
+    font-size: 15px;
+    color: #333;
+}
+
+/* ====================== RESPONSIVE ====================== */
+@media (max-width: 992px) {
+    .header-actions {
+        position: static;
+        margin-top: 1.5rem;
+        justify-content: center;
+        width: 100%;
+    }
+    
     .search-modern {
-        min-width: 280px;
-        margin-bottom: 1rem;
-    }
-
-    .top-icon {
-        width: 44px;
-        height: 44px;
-    }
-
-    .user-menu {
-        padding: 6px 12px;
-    }
-
-    .user-avatar {
-        width: 32px;
-        height: 32px;
+        margin-top: 1rem;
+        min-width: 100%;
     }
 }
 
 @media (max-width: 576px) {
     .dashboard-header {
-        padding: 1.5rem 1rem;
-    }
-
-    .search-modern {
-        min-width: 100%;
-        margin-bottom: 1rem;
-    }
-
-    .d-flex.align-items-center.justify-content-lg-end {
-       justify-content: center !important;
-        flex-wrap: wrap;
-    }
-}
-
-/* Animations d'entrée */
-.dashboard-header {
-    animation: slideInDown 0.8s ease-out;
-}
-
-@keyframes slideInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.search-modern, .top-icon, .user-menu {
-    animation: fadeInUp 0.6s ease-out forwards;
-    opacity: 0;
-}
-
-.search-modern { animation-delay: 0.2s; }
-.top-icon:nth-child(1) { animation-delay: 0.4s; }
-.top-icon:nth-child(2) { animation-delay: 0.5s; }
-.user-menu { animation-delay: 0.6s; }
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+        padding: 1.8rem 1.2rem;
     }
 }

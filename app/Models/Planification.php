@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Planification extends Model
 {
@@ -19,48 +22,97 @@ class Planification extends Model
         'zone_id',
         'collecteur_id',
         'declaration_id',
+        'abonnement_id',
+        'agent_id',
+        'ordre_passage',
+        'duree_estimee',
+        'priorite',
     ];
 
-    public function zone()
+
+    protected $casts = [
+        'date_prevue' => 'date',
+        'ordre_passage' => 'integer',
+        'duree_estimee' => 'integer',
+        'priorite' => 'integer',
+    ];
+
+    public const STATUSES = [
+        'planifiee',
+        'assignee',
+        'en_route',
+        'en_cours',
+        'terminee',
+        'annulee',
+        'reportee',
+    ];
+
+    public function zone(): BelongsTo
     {
         return $this->belongsTo(Zone::class);
     }
 
-    public function collecteur()
+    public function collecteur(): BelongsTo
     {
         return $this->belongsTo(Collecteur::class);
     }
 
-    public function declaration()
+    public function agent(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'agent_id');
+    }
+
+    public function declaration(): BelongsTo
     {
         return $this->belongsTo(Declaration::class);
     }
 
-    // === RELATIONS ===
-    public function collecte()
+    public function abonnement(): BelongsTo
     {
-        return $this->hasOne(Collectes::class);   // une planification = une collecte réelle
+        return $this->belongsTo(Abonnement::class);
     }
 
-    // === SCOPES (très utile) ===
-    public function scopeEffectuees($query)
+    public function collecte(): HasOne
     {
-        return $query->whereHas('collecte', function ($q) {
-            $q->whereIn('statut', ['Effectuée', 'Triée']);
-        });
+        return $this->hasOne(Collectes::class);
     }
 
-    public function scopeNonEffectuees($query)
+    public function scopeForToday($query)
     {
-        return $query->whereDoesntHave('collecte')
-            ->orWhere('statut', 'Planifiée');
+        return $query->whereDate('date_prevue', now());
     }
 
-    // === CONSTANTES (propre et évite les fautes de frappe) ===
-    const STATUTS = [
-        'Planifiée' => 'Planifiée',
-        'En cours' => 'En cours',
-        'Effectuée' => 'Effectuée',
-        'Triée' => 'Triée',
-    ];
+    public function scopeActive($query)
+    {
+        return $query->whereIn('statut', ['planifiee', 'assignee', 'en_route', 'en_cours']);
+    }
+
+    public function isActive(): bool
+    {
+        return in_array($this->statut, ['planifiee', 'assignee', 'en_route', 'en_cours'], true);
+    }
+
+    public static function createFromDeclaration(Declaration $declaration): self
+    {
+        $datePrevue = Carbon::now()->addDay();
+        $zoneId = optional(optional($declaration->user->client)->zone)->id ?? Zone::first()?->id;
+
+        return self::create([
+            'code_planification' => 'D-'.$declaration->id.'-'.$datePrevue->format('Ymd'),
+            'nom_tournee' => 'Tournée déclaration #'.$declaration->id,
+            'jour_semaine' => $datePrevue->translatedFormat('l'),
+            'date_prevue' => $datePrevue->toDateString(),
+            'periode' => 'PONCTUELLE',
+            'type_collecte' => $declaration->type_dechet,
+            'statut' => 'planifiee',
+            'zone_id' => $zoneId,
+            'collecteur_id' => null,
+            'declaration_id' => $declaration->id,
+            'abonnement_id' => $declaration->abonnement_id,
+            'agent_id' => null,
+            'ordre_passage' => 1,
+            'duree_estimee' => 60,
+            'priorite' => 2,
+        ]);
+    }
 }

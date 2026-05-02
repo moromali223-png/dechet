@@ -21,11 +21,18 @@ class CommandeController extends Controller
      */
     public function index()
     {
-        $commandes = Commande::with(['client', 'produit'])
+        $commandes = Commande::with(['client.user', 'produit'])
             ->latest()
             ->paginate(20);
 
-        return view('commandes.index', compact('commandes'));
+        $stats = [
+            'en_attente' => Commande::where('statut', 'en_attente')->count(),
+            'acceptee' => Commande::where('statut', 'acceptee')->count(),
+            'refusee' => Commande::where('statut', 'refusee')->count(),
+            'livree' => Commande::where('statut', 'livree')->count(),
+        ];
+
+        return view('commandes.index', compact('commandes', 'stats'));
     }
 
     /**

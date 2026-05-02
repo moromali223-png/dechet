@@ -12,7 +12,8 @@ return new class extends Migration
             $table->id();
 
             $table->string('nom')->unique();                    // Nom du produit (ex: Plastique PET, Compost, etc.)
-            $table->string('type');                             // Type : 'recycle', 'consommable', 'matiere_premiere', 'equipement'
+            $table->string('type');
+            $table->decimal('quantite');                           // Type : 'recycle', 'consommable', 'matiere_premiere', 'equipement'
             $table->string('unite_mesure')->default('kg');      // kg, pièce, litre, tonne...
             $table->decimal('prix_unitaire', 12, 2)->nullable(); // Prix de vente ou de référence
             $table->text('description')->nullable();

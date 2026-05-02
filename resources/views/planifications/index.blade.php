@@ -37,8 +37,8 @@
                 <td>{{ $planification->periode }}</td>
                 <td>{{ $planification->type_collecte }}</td>
                 <td>{{ $planification->statut }}</td>
-                <td>{{ $planification->zone->nom_zone ?? 'N/A' }}</td>
-                <td>{{ $planification->collecteur->nom_collecteur ?? 'N/A' }}</td>
+                <td>{{ $planification->zone->nom ?? 'N/A' }}</td>
+<td>{{ $planification->collecteur->user->name ?? 'N/A' }}</td>
                 <td>
                     <div class="d-flex align-items-center gap-2 flex-nowrap">
                          <a href="{{ route('planifications.show', $planification) }}" class="btn btn-sm btn-info me-2" title="Voir">

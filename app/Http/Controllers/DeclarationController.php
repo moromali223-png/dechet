@@ -2,64 +2,115 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreDeclarationRequest;
+use App\Http\Requests\UpdateDeclarationRequest;
 use App\Models\Declaration;
-use Illuminate\Http\Request;
+use App\Models\Planification;
+use Illuminate\Support\Facades\Auth; // Import the Auth facade
+use Illuminate\Support\Facades\Storage;
 
 class DeclarationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->authorizeResource(Declaration::class, 'declaration');
+    }
+
     public function index()
     {
-        //
+        // Retrieve the authenticated user.
+        // The 'auth' middleware on the route should ensure a user is logged in,
+        // but an explicit check adds robustness against unexpected scenarios.
+        $user = Auth::user();
+
+        if (! $user) {
+            // If no authenticated user is found, deny access.
+            // This should ideally be handled by middleware or policy, but acts as a safeguard.
+            abort(403, 'Vous devez être connecté pour accéder à vos déclarations.');
+        }
+
+        $declarations = $user->declarations()->latest()->paginate(15);
+
+        return view('declarations.index', compact('declarations'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return view('declarations.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StoreDeclarationRequest $request)
     {
-        //
+        $data = $request->validated();
+        $data['user_id'] = Auth::id();
+        $data['statut'] = 'en_attente';
+
+        if ($request->hasFile('photo')) {
+            $data['photo'] = $request->file('photo')->store('declarations', 'public');
+        }
+
+        Declaration::create($data);
+
+        return redirect()
+            ->route('declarations.index')
+            ->with('success', 'Déclaration créée avec succès.');
     }
 
-    /**
-     * Display the specified resource.
-     */
+    public function valider(Declaration $declaration)
+    {
+        abort_if(! auth()->user() || auth()->user()->role !== 'admin', 403, 'Accès refusé.');
+        abort_if($declaration->statut !== 'en_attente', 403, 'Cette déclaration ne peut plus être validée.');
+
+        $declaration->update(['statut' => 'valide']);
+        Planification::createFromDeclaration($declaration);
+
+        return redirect()->route('declarations.show', $declaration)
+            ->with('success', 'Déclaration validée et planification créée.');
+    }
+
     public function show(Declaration $declaration)
     {
-        //
+        return view('declarations.show', compact('declaration'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Declaration $declaration)
     {
-        //
+        abort_if($declaration->statut !== 'en_attente', 403, 'Cette déclaration ne peut plus être modifiée.');
+
+        return view('declarations.edit', compact('declaration'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Declaration $declaration)
+    public function update(UpdateDeclarationRequest $request, Declaration $declaration)
     {
-        //
+        abort_if($declaration->statut !== 'en_attente', 403, 'Cette déclaration ne peut plus être modifiée.');
+
+        $data = $request->validated();
+
+        if ($request->hasFile('photo')) {
+            if ($declaration->photo) {
+                Storage::disk('public')->delete($declaration->photo);
+            }
+
+            $data['photo'] = $request->file('photo')->store('declarations', 'public');
+        }
+
+        $declaration->update($data);
+
+        return redirect()->route('declarations.show', $declaration)
+            ->with('success', 'Déclaration mise à jour avec succès.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Declaration $declaration)
     {
-        //
+        abort_if($declaration->statut !== 'en_attente', 403, 'Cette déclaration ne peut pas être supprimée.');
+
+        if ($declaration->photo) {
+            Storage::disk('public')->delete($declaration->photo);
+        }
+
+        $declaration->delete();
+
+        return redirect()->route('declarations.index')
+            ->with('success', 'Déclaration supprimée avec succès.');
     }
 }

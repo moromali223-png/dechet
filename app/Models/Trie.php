@@ -10,39 +10,18 @@ class Trie extends Model
 {
     use HasFactory;
 
-    protected $table = 'tries';
-
     protected $fillable = [
+        'pesage_id',
         'type_dechet',
-        'quantite_trier',     // nom cohérent avec la migration
+        'quantite_trier',
         'unite',
-        'pesage_id',          // important à mettre dans fillable
-
     ];
 
     /**
-     * Casts pour les types de données
-     */
-    protected $casts = [
-        'quantite_trier' => 'decimal:2',
-        // si tu ajoutes cette colonne plus tard
-    ];
-
-    /**
-     * Relation avec Pesage
-     * Un tri appartient à un pesage
+     * Un tri appartient à un pesage.
      */
     public function pesage(): BelongsTo
     {
-        return $this->belongsTo(Pesage::class);
+        return $this->belongsTo(Pesage::class, 'pesage_id');
     }
-
-    /**
-     * Relation avec Production (optionnel selon ton diagramme)
-     * Un tri peut donner plusieurs productions
-     */
-
-    /**
-     * Accesseur exemple : Afficher quantité + unité
-     */
 }

@@ -1,22 +1,27 @@
 <?php
 
 use App\Http\Controllers\AbonnementsController;
+use App\Http\Controllers\AffectationController;
 use App\Http\Controllers\AgentsController;
 use App\Http\Controllers\AlertesController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CollecteurController;
 use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeclarationController;
 use App\Http\Controllers\InventaireController;
 use App\Http\Controllers\MouvementController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaiementController;
+use App\Http\Controllers\PesageController;
 use App\Http\Controllers\PlanificationController;
 use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RapportController;
 use App\Http\Controllers\StockEntreeController;
 use App\Http\Controllers\SuiviCollecteController;
+use App\Http\Controllers\TourneeController;
+use App\Http\Controllers\TrieController;
 use App\Http\Controllers\ZoneController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,8 +31,13 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // Dashboard
+    // Dashboard principal accessible à tous les rôles
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Dashboards spécifiques (URL directes si besoin)
+    Route::middleware('agent')->get('/dashboard/agent', [DashboardController::class, 'agent'])->name('dashboard.agent');
+    Route::middleware('collecteur')->get('/dashboard/collecteur', [DashboardController::class, 'collecteur'])->name('dashboard.collecteur');
+    Route::middleware('client')->get('/dashboard/client', [DashboardController::class, 'client'])->name('dashboard.client');
 
     // Gestion des Zones
     Route::resource('zones', ZoneController::class);
@@ -53,6 +63,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('alertes/{alerte}/traiter', [AlertesController::class, 'marquerTraitee'])->name('alertes.traiter');
     // Gestion des Planifications
     Route::resource('planifications', PlanificationController::class);
+    Route::middleware('admin')->group(function () {
+        Route::get('affectations', [AffectationController::class, 'index'])->name('affectations.index');
+        Route::post('affectations/{planification}/assign', [AffectationController::class, 'assign'])->name('affectations.assign');
+        Route::post('declarations/{declaration}/valider', [DeclarationController::class, 'valider'])->name('declarations.valider');
+    });
+    Route::get('tournees-du-jour', [TourneeController::class, 'index'])->name('tournees.index');
+    Route::patch('planifications/{planification}/statut', [AffectationController::class, 'updateStatus'])->name('planifications.status.update');
+    Route::resource('pesages', PesageController::class);
+    Route::resource('tries', TrieController::class)
+        ->parameters(['tries' => 'tri']);
     // Gestion des suivi de collecte
     Route::get('/suivi/collectes', [SuiviCollecteController::class, 'index'])
         ->name('suivi_collecte.index');
@@ -73,6 +93,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Abonnements
     Route::resource('abonnements', AbonnementsController::class);
+    Route::patch('abonnements/{abonnement}/activer', [AbonnementsController::class, 'activer'])->name('abonnements.activer');
+    Route::patch('abonnements/{abonnement}/rejeter', [AbonnementsController::class, 'rejeter'])->name('abonnements.rejeter');
+
+    // Déclarations de déchets
+    Route::resource('declarations', DeclarationController::class);
 
     // Configuration
     Route::view('/parametres', 'parametres.index')->name('parametres.index');

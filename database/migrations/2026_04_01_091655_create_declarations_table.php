@@ -24,7 +24,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('statut')->default('en_attente');   // en_attente, validée, rejetée, collectée...
 
-            // Si chaque déclaration est liée à un utilisateur
             $table->foreignId('user_id')
                 ->constrained('users')      // assure-toi que la table users existe
                 ->onDelete('cascade');

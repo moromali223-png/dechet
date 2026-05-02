@@ -19,7 +19,10 @@ return new class extends Migration
             $table->string('periode')->default('HEBDOMADAIRE'); // HEBDOMADAIRE, BI_HEBDOMADAIRE
 
             $table->string('type_collecte');              // "SYSTEMATIQUE" ou "MIXTE"
-            $table->string('statut')->default('ACTIVE');  // ACTIVE, SUSPENDUE, TERMINEE, ANNULEE
+            $table->string('statut')->default('planifiee'); 
+            $table->integer('priorite')->default(1);
+            $table->integer('ordre_passage')->nullable();
+            $table->string('duree_estimee')->nullable();
 
             // Clés étrangères
             $table->foreignId('zone_id')
@@ -27,14 +30,22 @@ return new class extends Migration
                 ->onDelete('cascade');
 
             $table->foreignId('collecteur_id')
+                ->nullable()
                 ->constrained('collecteurs')
-                ->onDelete('cascade');
+                ->nullOnDelete();
 
             // Optionnel : si vous voulez lier à une déclaration de déchet spécifique
             $table->foreignId('declaration_id')
                 ->nullable()
                 ->constrained('declarations')
                 ->nullOnDelete();
+
+            $table->foreignId('abonnement_id')
+                ->nullable()
+                ->constrained('abonnements')
+                ->cascadeOnDelete();
+
+            $table->foreignId('agent_id')->nullable()->constrained('users');
 
             $table->timestamps();
         });

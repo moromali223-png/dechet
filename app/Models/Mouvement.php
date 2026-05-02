@@ -32,15 +32,15 @@ class Mouvement extends Model
      */
     public function setTypeMouvementAttribute(string $value): void
     {
-        $normalized = Str::upper(Str::ascii($value));
+        $normalized = Str::lower(Str::ascii($value));
 
-        if ($normalized === 'SORTIE') {
-            $this->attributes['type_mouvement'] = 'SORTIE';
+        if ($normalized === 'sortie') {
+            $this->attributes['type_mouvement'] = 'sortie';
 
             return;
         }
 
-        $this->attributes['type_mouvement'] = 'ENTREE';
+        $this->attributes['type_mouvement'] = 'entrée';
     }
 
     public function getTypeMouvementLabelAttribute(): string
@@ -71,12 +71,12 @@ class Mouvement extends Model
      */
     public function scopeEntrees($query)
     {
-        return $query->where('type_mouvement', 'ENTREE');
+        return $query->where('type_mouvement', 'entrée');
     }
 
     public function scopeSorties($query)
     {
-        return $query->where('type_mouvement', 'SORTIE');
+        return $query->where('type_mouvement', 'sortie');
     }
 
     public function scopeParCommande($query, $commandeId)

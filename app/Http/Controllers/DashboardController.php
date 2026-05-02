@@ -2,19 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Abonnements;
+use App\Models\Abonnement;
 use App\Models\Agents;
-use App\Models\Collecteur;
 use App\Models\Client;
+use App\Models\Collecteur;
 use App\Models\Commande;
 use App\Models\Paiement;
 use App\Models\Produit;
 use App\Models\Stock;
+use App\Models\Zone;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
     public function index(): View
+    {
+        $user = auth()->user();
+        $role = strtolower($user?->role ?? '');
+
+        return match ($role) {
+            'admin' => $this->adminDashboard(),
+            'agent' => $this->agent(),
+            'collecteur' => $this->collecteur(),
+            'client' => $this->client(),
+            default => $this->adminDashboard(),
+        };
+    }
+
+    private function adminDashboard(): View
     {
         $user = auth()->user();
 
@@ -25,7 +40,7 @@ class DashboardController extends Controller
         $produitsCount = Produit::count();
         $agentsCount = Agents::count();
         $collecteursCount = Collecteur::count();
-        $abonnementsCount = Abonnements::count();
+        $abonnementsCount = Abonnement::count();
         $lowStockCount = Stock::enAlerte()->count();
         $recentCommandes = Commande::with('client')
             ->orderByDesc('date_commande')
@@ -85,6 +100,62 @@ class DashboardController extends Controller
             'monthlyRevenue' => $monthlyRevenue,
             'commandesStatusLabels' => array_values($statusLabels),
             'commandesStatusData' => $statusData,
+        ]);
+    }
+
+    public function agent(): View
+    {
+        $user = auth()->user();
+
+        // Données spécifiques à l'agent
+        $clientsCount = Client::count(); // Ou filtrer par agent si nécessaire
+        $commandesPending = Commande::where('statut', 'en_attente')->count();
+        $recentCommandes = Commande::with('client')
+            ->orderByDesc('date_commande')
+            ->limit(5)
+            ->get();
+
+        return view('dashboard-agent', [
+            'userName' => $user?->name ?? 'Agent',
+            'clientsCount' => $clientsCount,
+            'commandesPending' => $commandesPending,
+            'recentCommandes' => $recentCommandes,
+        ]);
+    }
+
+    public function collecteur(): View
+    {
+        $user = auth()->user();
+
+        // Données spécifiques au collecteur
+        $collectesCount = Collecteur::count(); // Ajuster selon les besoins
+        $zonesCount = Zone::count();
+
+        return view('dashboard-collecteur', [
+            'userName' => $user?->name ?? 'Collecteur',
+            'collectesCount' => $collectesCount,
+            'zonesCount' => $zonesCount,
+        ]);
+    }
+
+    public function client(): View
+    {
+        $user = auth()->user();
+
+        // Données spécifiques au client
+        $commandesCount = Commande::where('client_id', $user->id)->count();
+        $paiementsCount = Paiement::whereHas('commande', fn ($query) => $query->where('client_id', $user->id)
+        )->count();
+        $recentCommandes = Commande::where('client_id', $user->id)
+            ->orderByDesc('date_commande')
+            ->limit(5)
+            ->get();
+
+        return view('dashboard-client', [
+            'userName' => $user?->name ?? 'Client',
+            'commandesCount' => $commandesCount,
+            'paiementsCount' => $paiementsCount,
+            'recentCommandes' => $recentCommandes,
         ]);
     }
 }

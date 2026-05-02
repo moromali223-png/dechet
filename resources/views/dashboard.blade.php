@@ -2,119 +2,135 @@
 @section('title', 'Tableau de bord - EcoFlux')
 
 @push('styles')
-
-
 <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
-
-
-
+@endpush
 
 @section('content')
 <div class="container-fluid px-0">
     <!-- Header Professionnel -->
-    <div class="dashboard-header">
-        <div class="row align-items-center g-4">
-            <!-- Section de bienvenue -->
-            <div class="col-lg-6 col-12">
-                <div class="welcome-section">
-                    <h1 class="welcome-title">
-                         Bonjour, {{ auth()->user()->name ?? 'Utilisateur' }}
-                    </h1>
-                    <p class="welcome-subtitle">
-                        Bienvenue sur votre tableau de bord EcoFlux. Suivez l'activité de votre plateforme en temps réel.
-                    </p>
+   <div class="dashboard-header">
+    <div class="row align-items-center g-4">
+        <!-- Section de bienvenue -->
+        <div class="col-lg-6 col-12">
+            <div class="welcome-section">
+                <h1 class="welcome-title">
+                    Bonjour, {{ auth()->user()->name ?? 'Utilisateur' }}
+                </h1>
+                <p class="welcome-subtitle">
+                    Bienvenue sur votre tableau de bord EcoFlux. Suivez l'activité de votre plateforme en temps réel.
+                </p>
+            </div>
+        </div>
+
+        <!-- Header Actions : Notifications + Profil -->
+        <div class="col-lg-6 col-12">
+            <div class="header-actions">
+                <!-- Notifications -->
+                <div class="top-icon" data-bs-toggle="tooltip" title="Notifications">
+                    <i class="bx bx-bell"></i>
+                    <span class="badge">3</span>
+                </div>
+
+<!-- ============================
+     MENU UTILISATEUR CORRIGÉ
+     ============================ -->
+<div class="dropdown">
+    <a href="#"
+       class="user-menu dropdown-toggle"
+       id="userDropdown"
+       role="button"
+       data-bs-toggle="dropdown"
+       aria-expanded="false">
+       
+        <img src="{{ auth()->user()->avatar ?? asset('assets/img/avatars/1.png') }}"
+             alt="Avatar"
+             class="user-avatar">
+
+        <span class="d-none d-md-inline">
+            {{ auth()->user()->name ?? 'Utilisateur' }}
+        </span>
+    </a>
+
+    <ul class="dropdown-menu dropdown-menu-end shadow border-0"
+        aria-labelledby="userDropdown">
+
+        <!-- Informations utilisateur -->
+        <li class="px-3 py-3">
+            <div class="d-flex align-items-center">
+                <img src="{{ auth()->user()->avatar ?? asset('assets/img/avatars/1.png') }}"
+                     alt="Avatar"
+                     class="user-avatar me-3">
+
+                <div>
+                    <h6 class="mb-0 fw-bold">
+                        {{ auth()->user()->name ?? 'Utilisateur' }}
+                    </h6>
+                    <small class="text-muted">
+                        {{ auth()->user()->email ?? 'email@example.com' }}
+                    </small>
                 </div>
             </div>
+        </li>
 
-            <!-- Section outils -->
-            <div class="col-lg-6 col-12">
-                <div class="d-flex align-items-center justify-content-lg-end gap-3 flex-wrap">
-                    <!-- Barre de recherche -->
-                    <div class="search-modern">
-                        <i class="bx bx-search"></i>
-                        <input type="text"
-                               placeholder="🔍 Rechercher commandes, clients, zones..."
-                               class="form-control border-0"
-                               id="globalSearch">
-                    </div>
+        <li><hr class="dropdown-divider"></li>
 
-                    <!-- Notifications -->
-                    <div class="top-icon" data-bs-toggle="tooltip" title="Notifications">
-                        <i class="bx bx-bell"></i>
-                        <span class="badge">3</span>
-                    </div>
+        <!-- Profil -->
+        <li>
+            <a class="dropdown-item"
+               href="{{ route('profile.edit') }}">
+                <i class="bx bx-user me-2"></i>
+                Mon profil
+            </a>
+        </li>
 
-                    <!-- Messages 
-                    <div class="top-icon" data-bs-toggle="tooltip" title="Messages">
-                        <i class="bx bx-envelope"></i>
-                        <span class="badge">2</span>
-                    </div>
-                     -->
-                    <!-- Menu utilisateur -->
-                    <div class="dropdown">
-                        <a class="user-menu" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="{{ auth()->user()->avatar ?? asset('assets/img/avatars/1.png') }}"
-                                 alt="Avatar"
-                                 class="user-avatar">
-                            <span class="ms-2 d-none d-md-inline">
-                                {{ auth()->user()->name ?? 'Utilisateur' }}
-                            </span>
-                            <i class="bx bx-chevron-down ms-1"></i>
-                        </a>
+        <!-- Paramètres -->
+        <li>
+            <a class="dropdown-item"
+               href="{{ route('profile.edit') }}">
+                <i class="bx bx-cog me-2"></i>
+                Paramètres
+            </a>
+        </li>
 
-                        <ul class="dropdown-menu">
-                            <li class="dropdown-header px-3 py-2">
-                                <div class="d-flex align-items-center">
-                                    <img src="{{ auth()->user()->avatar ?? asset('assets/img/avatars/1.png') }}"
-                                         alt="Avatar"
-                                         class="user-avatar me-3">
-                                    <div>
-                                        <div class="fw-semibold">{{ auth()->user()->name ?? 'Utilisateur' }}</div>
-                                        <small class="text-muted">{{ auth()->user()->email ?? 'user@example.com' }}</small>
-                                    </div>
-                                </div>
-                            </li>
+        <!-- Notifications -->
+        <li>
+            <a class="dropdown-item"
+               href="#">
+                <i class="bx bx-bell me-2"></i>
+                Notifications
+            </a>
+        </li>
 
-                            <li><hr class="dropdown-divider"></li>
+        <li><hr class="dropdown-divider"></li>
 
-                            <li>
-                                <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                    <i class="bx bx-user"></i>
-                                    Mon profil
-                                </a>
-                            </li>
+        <!-- Déconnexion -->
+        <li>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit"
+                        class="dropdown-item text-danger">
+                    <i class="bx bx-log-out me-2"></i>
+                    Déconnexion
+                </button>
+            </form>
+        </li>
+    </ul>
+</div>
+            </div>
+        </div>
 
-                            <li>
-                                <a class="dropdown-item" href="#">
-                                    <i class="bx bx-cog"></i>
-                                    Paramètres
-                                </a>
-                            </li>
-
-                            <li>
-                                <a class="dropdown-item" href="#">
-                                    <i class="bx bx-bell"></i>
-                                    Notifications
-                                </a>
-                            </li>
-
-                            <li><hr class="dropdown-divider"></li>
-
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start">
-                                        <i class="bx bx-log-out"></i>
-                                        Déconnexion
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+        <!-- Barre de recherche -->
+        <div class="col-12">
+            <div class="search-modern">
+                <i class="bx bx-search"></i>
+                <input type="text" 
+                       placeholder="Rechercher par commandes, clients, zones..." 
+                       class="form-control border-0"
+                       id="globalSearch">
             </div>
         </div>
     </div>
+</div>
     <!-- KPI Cards -->
     <div class="row g-4">
         <div class="col-xl-3 col-md-6">
@@ -240,114 +256,143 @@
 @push('scripts')
 <script>
 // Initialiser les tooltips Bootstrap
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialiser les tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
+document.addEventListener('DOMContentLoaded', function () {
+    // ==========================================
+    // Initialisation des Tooltips Bootstrap
+    // ==========================================
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
-    // Fonctionnalité de recherche globale
+    // ==========================================
+    // Recherche Globale
+    // ==========================================
     const globalSearch = document.getElementById('globalSearch');
+
     if (globalSearch) {
-        globalSearch.addEventListener('input', function(e) {
+        globalSearch.addEventListener('input', function (e) {
             const searchTerm = e.target.value.toLowerCase().trim();
+
             if (searchTerm.length > 2) {
-                // Ici tu peux ajouter la logique de recherche
-                console.log('Recherche:', searchTerm);
-                // Par exemple, filtrer les éléments visibles ou faire une requête AJAX
+                console.log('Recherche :', searchTerm);
+                // Ajoutez ici votre logique AJAX ou de filtrage
             }
         });
 
-        // Effet de focus sur la barre de recherche
-        globalSearch.addEventListener('focus', function() {
+        globalSearch.addEventListener('focus', function () {
             this.parentElement.classList.add('search-focused');
         });
 
-        globalSearch.addEventListener('blur', function() {
+        globalSearch.addEventListener('blur', function () {
             this.parentElement.classList.remove('search-focused');
         });
     }
 
-    // Animation des icônes au survol
+    // ==========================================
+    // Animation des icônes de notification
+    // ==========================================
     const topIcons = document.querySelectorAll('.top-icon');
-    topIcons.forEach(icon => {
-        icon.addEventListener('mouseenter', function() {
+
+    topIcons.forEach(function (icon) {
+        icon.addEventListener('mouseenter', function () {
             this.style.transform = 'translateY(-3px) scale(1.05)';
         });
 
-        icon.addEventListener('mouseleave', function() {
+        icon.addEventListener('mouseleave', function () {
             this.style.transform = 'translateY(0) scale(1)';
         });
     });
 
+    // ==========================================
     // Animation du menu utilisateur
+    // ==========================================
     const userMenu = document.querySelector('.user-menu');
+
     if (userMenu) {
-        userMenu.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
+        userMenu.addEventListener('mouseenter', function () {
+            if (!this.classList.contains('show')) {
+                this.style.transform = 'translateY(-2px)';
+            }
         });
 
-        userMenu.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
+        userMenu.addEventListener('mouseleave', function () {
+            if (!this.classList.contains('show')) {
+                this.style.transform = 'translateY(0)';
+            }
         });
     }
 
-    // Fermer les dropdowns au clic en dehors
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.dropdown')) {
-            const dropdowns = document.querySelectorAll('.dropdown-menu.show');
-            dropdowns.forEach(dropdown => {
-                dropdown.classList.remove('show');
-            });
-        }
-    });
-
-    // Animation d'entrée progressive pour les éléments du header
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
+    // ==========================================
+    // Animation d'apparition
+    // ==========================================
+    const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
             if (entry.isIntersecting) {
                 entry.target.style.opacity = '1';
                 entry.target.style.transform = 'translateY(0)';
             }
         });
-    }, observerOptions);
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
 
-    // Observer les éléments du header
-    const headerElements = document.querySelectorAll('.search-modern, .top-icon, .user-menu');
-    headerElements.forEach(el => {
-        observer.observe(el);
+    const animatedElements = document.querySelectorAll(
+        '.search-modern, .top-icon, .user-menu'
+    );
+
+    animatedElements.forEach(function (element) {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(20px)';
+        element.style.transition = 'all 0.6s ease';
+        observer.observe(element);
     });
 });
 
-// Fonction pour afficher les notifications (peut être appelée depuis ailleurs)
+// ==========================================
+// Fonction Toast Notifications
+// ==========================================
 function showNotification(message, type = 'info') {
-    // Créer une notification toast
     const toast = document.createElement('div');
+
     toast.className = `toast align-items-center text-white bg-${type} border-0`;
     toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+
     toast.innerHTML = `
         <div class="d-flex">
-            <div class="toast-body">${message}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            <div class="toast-body">
+                ${message}
+            </div>
+            <button type="button"
+                    class="btn-close btn-close-white me-2 m-auto"
+                    data-bs-dismiss="toast"
+                    aria-label="Fermer">
+            </button>
         </div>
     `;
 
-    // Ajouter au conteneur de toasts (à créer dans le layout si nécessaire)
-    const toastContainer = document.querySelector('.toast-container') || document.body;
+    let toastContainer = document.querySelector('.toast-container');
+
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className =
+            'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '1080';
+        document.body.appendChild(toastContainer);
+    }
+
     toastContainer.appendChild(toast);
 
-    // Initialiser et afficher
-    const bsToast = new bootstrap.Toast(toast);
+    const bsToast = new bootstrap.Toast(toast, {
+        delay: 5000
+    });
+
     bsToast.show();
 
-    // Supprimer après affichage
-    toast.addEventListener('hidden.bs.toast', () => {
+    toast.addEventListener('hidden.bs.toast', function () {
         toast.remove();
     });
 }

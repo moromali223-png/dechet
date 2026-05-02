@@ -52,8 +52,8 @@ class Commande extends Model
         return $query->where('statut', 'en_attente');
     }
 
-    public function scopeValidee($query)
+    public function scopeAcceptee($query)
     {
-        return $query->where('statut', 'validée');
+        return $query->where('statut', 'acceptee');
     }
 }

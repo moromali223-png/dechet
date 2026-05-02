@@ -65,6 +65,6 @@ class Produit extends Model
      */
     public function scopeActif($query)
     {
-        return $query->where('statut', 'actif');
+        return $query->whereIn('statut', ['actif', 'DISPONIBLE']);
     }
 }

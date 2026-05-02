@@ -35,25 +35,56 @@
         <div class="form-group">
             <label for="statut">Statut</label>
             <select class="form-control" id="statut" name="statut" required>
-                <option value="ACTIVE">Active</option>
-                <option value="SUSPENDUE">Suspendue</option>
-                <option value="TERMINEE">Terminée</option>
-                <option value="ANNULEE">Annulée</option>
+                <option value="planifiee">Planifiée</option>
+                <option value="assignee">Affectée</option>
+                <option value="en_route">En route</option>
+                <option value="en_cours">En cours</option>
+                <option value="terminee">Terminée</option>
+                <option value="annulee">Annulée</option>
+                <option value="reportee">Reportée</option>
             </select>
         </div>
         <div class="form-group">
-            <label for="zone_id">Zone</label>
-            <select class="form-control" id="zone_id" name="zone_id" required>
-                @foreach($zones as $zone)
-                <option value="{{ $zone->id }}">{{ $zone->nom_zone }}</option>
-                @endforeach
-            </select>
-        </div>
+    <label for="zone_id">Zone</label>
+    <select class="form-control" id="zone_id" name="zone_id" required>
+        <option value="">-- Sélectionnez une zone --</option>
+        @forelse($zones ?? [] as $zone)
+            <option value="{{ $zone->id }}">{{ $zone->nom_zone ?? $zone->nom ?? 'Zone sans nom' }}</option>
+        @empty
+            <option value="">Aucune zone disponible</option>
+        @endforelse
+    </select>
+</div>
+
+<div class="form-group">
+    <label for="agent_id">Agent</label>
+    <select class="form-control" id="agent_id" name="agent_id">
+        <option value="">-- Sélectionnez un agent --</option>
+        @foreach($agents as $agent)
+            <option value="{{ $agent->id }}">{{ $agent->name }}</option>
+        @endforeach
+    </select>
+</div>
+
+<div class="form-group">
+    <label for="collecteur_id">Collecteur</label>
+    <select class="form-control" id="collecteur_id" name="collecteur_id">
+        <option value="">-- Sélectionnez un collecteur --</option>
+        @forelse($collecteurs ?? [] as $collecteur)
+            <option value="{{ $collecteur->id }}">
+                {{ $collecteur->nom_collecteur ?? optional($collecteur->user)->name ?? 'Collecteur #' . $collecteur->id }}
+            </option>
+        @empty
+            <option value="">Aucun collecteur disponible</option>
+        @endforelse
+    </select>
+</div>
         <div class="form-group">
-            <label for="collecteur_id">Collecteur</label>
-            <select class="form-control" id="collecteur_id" name="collecteur_id" required>
-                @foreach($collecteurs as $collecteur)
-                <option value="{{ $collecteur->id }}">{{ $collecteur->nom_collecteur }}</option>
+            <label for="abonnement_id">Abonnement</label>
+            <select class="form-control" id="abonnement_id" name="abonnement_id">
+                <option value="">Aucun</option>
+                @foreach($abonnements as $abonnement)
+                    <option value="{{ $abonnement->id }}">Abonnement #{{ $abonnement->id }} - {{ $abonnement->type_abonnement }}</option>
                 @endforeach
             </select>
         </div>
@@ -65,6 +96,26 @@
                 <option value="{{ $declaration->id }}">{{ $declaration->id }}</option>
                 @endforeach
             </select>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="ordre_passage">Ordre de passage</label>
+                    <input type="number" class="form-control" id="ordre_passage" name="ordre_passage" min="1" value="1">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="duree_estimee">Durée estimée (min)</label>
+                    <input type="number" class="form-control" id="duree_estimee" name="duree_estimee" min="15" value="60">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="priorite">Priorité</label>
+                    <input type="number" class="form-control" id="priorite" name="priorite" min="1" max="5" value="1">
+                </div>
+            </div>
         </div>
         <button type="submit" class="btn btn-primary">Créer</button>
     </form>

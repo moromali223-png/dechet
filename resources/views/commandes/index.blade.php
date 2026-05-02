@@ -37,36 +37,36 @@
                 <div class="bg-light rounded-3 p-3 h-100">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="text-muted">En attente</span>
-                        <span class="badge bg-warning">{{ $commandes->where('statut', 'en_attente')->count() }}</span>
+                        <span class="badge bg-warning text-dark">{{ $stats['en_attente'] }}</span>
                     </div>
-                    <h5 class="mb-0">{{ $commandes->where('statut', 'en_attente')->count() }}</h5>
+                    <h5 class="mb-0">{{ $stats['en_attente'] }}</h5>
                 </div>
             </div>
             <div class="col-lg-3 col-sm-6 mb-2">
                 <div class="bg-light rounded-3 p-3 h-100">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="text-muted">Acceptées</span>
-                        <span class="badge bg-success">{{ $commandes->where('statut', 'acceptee')->count() }}</span>
+                        <span class="badge bg-success">{{ $stats['acceptee'] }}</span>
                     </div>
-                    <h5 class="mb-0">{{ $commandes->where('statut', 'acceptee')->count() }}</h5>
+                    <h5 class="mb-0">{{ $stats['acceptee'] }}</h5>
                 </div>
             </div>
             <div class="col-lg-3 col-sm-6 mb-2">
                 <div class="bg-light rounded-3 p-3 h-100">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="text-muted">Refusées</span>
-                        <span class="badge bg-danger">{{ $commandes->where('statut', 'refusee')->count() }}</span>
+                        <span class="badge bg-danger">{{ $stats['refusee'] }}</span>
                     </div>
-                    <h5 class="mb-0">{{ $commandes->where('statut', 'refusee')->count() }}</h5>
+                    <h5 class="mb-0">{{ $stats['refusee'] }}</h5>
                 </div>
             </div>
             <div class="col-lg-3 col-sm-6 mb-2">
                 <div class="bg-light rounded-3 p-3 h-100">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="text-muted">Livrées</span>
-                        <span class="badge bg-secondary">{{ $commandes->where('statut', 'livree')->count() }}</span>
+                        <span class="badge bg-secondary">{{ $stats['livree'] }}</span>
                     </div>
-                    <h5 class="mb-0">{{ $commandes->where('statut', 'livree')->count() }}</h5>
+                    <h5 class="mb-0">{{ $stats['livree'] }}</h5>
                 </div>
             </div>
         </div>
@@ -88,7 +88,7 @@
                     @forelse($commandes as $commande)
                         <tr>
                             <td class="fw-semibold">{{ $commande->code_commande }}</td>
-                            <td>{{ $commande->client->name ?? 'N/A' }}</td>
+                            <td>{{ $commande->client->user->name ?? 'N/A' }}</td>
                             <td>{{ $commande->produit->nom ?? $commande->produit }}</td>
                             <td>{{ $commande->quantite }}</td>
                             <td>{{ $commande->created_at->format('d/m/Y') }}</td>

@@ -35,10 +35,10 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label for="stock_id" class="form-label">Produit en Stock <span class="text-danger">*</span></label>
-                    <select name="stock_id" id="stock_id" class="form-select" required>
+                    <select name="stock_id" id="stock_id" class="form-select" required onchange="updateUnit()">
                         <option value="">Sélectionner un produit</option>
                         @foreach($stocks as $stock)
-                            <option value="{{ $stock->id }}">
+                            <option value="{{ $stock->id }}" data-unite="{{ $stock->unite_mesure }}">
                                 {{ $stock->nom }}
                                 @if($stock->produit)
                                     ({{ $stock->produit->nom }})
@@ -51,21 +51,29 @@
 
                 <div class="col-md-6">
                     <label for="quantite" class="form-label">Quantité à ajouter <span class="text-danger">*</span></label>
-                    <input type="number" step="0.01" min="0.01" name="quantite" id="quantite"
-                           class="form-control" value="{{ old('quantite') }}" required>
-                    <div class="form-text">Quantité en {{ $stocks->first()->unite_mesure ?? 'unités' }}</div>
+                    <div class="input-group">
+                        <input type="number" step="0.01" min="0.01" name="quantite" id="quantite"
+                               class="form-control" value="{{ old('quantite') }}" required>
+                        <span class="input-group-text" id="unite-label">unités</span>
+                    </div>
                 </div>
 
                 <div class="col-md-6">
                     <label for="source" class="form-label">Source de l'entrée <span class="text-danger">*</span></label>
-                    <select name="source" id="source" class="form-select" required>
+                    <select name="source" id="source" class="form-select" required onchange="toggleClientField()">
                         <option value="">Sélectionner une source</option>
-                        <option value="Production interne" {{ old('source') == 'Production interne' ? 'selected' : '' }}>Production interne</option>
+                        <option value="Source du produit" {{ old('source') == 'Source du produit' ? 'selected' : '' }}>Source du produit (Production)</option>
+                        <option value="Retour client" {{ old('source') == 'Retour client' ? 'selected' : '' }}>Retour client ↩️</option>
+                        <option value="Retour de stock" {{ old('source') == 'Retour de stock' ? 'selected' : '' }}>Retour de stock (Interne)</option>
                         <option value="Fournisseur" {{ old('source') == 'Fournisseur' ? 'selected' : '' }}>Fournisseur</option>
                         <option value="Ajustement inventaire" {{ old('source') == 'Ajustement inventaire' ? 'selected' : '' }}>Ajustement inventaire</option>
-                        <option value="Retour client" {{ old('source') == 'Retour client' ? 'selected' : '' }}>Retour client</option>
                         <option value="Autre" {{ old('source') == 'Autre' ? 'selected' : '' }}>Autre</option>
                     </select>
+                </div>
+
+                <div class="col-md-6" id="client_field" style="display: none;">
+                    <label for="client_nom" class="form-label">Nom du client / Référence retour</label>
+                    <input type="text" name="client_nom" id="client_nom" class="form-control" placeholder="Ex: Client Martin ou Facture #123">
                 </div>
 
                 <div class="col-md-6">

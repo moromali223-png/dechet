@@ -2,107 +2,69 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePlanificationRequest;
+use App\Http\Requests\UpdatePlanificationRequest;
+use App\Models\Abonnement;
 use App\Models\Collecteur;
 use App\Models\Declaration;
 use App\Models\Planification;
+use App\Models\User;
 use App\Models\Zone;
-use Illuminate\Http\Request;
 
 class PlanificationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $planifications = Planification::with(['zone', 'collecteur', 'declaration'])->paginate(10);
+        $planifications = Planification::with(['zone', 'collecteur.user', 'agent', 'declaration', 'abonnement'])
+            ->latest('date_prevue')
+            ->paginate(10);
 
         return view('planifications.index', compact('planifications'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $zones = Zone::all();
-        $collecteurs = Collecteur::all();
+        $collecteurs = Collecteur::with('user')->get();
         $declarations = Declaration::all();
+        $abonnements = Abonnement::all();
+        $agents = User::where('role', 'agent')->get();
 
-        return view('planifications.create', compact('zones', 'collecteurs', 'declarations'));
+        return view('planifications.create', compact('zones', 'collecteurs', 'declarations', 'abonnements', 'agents'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StorePlanificationRequest $request)
     {
-        $request->validate([
-            'code_planification' => 'required|unique:planifications',
-            'nom_tournee' => 'nullable|string',
-            'jour_semaine' => 'required|string',
-            'date_prevue' => 'nullable|date',
-            'periode' => 'required|string',
-            'type_collecte' => 'required|string',
-            'statut' => 'required|string',
-            'zone_id' => 'required|exists:zones,id',
-            'collecteur_id' => 'required|exists:collecteurs,id',
-            'declaration_id' => 'nullable|exists:declarations,id',
-        ]);
-
-        Planification::create($request->all());
+        Planification::create($request->validated());
 
         return redirect()->route('planifications.index')->with('success', 'Planification créée avec succès.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Planification $planification)
     {
-        $planification->load(['zone', 'collecteur', 'declaration']);
+        $planification->load(['zone', 'collecteur.user', 'agent', 'declaration', 'abonnement']);
 
         return view('planifications.show', compact('planification'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Planification $planification)
     {
         $zones = Zone::all();
-        $collecteurs = Collecteur::all();
+        $collecteurs = Collecteur::with('user')->get();
         $declarations = Declaration::all();
+        $abonnements = Abonnement::all();
+        $agents = User::where('role', 'agent')->get();
 
-        return view('planifications.edit', compact('planification', 'zones', 'collecteurs', 'declarations'));
+        return view('planifications.edit', compact('planification', 'zones', 'collecteurs', 'declarations', 'abonnements', 'agents'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Planification $planification)
+    public function update(UpdatePlanificationRequest $request, Planification $planification)
     {
-        $request->validate([
-            'code_planification' => 'required|unique:planifications,code_planification,'.$planification->id,
-            'nom_tournee' => 'nullable|string',
-            'jour_semaine' => 'required|string',
-            'date_prevue' => 'nullable|date',
-            'periode' => 'required|string',
-            'type_collecte' => 'required|string',
-            'statut' => 'required|string',
-            'zone_id' => 'required|exists:zones,id',
-            'collecteur_id' => 'required|exists:collecteurs,id',
-            'declaration_id' => 'nullable|exists:declarations,id',
-        ]);
-
-        $planification->update($request->all());
+        $planification->update($request->validated());
 
         return redirect()->route('planifications.index')->with('success', 'Planification mise à jour avec succès.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Planification $planification)
     {
         $planification->delete();
