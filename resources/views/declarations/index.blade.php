@@ -21,6 +21,9 @@
             <thead class="table-light">
                 <tr>
                     <th>ID</th>
+                    <th>Client</th>
+                    <th>Adresse</th>
+                    <th>Abonnement</th>
                     <th>Type de déchet</th>
                     <th>Poids estimé</th>
                     <th>Statut</th>
@@ -32,10 +35,14 @@
                 @forelse($declarations as $declaration)
                     <tr>
                         <td>{{ $declaration->id }}</td>
+                        <td>{{ $declaration->user?->name ?? 'N/A' }}</td>
+                        <td>{{ $declaration->user?->address ?? 'N/A' }}</td>
+                        <td>{{ $declaration->abonnement?->type_abonnement ?? 'Manuel' }}</td>
                         <td>{{ $declaration->type_dechet }}</td>
                         <td>{{ $declaration->poids_estime ? number_format($declaration->poids_estime, 2, ',', ' ') . ' kg' : 'N/A' }}</td>
                         <td>
                             <span class="badge {{ $declaration->statut === 'en_attente' ? 'bg-warning text-dark' : ($declaration->statut === 'planifiee' ? 'bg-info text-dark' : ($declaration->statut === 'validée' ? 'bg-success' : 'bg-secondary')) }}">
+                            <span class="badge {{ $declaration->statut === 'en_attente' ? 'bg-warning text-dark' : ($declaration->statut === 'planifiee' ? 'bg-info text-dark' : ($declaration->statut === 'valide' ? 'bg-success' : 'bg-secondary')) }}">
                                 {{ ucfirst(str_replace('_', ' ', $declaration->statut)) }}
                             </span>
                         </td>

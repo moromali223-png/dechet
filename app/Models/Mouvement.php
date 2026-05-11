@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Str;
 
 class Mouvement extends Model
 {
@@ -12,75 +11,86 @@ class Mouvement extends Model
 
     protected $fillable = [
         'stock_id',
+        'produit_id',
         'type_mouvement',
         'quantite',
+        'prix_unitaire',
+        'montant_total',
         'source',
         'description',
         'commande_id',
+        'user_id',
         'date_mouvement',
         'heure_mouvement',
     ];
 
+    protected $hidden = ['user_id']; // Cache l'ID pour les API/Clients
+
     protected $casts = [
         'quantite' => 'decimal:2',
         'date_mouvement' => 'date',
-        'heure_mouvement' => 'datetime:H:i:s',
     ];
 
-    /**
-     * Normalise le type de mouvement pour stocker sous forme standardisée.
-     */
-    public function setTypeMouvementAttribute(string $value): void
+    /*
+    |-------------------------
+    | MUTATOR PROPRE
+    |-------------------------
+    */
+
+    public function setTypeMouvementAttribute($value)
     {
-        $normalized = Str::lower(Str::ascii($value));
-
-        if ($normalized === 'sortie') {
-            $this->attributes['type_mouvement'] = 'sortie';
-
-            return;
-        }
-
-        $this->attributes['type_mouvement'] = 'entrée';
+        $this->attributes['type_mouvement'] = strtolower($value) === 'sortie'
+            ? 'sortie'
+            : 'entree';
     }
 
-    public function getTypeMouvementLabelAttribute(): string
-    {
-        $normalized = Str::upper(Str::ascii($this->type_mouvement));
+    /*
+    |-------------------------
+    | ACCESSOR
+    |-------------------------
+    */
 
-        return $normalized === 'SORTIE' ? 'Sortie' : 'Entrée';
+    public function getTypeMouvementLabelAttribute()
+    {
+        return $this->type_mouvement === 'sortie'
+            ? 'Sortie'
+            : 'Entrée';
     }
 
-    /**
-     * Relation avec Stock
-     */
+    /*
+    |-------------------------
+    | RELATIONS
+    |-------------------------
+    */
+
     public function stock(): BelongsTo
     {
         return $this->belongsTo(Stock::class);
     }
 
-    /**
-     * Relation avec Commande
-     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function commande(): BelongsTo
     {
         return $this->belongsTo(Commande::class);
     }
 
-    /**
-     * Scopes utiles
-     */
+    /*
+    |-------------------------
+    | SCOPES
+    |-------------------------
+    */
+
     public function scopeEntrees($query)
     {
-        return $query->where('type_mouvement', 'entrée');
+        return $query->where('type_mouvement', 'entree');
     }
 
     public function scopeSorties($query)
     {
         return $query->where('type_mouvement', 'sortie');
-    }
-
-    public function scopeParCommande($query, $commandeId)
-    {
-        return $query->where('commande_id', $commandeId);
     }
 }

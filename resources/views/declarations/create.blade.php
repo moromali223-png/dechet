@@ -19,10 +19,18 @@
     <form action="{{ route('declarations.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
-        <div class="mb-3">
-            <label for="type_dechet" class="form-label">Type de déchet</label>
-            <input type="text" id="type_dechet" name="type_dechet" class="form-control" value="{{ old('type_dechet') }}" required>
-        </div>
+     <div class="mb-3">
+    <label for="type_dechet" class="form-label">Type de déchet</label>
+    <select id="type_dechet" name="type_dechet" class="form-control" required>
+        <option value="">-- Sélectionner --</option>
+        <option value="plastique">Plastique</option>
+        <option value="organique">Organique</option>
+        <option value="papier">Papier</option>
+        <option value="metal">Métal</option>
+        <option value="electronique">Électronique</option>
+        <option value="verre">Verre</option>
+    </select>
+</div>
 
         <div class="mb-3">
             <label for="poids_estime" class="form-label">Poids estimé (kg)</label>

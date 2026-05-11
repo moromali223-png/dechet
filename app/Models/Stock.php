@@ -4,13 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Stock extends Model
 {
     use HasFactory;
-
-    protected $table = 'stocks';
 
     protected $fillable = [
         'code_stock',
@@ -29,33 +26,39 @@ class Stock extends Model
         'seuil_alerte' => 'decimal:2',
     ];
 
-    /**
-     * Relation avec le Produit
-     */
-    public function produit(): BelongsTo
+    /*
+    |-------------------------
+    | RELATIONS
+    |-------------------------
+    */
+
+    public function produit()
     {
-        return $this->belongsTo(Produit::class, 'produit_id');
+        return $this->belongsTo(Produit::class);
     }
 
-    /**
-     * Relation avec les Mouvements
-     */
     public function mouvements()
     {
         return $this->hasMany(Mouvement::class);
     }
 
-    /**
-     * Scope : Stocks en alerte (quantité basse)
-     */
+    /*
+    |-------------------------
+    | SCOPES
+    |-------------------------
+    */
+
     public function scopeEnAlerte($query)
     {
         return $query->whereColumn('quantite_disponible', '<=', 'seuil_alerte');
     }
 
-    /**
-     * Accesseur : Valeur totale du stock (quantité × prix unitaire)
-     */
+    /*
+    |-------------------------
+    | ACCESSORS
+    |-------------------------
+    */
+
     public function getValeurTotaleAttribute()
     {
         return $this->quantite_disponible * $this->prix_unitaire;

@@ -19,7 +19,7 @@ class CollecteurController extends Controller
             ->latest()
             ->paginate(15);
 
-        return view('collecteurs.index', compact('collecteurs'));
+        return view('admin.collecteurs.index', compact('collecteurs'));
     }
 
     /**
@@ -29,7 +29,7 @@ class CollecteurController extends Controller
     {
         $zones = Zone::all();
 
-        return view('collecteurs.create', compact('zones'));
+        return view('admin.collecteurs.create', compact('zones'));
     }
 
     /**
@@ -73,7 +73,7 @@ class CollecteurController extends Controller
     {
         $collecteur->load(['user', 'zone']);
 
-        return view('collecteurs.show', compact('collecteur'));
+        return view('admin.collecteurs.show', compact('collecteur'));
     }
 
     /**
@@ -83,7 +83,7 @@ class CollecteurController extends Controller
     {
         $zones = Zone::all();
 
-        return view('collecteurs.edit', compact('collecteur', 'zones'));
+        return view('admin.collecteurs.edit', compact('collecteur', 'zones'));
     }
 
     /**
@@ -116,7 +116,7 @@ class CollecteurController extends Controller
             }
         });
 
-        return redirect()->route('collecteurs.index')
+        return redirect()->route('admin.collecteurs.index')
             ->with('success', 'Collecteur mis à jour avec succès !');
     }
 
@@ -129,7 +129,7 @@ class CollecteurController extends Controller
             $collecteur->user->delete(); // supprime l'utilisateur et donc le collecteur si cascade
         });
 
-        return redirect()->route('collecteurs.index')
+        return redirect()->route('admin.collecteurs.index')
             ->with('success', 'Collecteur supprimé avec succès !');
     }
 }

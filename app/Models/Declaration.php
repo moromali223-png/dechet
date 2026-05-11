@@ -21,7 +21,15 @@ class Declaration extends Model
     ];
 
     protected $casts = [
-        'poids_estime' => 'decimal:2',
+        'statut' => 'string',
+    ];
+
+    public const STATUTS = [
+        'en_attente' => 'En attente',
+        'valide' => 'Validée',
+        'rejete' => 'Rejetée',
+        'brouillon' => 'Brouillon',
+        // plus tard : 'planifiee', etc.
     ];
 
     public function user(): BelongsTo

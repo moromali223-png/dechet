@@ -2,9 +2,16 @@
 
 use App\Http\Controllers\AbonnementsController;
 use App\Http\Controllers\AffectationController;
+use App\Http\Controllers\Agent\CollecteController;
+use App\Http\Controllers\Agent\MatiereController;
+use App\Http\Controllers\Agent\StockController;
 use App\Http\Controllers\AgentsController;
 use App\Http\Controllers\AlertesController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\Collecteur\CollecteController as CollecteurCollecteController;
+use App\Http\Controllers\Collecteur\HistoriqueController as CollecteurHistoriqueController;
+use App\Http\Controllers\Collecteur\TourneeController as CollecteurTourneeController;
+use App\Http\Controllers\Collecteur\ZoneController as CollecteurZoneController;
 use App\Http\Controllers\CollecteurController;
 use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\DashboardController;
@@ -38,7 +45,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('agent')->get('/dashboard/agent', [DashboardController::class, 'agent'])->name('dashboard.agent');
     Route::middleware('collecteur')->get('/dashboard/collecteur', [DashboardController::class, 'collecteur'])->name('dashboard.collecteur');
     Route::middleware('client')->get('/dashboard/client', [DashboardController::class, 'client'])->name('dashboard.client');
+    Route::middleware(['auth'])->group(function () {
 
+        // === ADMIN ===
+        Route::prefix('admin')->name('admin.')->group(function () {
+            Route::get('/declarations', [DeclarationController::class, 'adminIndex'])
+                ->name('declarations.index');
+
+            Route::post('/declarations/{declaration}/valider', [DeclarationController::class, 'valider'])
+                ->name('declarations.valider');
+
+            Route::post('/declarations/{declaration}/rejeter', [DeclarationController::class, 'rejeter'])
+                ->name('declarations.rejeter');
+        });
+
+        // === PLANIFICATIONS ===
+        Route::resource('planifications', PlanificationController::class)
+            ->only(['index', 'edit', 'update']);
+    });
     // Gestion des Zones
     Route::resource('zones', ZoneController::class);
     // Gestion des Collecteurs
@@ -68,15 +92,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('affectations/{planification}/assign', [AffectationController::class, 'assign'])->name('affectations.assign');
         Route::post('declarations/{declaration}/valider', [DeclarationController::class, 'valider'])->name('declarations.valider');
     });
+
+    // Tournées pour l'admin/agent
     Route::get('tournees-du-jour', [TourneeController::class, 'index'])->name('tournees.index');
+
     Route::patch('planifications/{planification}/statut', [AffectationController::class, 'updateStatus'])->name('planifications.status.update');
     Route::resource('pesages', PesageController::class);
     Route::resource('tries', TrieController::class)
         ->parameters(['tries' => 'tri']);
     // Gestion des suivi de collecte
-    Route::get('/suivi/collectes', [SuiviCollecteController::class, 'index'])
-        ->name('suivi_collecte.index');
-    // mouvement de sortie
+
+    // ...
+
+    // ====================== SUIVI DES COLLECTES ======================
+    Route::resource('suivi/collectes', SuiviCollecteController::class)
+        ->only(['index', 'show'])
+        ->names('suivi_collecte');
 
     Route::get('/stock/entree', [StockEntreeController::class, 'create'])->name('stock.entree.create');
     Route::post('/stock/entree', [StockEntreeController::class, 'store'])->name('stock.entree.store');
@@ -94,6 +125,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Abonnements
     Route::resource('abonnements', AbonnementsController::class);
     Route::patch('abonnements/{abonnement}/activer', [AbonnementsController::class, 'activer'])->name('abonnements.activer');
+    Route::get('abonnements/{abonnement}/rejeter', [AbonnementsController::class, 'rejeterForm'])->name('abonnements.rejeter.form');
     Route::patch('abonnements/{abonnement}/rejeter', [AbonnementsController::class, 'rejeter'])->name('abonnements.rejeter');
 
     // Déclarations de déchets
@@ -102,7 +134,55 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Configuration
     Route::view('/parametres', 'parametres.index')->name('parametres.index');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+
+    // === MODULE COLLECTEUR ===
+    Route::prefix('collecteur')->name('collecteur.')->group(function () {
+        Route::get('/tournees', [CollecteurTourneeController::class, 'index'])->name('tournees');
+        Route::get('/collecte/encours', [CollecteurCollecteController::class, 'encours'])->name('collecte.encours');
+        Route::get('/collecte/terminees', [CollecteurCollecteController::class, 'terminees'])->name('collecte.terminees');
+        Route::get('/historique', [CollecteurHistoriqueController::class, 'index'])->name('historique');
+        Route::get('/zone', [CollecteurZoneController::class, 'index'])->name('zone');
+        Route::get('/tournee/{planification}', [CollecteurTourneeController::class, 'show'])
+            ->name('show');
+        // Actions de changement de statut
+        Route::post('/planification/{planification}/start', [CollecteurCollecteController::class, 'start'])->name('start');
+        Route::post('/planification/{planification}/arrive', [CollecteurCollecteController::class, 'arrive'])->name('arrive');
+        Route::post('/planification/{planification}/finish', [CollecteurCollecteController::class, 'finish'])->name('finish');
+        Route::get('/historique/{id}', [CollecteurHistoriqueController::class, 'show'])
+            ->name('historique.show');
+    });
 });
+
+// === MODULE AGENT ===
+Route::prefix('agent')->name('agent.')->middleware(['auth', 'agent'])->group(function () {
+    // Dashboard Agent
+    Route::get('/dashboard', [App\Http\Controllers\Agent\DashboardController::class, 'index'])->name('dashboard');
+
+    // Collectes reçues
+    Route::resource('collectes', CollecteController::class)->only(['index', 'show']);
+
+    // Pesages
+    Route::resource('pesages', App\Http\Controllers\Agent\PesageController::class);
+
+    // Tris des déchets
+    Route::resource('tries', App\Http\Controllers\Agent\TrieController::class)->parameters(['tries' => 'tri']);
+
+    // Matières premières
+    Route::resource('matieres', MatiereController::class)->only(['index', 'show']);
+
+    // Produits
+    Route::resource('produits', App\Http\Controllers\Agent\ProduitController::class);
+
+    // Stocks produits finis
+    Route::resource('stocks', StockController::class)->only(['index', 'show']);
+
+    // Rapports
+    Route::get('rapports', [App\Http\Controllers\Agent\RapportController::class, 'index'])->name('rapports.index');
+    Route::get('rapports/journalier', [App\Http\Controllers\Agent\RapportController::class, 'journalier'])->name('rapports.journalier');
+    Route::get('rapports/mensuel', [App\Http\Controllers\Agent\RapportController::class, 'mensuel'])->name('rapports.mensuel');
+    Route::get('rapports/export/{type}', [App\Http\Controllers\Agent\RapportController::class, 'export'])->name('rapports.export');
+});
+
 // Profil Utilisateur
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

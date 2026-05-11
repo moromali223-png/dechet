@@ -33,7 +33,7 @@ class AlertesController extends Controller
             }),
         ];
 
-        return view('alertes.index', compact(
+        return view('admin.alertes.index', compact(
             'stocksEnAlerte',
             'totalAlertes',
             'alertesCritiques',
@@ -52,7 +52,7 @@ class AlertesController extends Controller
         // Ici on pourrait ajouter un champ 'alerte_traitee' ou utiliser un système de notifications
         // Pour l'instant, on redirige simplement avec un message
 
-        return redirect()->route('alertes.index')
+        return redirect()->route('admin.alertes.index')
             ->with('success', "Alerte pour {$stock->nom} marquée comme consultée");
     }
 
@@ -66,6 +66,6 @@ class AlertesController extends Controller
             ->orderBy('quantite_disponible', 'asc')
             ->get();
 
-        return view('alertes.rapport', compact('stocksEnAlerte'));
+        return view('admin.alertes.rapport', compact('stocksEnAlerte'));
     }
 }

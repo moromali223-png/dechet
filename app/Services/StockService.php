@@ -4,90 +4,69 @@ namespace App\Services;
 
 use App\Models\Mouvement;
 use App\Models\Stock;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class StockService
 {
     /**
-     * Entrée de stock automatique
-     * Met à jour le stock et crée le mouvement
+     * Entrée en stock
      */
-    public function entreeStock($stock_id, $quantite, $source, $description = null, $commande_id = null)
-    {
-        DB::transaction(function () use ($stock_id, $quantite, $source, $description, $commande_id) {
-            $stock = Stock::findOrFail($stock_id);
+    public function entreeStock(
+        int $stockId,
+        float $quantite,
+        float $prixUnitaireBatch,
+        string $type = 'production',
+        string $description = null
+    ) {
+        return DB::transaction(function () use (
+            $stockId,
+            $quantite,
+            $prixUnitaireBatch,
+            $type,
+            $description
+        ) {
+
+            $stock = Stock::findOrFail($stockId);
+
+            // Anciennes valeurs
+            $ancienneQuantite = $stock->quantite_disponible;
+            $ancienPrix       = $stock->prix_unitaire;
+
+            // Valeur ancien stock
+            $ancienneValeur = $ancienneQuantite * $ancienPrix;
+            $nouvelleValeur = $prixUnitaireBatch * $quantite;
+
+            // Nouvelle quantité totale
+            $quantiteTotale = $ancienneQuantite + $quantite;
+
+            // Nouveau Prix Moyen Pondéré (Sécurité division par zéro)
+            $nouveauPrix = $quantiteTotale > 0 
+                ? ($ancienneValeur + $nouvelleValeur) / $quantiteTotale 
+                : $prixUnitaireBatch;
 
             // Mise à jour stock
-            $stock->increment('quantite_disponible', $quantite);
-
-            // Création mouvement automatique
-            Mouvement::create([
-                'type_mouvement' => 'ENTREE',
-                'quantite' => $quantite,
-                'source' => $source,
-                'description' => $description,
-                'stock_id' => $stock->id,
-                'commande_id' => $commande_id,
-                'date_mouvement' => now()->toDateString(),
-                'heure_mouvement' => now()->toTimeString(),
+            $stock->update([
+                'quantite_disponible' => $quantiteTotale,
+                'prix_unitaire'       => $nouveauPrix,
             ]);
-        });
-    }
 
-    /**
-     * Sortie de stock automatique
-     * Met à jour le stock et crée le mouvement
-     */
-    public function sortieStock($stock_id, $quantite, $source, $description = null, $commande_id = null)
-    {
-        DB::transaction(function () use ($stock_id, $quantite, $source, $description, $commande_id) {
-            $stock = Stock::findOrFail($stock_id);
-
-            if ($stock->quantite_disponible < $quantite) {
-                throw new \Exception("Stock insuffisant pour {$stock->nom}. Disponible: {$stock->quantite_disponible} {$stock->unite_mesure}");
-            }
-
-            // Diminution du stock
-            $stock->decrement('quantite_disponible', $quantite);
-
-            // Mouvement automatique
+            // Mouvement
             Mouvement::create([
-                'type_mouvement' => 'SORTIE',
-                'quantite' => $quantite,
-                'source' => $source,
-                'description' => $description,
-                'stock_id' => $stock->id,
-                'commande_id' => $commande_id,
-                'date_mouvement' => now()->toDateString(),
+                'stock_id'        => $stock->id,
+                'produit_id'      => $stock->produit_id, // Nécessite l'ajout au fillable de Mouvement
+                'type_mouvement'  => 'ENTREE',
+                'quantite'        => $quantite,
+                'prix_unitaire'   => $prixUnitaireBatch,
+                'montant_total'   => $nouvelleValeur,
+                'source'          => $type,
+                'description'     => $description,
+                'date_mouvement'  => now()->toDateString(),
                 'heure_mouvement' => now()->toTimeString(),
+                'user_id'         => Auth::id(),
             ]);
-        });
-    }
 
-    /**
-     * Ajustement manuel du stock (pour corrections d'inventaire)
-     */
-    public function ajusterStock($stock_id, $nouvelle_quantite, $motif)
-    {
-        DB::transaction(function () use ($stock_id, $nouvelle_quantite, $motif) {
-            $stock = Stock::findOrFail($stock_id);
-            $ancienne_quantite = $stock->quantite_disponible;
-            $difference = $nouvelle_quantite - $ancienne_quantite;
-
-            // Mise à jour stock
-            $stock->update(['quantite_disponible' => $nouvelle_quantite]);
-
-            // Mouvement d'ajustement
-            $type = $difference > 0 ? 'ENTREE' : 'SORTIE';
-            Mouvement::create([
-                'type_mouvement' => $type,
-                'quantite' => abs($difference),
-                'source' => 'Ajustement manuel',
-                'description' => "Ajustement: {$motif}. Ancien: {$ancienne_quantite}, Nouveau: {$nouvelle_quantite}",
-                'stock_id' => $stock->id,
-                'date_mouvement' => now()->toDateString(),
-                'heure_mouvement' => now()->toTimeString(),
-            ]);
+            return $stock;
         });
     }
 }

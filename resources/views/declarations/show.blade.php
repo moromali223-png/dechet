@@ -15,6 +15,14 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row mb-3">
+                <div class="col-md-4 fw-semibold">Client</div>
+                <div class="col-md-8">{{ $declaration->user?->name ?? 'Non spécifié' }}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4 fw-semibold">Adresse de collecte</div>
+                <div class="col-md-8">{{ $declaration->user?->address ?? 'Non renseignée' }}</div>
+            </div>
+            <div class="row mb-3">
                 <div class="col-md-4 fw-semibold">Type de déchet</div>
                 <div class="col-md-8">{{ $declaration->type_dechet }}</div>
             </div>
@@ -31,8 +39,16 @@
                 <div class="col-md-8">{{ $declaration->created_at->format('d/m/Y H:i') }}</div>
             </div>
             <div class="row mb-3">
-                <div class="col-md-4 fw-semibold">Abonnement lié</div>
-                <div class="col-md-8">{{ $declaration->abonnement ? 'Oui (#' . $declaration->abonnement->id . ')' : 'Non' }}</div>
+                <div class="col-md-4 fw-semibold">Détails de l'abonnement</div>
+                <div class="col-md-8">
+                    @if($declaration->abonnement)
+                        <p class="mb-1"><strong>Type :</strong> {{ $declaration->abonnement->type_abonnement }} (ID: #{{ $declaration->abonnement->id }})</p>
+                        <p class="mb-1"><strong>Nom du client :</strong> {{ $declaration->abonnement->user?->name ?? 'N/A' }}</p>
+                        <p class="mb-0"><strong>Adresse :</strong> {{ $declaration->abonnement->user?->address ?? 'N/A' }}</p>
+                    @else
+                        <span class="badge bg-secondary">Déclaration manuelle (Hors abonnement)</span>
+                    @endif
+                </div>
             </div>
             <div class="row mb-3">
                 <div class="col-md-4 fw-semibold">Description</div>

@@ -29,15 +29,18 @@ class Planification extends Model
         'priorite',
     ];
 
-
     protected $casts = [
         'date_prevue' => 'date',
         'ordre_passage' => 'integer',
         'duree_estimee' => 'integer',
         'priorite' => 'integer',
+        'heure_depart' => 'datetime',
+        'heure_arrivee' => 'datetime',
+        'heure_fin' => 'datetime',
     ];
 
     public const STATUSES = [
+        'brouillon',
         'planifiee',
         'assignee',
         'en_route',
@@ -46,6 +49,8 @@ class Planification extends Model
         'annulee',
         'reportee',
     ];
+
+    // ==================== RELATIONS ====================
 
     public function zone(): BelongsTo
     {
@@ -77,6 +82,8 @@ class Planification extends Model
         return $this->hasOne(Collectes::class);
     }
 
+    // ==================== SCOPES ====================
+
     public function scopeForToday($query)
     {
         return $query->whereDate('date_prevue', now());
@@ -84,35 +91,49 @@ class Planification extends Model
 
     public function scopeActive($query)
     {
-        return $query->whereIn('statut', ['planifiee', 'assignee', 'en_route', 'en_cours']);
+        return $query->whereIn('statut', [
+            'planifiee',
+            'assignee',
+            'en_route',
+            'en_cours'
+        ]);
     }
+
+    // ==================== METHODS ====================
 
     public function isActive(): bool
     {
-        return in_array($this->statut, ['planifiee', 'assignee', 'en_route', 'en_cours'], true);
+        return in_array($this->statut, [
+            'planifiee',
+            'assignee',
+            'en_route',
+            'en_cours'
+        ], true);
     }
 
     public static function createFromDeclaration(Declaration $declaration): self
     {
         $datePrevue = Carbon::now()->addDay();
-        $zoneId = optional(optional($declaration->user->client)->zone)->id ?? Zone::first()?->id;
+
+        $zoneId = optional(optional($declaration->user->client)->zone)->id
+            ?? Zone::first()?->id;
 
         return self::create([
-            'code_planification' => 'D-'.$declaration->id.'-'.$datePrevue->format('Ymd'),
-            'nom_tournee' => 'Tournée déclaration #'.$declaration->id,
-            'jour_semaine' => $datePrevue->translatedFormat('l'),
-            'date_prevue' => $datePrevue->toDateString(),
-            'periode' => 'PONCTUELLE',
-            'type_collecte' => $declaration->type_dechet,
-            'statut' => 'planifiee',
-            'zone_id' => $zoneId,
-            'collecteur_id' => null,
-            'declaration_id' => $declaration->id,
-            'abonnement_id' => $declaration->abonnement_id,
-            'agent_id' => null,
-            'ordre_passage' => 1,
-            'duree_estimee' => 60,
-            'priorite' => 2,
+            'code_planification' => 'D-' . $declaration->id . '-' . $datePrevue->format('Ymd'),
+            'nom_tournee'        => 'Tournée déclaration #' . $declaration->id,
+            'jour_semaine'       => $datePrevue->translatedFormat('l'),
+            'date_prevue'        => $datePrevue->toDateString(),
+            'periode'            => 'PONCTUELLE',
+            'type_collecte'      => $declaration->type_dechet,
+            'statut'             => 'planifiee',
+            'zone_id'            => $zoneId,
+            'collecteur_id'      => null,
+            'declaration_id'     => $declaration->id,
+            'abonnement_id'      => $declaration->abonnement_id,
+            'agent_id'           => null,
+            'ordre_passage'      => 1,
+            'duree_estimee'      => 60,
+            'priorite'           => 2,
         ]);
     }
 }

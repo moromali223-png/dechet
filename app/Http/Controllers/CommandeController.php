@@ -32,7 +32,7 @@ class CommandeController extends Controller
             'livree' => Commande::where('statut', 'livree')->count(),
         ];
 
-        return view('commandes.index', compact('commandes', 'stats'));
+        return view('admin.commandes.index', compact('commandes', 'stats'));
     }
 
     /**

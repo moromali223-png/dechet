@@ -30,6 +30,59 @@
                 <div>Tableau de bord</div>
             </a>
         </li>
+         <!-- ==================== GESTION DES UTILISATEURS ==================== -->
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-group"></i>
+                <div>Gestion des utilisateurs</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="{{ route('clients.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-user"></i>
+                        <div>Clients</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{{ route('agents.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-shield"></i>
+                        <div>Agents</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{{ route('collecteurs.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-car"></i>
+                        <div>Collecteurs</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+          <!-- ==================== CONTRATS & DÉCLARATIONS ==================== -->
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx bx-edit"></i>
+                <div>Contrats & Déclarations</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="{{ route('abonnements.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-receipt"></i>
+                        <div>Abonnements</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{{ route('admin.declarations.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-file"></i>
+                        <div>Déclarations</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Operations</span>
+        </li>
 
         <!-- ==================== COLLECTE & PLANIFICATION ==================== -->
         <li class="menu-item">
@@ -71,28 +124,7 @@
             </ul>
         </li>
 
-        <!-- ==================== CONTRATS & DÉCLARATIONS ==================== -->
-        <li class="menu-item">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx bx-edit"></i>
-                <div>Contrats & Déclarations</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item">
-                    <a href="{{ route('abonnements.index') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-receipt"></i>
-                        <div>Abonnements</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="{{ route('declarations.index') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-file"></i>
-                        <div>Déclarations</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
+      
         <!-- ==================== TRAITEMENT ==================== -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -110,34 +142,7 @@
             </ul>
         </li>
 
-        <!-- ==================== GESTION DES UTILISATEURS ==================== -->
-        <li class="menu-item">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-group"></i>
-                <div>Gestion des utilisateurs</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item">
-                    <a href="{{ route('clients.index') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-user"></i>
-                        <div>Clients</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="{{ route('agents.index') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-shield"></i>
-                        <div>Agents</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="{{ route('collecteurs.index') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-car"></i>
-                        <div>Collecteurs</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
+       
         <!-- ==================== GESTION DU STOCK ==================== -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">

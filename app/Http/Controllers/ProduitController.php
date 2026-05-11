@@ -3,24 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produit;
-use App\Models\Stock;
 use App\Models\Trie;
-use App\Services\StockService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class ProduitController extends Controller
 {
-    protected $stockService;
-
-    public function __construct(StockService $stockService)
-    {
-        $this->stockService = $stockService;
-    }
-
     /**
-     * Liste des produits
+     * LISTE PRODUITS
      */
     public function index()
     {
@@ -33,7 +22,7 @@ class ProduitController extends Controller
     }
 
     /**
-     * Formulaire de création
+     * FORM CREATE
      */
     public function create()
     {
@@ -43,7 +32,7 @@ class ProduitController extends Controller
     }
 
     /**
-     * Enregistrement produit + gestion stock
+     * STORE → Observer gère stock automatiquement
      */
     public function store(Request $request)
     {
@@ -58,52 +47,15 @@ class ProduitController extends Controller
             'trie_id' => 'required|exists:tries,id',
         ]);
 
-        DB::transaction(function () use ($validated) {
-            // 🔹 1. Création produit (historique de production)
-            $produit = Produit::create($validated);
+        Produit::create($validated);
 
-            // 🔹 2. Vérifier si stock existe (par nom)
-            $stock = Stock::where('nom', $validated['nom'])->first();
-
-            if ($stock) {
-                // ✅ Utilisation du service pour la traçabilité (mouvements)
-                $this->stockService->entreeStock(
-                    $stock->id,
-                    $validated['quantite'],
-                    'production',
-                    'Entrée issue de la production : '.$produit->nom
-                );
-            } else {
-                // ✅ CRÉATION INITIALE DU STOCK
-                $stock = Stock::create([
-                    'code_stock' => 'STK-'.strtoupper(Str::random(5)),
-                    'nom' => $validated['nom'],
-                    'quantite_disponible' => 0, // Initialisé à 0 pour laisser le service gérer l'entrée
-                    'prix_unitaire' => $validated['prix_unitaire'],
-                    'unite_mesure' => $validated['unite_mesure'],
-                    'seuil_alerte' => 10,
-                    'produit_id' => $produit->id,
-                    'commande_id' => null,
-                ]);
-
-                // ✅ Enregistrement du mouvement initial via le service
-                if ($validated['quantite'] > 0) {
-                    $this->stockService->entreeStock(
-                        $stock->id,
-                        $validated['quantite'],
-                        'production',
-                        'Stock initial issu de la production : '.$produit->nom
-                    );
-                }
-            }
-        });
-
-        return redirect()->route('produits.index')
+        return redirect()
+            ->route('produits.index')
             ->with('success', 'Produit créé avec succès.');
     }
 
     /**
-     * Formulaire modification
+     * EDIT
      */
     public function edit(Produit $produit)
     {
@@ -113,7 +65,7 @@ class ProduitController extends Controller
     }
 
     /**
-     * Mise à jour produit
+     * UPDATE → Observer synchronise stock automatiquement
      */
     public function update(Request $request, Produit $produit)
     {
@@ -130,18 +82,20 @@ class ProduitController extends Controller
 
         $produit->update($validated);
 
-        return redirect()->route('produits.index')
+        return redirect()
+            ->route('produits.index')
             ->with('success', 'Produit mis à jour avec succès.');
     }
 
     /**
-     * Suppression produit
+     * DELETE → Observer supprime stock automatiquement
      */
     public function destroy(Produit $produit)
     {
         $produit->delete();
 
-        return redirect()->route('produits.index')
+        return redirect()
+            ->route('produits.index')
             ->with('success', 'Produit supprimé avec succès.');
     }
 }

@@ -20,7 +20,7 @@
 <ul class="menu-inner py-1">
 
     <li class="menu-item">
-        <a href="{{ route('dashboard.agent') }}" class="menu-link">
+        <a href="{{ route('agent.dashboard') }}" class="menu-link">
             <i class="menu-icon tf-icons bx bx-tachometer"></i>
             <div>Tableau de bord</div>
         </a>
@@ -29,21 +29,25 @@
     <li class="menu-item">
         <a href="javascript:void(0);" class="menu-link menu-toggle">
             <i class="menu-icon tf-icons bx bx-package"></i>
-            <div>Réception & Pesage</div>
+            <div>Collectes & Pesage</div>
         </a>
         <ul class="menu-sub">
             <li class="menu-item">
-                <a href="" class="menu-link">
+                <a href="{{ route('agent.collectes.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-inbox"></i>
-                    <div>Réceptions</div>
+                    <div>Collectes reçues</div>
                 </a>
             </li>
-            <li class="menu-item">
-                <a href="" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-scale"></i>
-                    <div>Pesage</div>
-                </a>
-            </li>
+          <li class="menu-item">
+            <a href="{{ route('agent.pesages.index') }}" class="menu-link">
+                <i class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 3L2 9l10 6 10-6-10-6zm0 13l-10-6v6l10 6 10-6v-6l-10 6z"/>
+                    </svg>
+                </i>
+                <div>Pesage</div>
+            </a>
+          </li>
         </ul>
     </li>
 
@@ -53,30 +57,36 @@
             <div>Tri & Production</div>
         </a>
         <ul class="menu-sub">
-            <li class="menu-item">
-                <a href="" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-filter-alt"></i>
-                    <div>Tri des déchets</div>
-                </a>
-            </li>
-            <li class="menu-item">
-                <a href="" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-factory"></i>
-                    <div>Production</div>
-                </a>
-            </li>
+             <li class="menu-item">
+                    <a href="{{ route('agent.tries.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-filter-alt"></i>
+                        <div>Tri des déchets</div>
+                    </a>
+                </li>
+             <li class="menu-item">
+                    <a href="{{ route('agent.matieres.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-recycle"></i>
+                        <div>Matières premières</div>
+                    </a>
+                </li>
+             <li class="menu-item">
+                    <a href="{{ route('agent.produits.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-box"></i>
+                        <div>Produits</div>
+                    </a>
+                </li>
         </ul>
     </li>
 
     <li class="menu-item">
-        <a href="" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-box"></i>
-            <div>Stock</div>
+        <a href="{{ route('agent.stocks.index') }}" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-archive"></i>
+            <div>Stock produits finis</div>
         </a>
     </li>
 
     <li class="menu-item">
-        <a href="" class="menu-link">
+        <a href="{{ route('agent.rapports.index') }}" class="menu-link">
             <i class="menu-icon tf-icons bx bx-bar-chart-alt-2"></i>
             <div>Rapports</div>
         </a>

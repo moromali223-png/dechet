@@ -17,7 +17,7 @@ class PaiementController extends Controller
             'abonnement.user',
         ])->latest()->paginate(20);
 
-        return view('paiements.index', compact('paiements'));
+        return view('admin.paiements.index', compact('paiements'));
     }
 
     public function create()
@@ -53,7 +53,7 @@ class PaiementController extends Controller
             ['paiement_id' => $paiement->id, 'commande_id' => $validated['commande_id'] ?? null]
         );
 
-        return redirect()->route('paiements.index')
+        return redirect()->route('admin.paiements.index')
             ->with('success', 'Paiement enregistré avec succès.');
     }
 
@@ -63,14 +63,14 @@ class PaiementController extends Controller
     {
         $paiement->load('commande');
 
-        return view('paiements.show', compact('paiement'));
+        return view('admin.paiements.show', compact('paiement'));
     }
 
     public function edit(Paiement $paiement)
     {
         $commandes = Commande::latest()->get();
 
-        return view('paiements.edit', compact('paiement', 'commandes'));
+        return view('admin.paiements.edit', compact('paiement', 'commandes'));
     }
 
     public function update(Request $request, Paiement $paiement)
@@ -86,7 +86,7 @@ class PaiementController extends Controller
         ]);
         $paiement->update($validated);
 
-        return redirect()->route('paiements.index')
+        return redirect()->route('admin.paiements.index')
             ->with('success', 'Paiement mis à jour avec succès.');
     }
 
@@ -94,7 +94,7 @@ class PaiementController extends Controller
     {
         $paiement->delete();
 
-        return redirect()->route('paiements.index')
+        return redirect()->route('admin.paiements.index')
             ->with('success', 'Paiement supprimé avec succès.');
     }
 }

@@ -42,11 +42,20 @@ class DeclarationController extends Controller
     public function store(StoreDeclarationRequest $request)
     {
         $data = $request->validated();
-        $data['user_id'] = Auth::id();
+
+        $user = auth()->user();
+
+        $data['user_id'] = $user->id;
         $data['statut'] = 'en_attente';
 
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('declarations', 'public');
+        // 🔥 récupérer abonnement actif
+        $abonnement = $user->abonnements()
+            ->where('statut', 'actif')
+            ->latest()
+            ->first();
+
+        if ($abonnement) {
+            $data['abonnement_id'] = $abonnement->id;
         }
 
         Declaration::create($data);
@@ -58,14 +67,19 @@ class DeclarationController extends Controller
 
     public function valider(Declaration $declaration)
     {
-        abort_if(! auth()->user() || auth()->user()->role !== 'admin', 403, 'Accès refusé.');
-        abort_if($declaration->statut !== 'en_attente', 403, 'Cette déclaration ne peut plus être validée.');
+        abort_unless(auth()->user()->role === 'admin', 403);
+
+        if ($declaration->statut !== 'en_attente') {
+            return back()->with('error', 'Déjà traité');
+        }
 
         $declaration->update(['statut' => 'valide']);
-        Planification::createFromDeclaration($declaration);
 
-        return redirect()->route('declarations.show', $declaration)
-            ->with('success', 'Déclaration validée et planification créée.');
+        $planification = Planification::createFromDeclaration($declaration);
+
+        return redirect()
+            ->route('planifications.edit', $planification)
+            ->with('success', 'Planification proposée, veuillez ajuster.');
     }
 
     public function show(Declaration $declaration)
@@ -112,5 +126,31 @@ class DeclarationController extends Controller
 
         return redirect()->route('declarations.index')
             ->with('success', 'Déclaration supprimée avec succès.');
+    }
+
+    public function adminIndex()
+    {
+        abort_unless(auth()->user()->role === 'admin', 403);
+
+        $declarations = Declaration::with('user')
+            ->latest()
+            ->paginate(20);
+
+        return view('admin.declarations.index', compact('declarations'));
+    }
+
+    public function rejeter(Request $request, Declaration $declaration)
+    {
+        abort_unless(auth()->user()->role === 'admin', 403);
+
+        if ($declaration->statut !== 'en_attente') {
+            return back()->with('error', 'Déjà traité');
+        }
+
+        $declaration->update([
+            'statut' => 'rejete',
+        ]);
+
+        return back()->with('success', 'Déclaration rejetée');
     }
 }

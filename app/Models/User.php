@@ -77,4 +77,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Planification::class, 'agent_id');
     }
+
+    public function mouvements(): HasMany
+    {
+        return $this->hasMany(Mouvement::class);
+    }
 }

@@ -14,25 +14,40 @@ return new class extends Migration
     {
         Schema::table('planifications', function (Blueprint $table) {
             $table->dropForeign(['collecteur_id']);
-            $table->foreignId('abonnement_id')
-                ->nullable()
-                ->after('declaration_id')
-                ->constrained('abonnements')
-                ->nullOnDelete();
-            $table->foreignId('agent_id')
-                ->nullable()
-                ->after('collecteur_id')
-                ->constrained('users')
-                ->nullOnDelete();
-            $table->unsignedSmallInteger('ordre_passage')
-                ->nullable()
-                ->after('agent_id');
-            $table->unsignedSmallInteger('duree_estimee')
-                ->nullable()
-                ->after('ordre_passage');
-            $table->unsignedTinyInteger('priorite')
-                ->default(1)
-                ->after('duree_estimee');
+
+            if (! Schema::hasColumn('planifications', 'abonnement_id')) {
+                $table->foreignId('abonnement_id')
+                    ->nullable()
+                    ->after('declaration_id')
+                    ->constrained('abonnements')
+                    ->nullOnDelete();
+            }
+
+            if (! Schema::hasColumn('planifications', 'agent_id')) {
+                $table->foreignId('agent_id')
+                    ->nullable()
+                    ->after('collecteur_id')
+                    ->constrained('users')
+                    ->nullOnDelete();
+            }
+
+            if (! Schema::hasColumn('planifications', 'ordre_passage')) {
+                $table->unsignedSmallInteger('ordre_passage')
+                    ->nullable()
+                    ->after('agent_id');
+            }
+
+            if (! Schema::hasColumn('planifications', 'duree_estimee')) {
+                $table->unsignedSmallInteger('duree_estimee')
+                    ->nullable()
+                    ->after('ordre_passage');
+            }
+
+            if (! Schema::hasColumn('planifications', 'priorite')) {
+                $table->unsignedTinyInteger('priorite')
+                    ->default(1)
+                    ->after('duree_estimee');
+            }
         });
 
         if (DB::getDriverName() === 'mysql') {

@@ -18,13 +18,13 @@ class TourneeController extends Controller
             'declaration.user',
             'abonnement.client.user',
         ])
-        ->whereDate('date_prevue', today())
-        ->whereIn('statut', [
-            'planifiee',
-            'assignee',
-            'en_route',
-            'en_cours',
-        ]);
+            ->whereDate('date_prevue', today())
+            ->whereIn('statut', [
+                'planifiee',
+                'assignee',
+                'en_route',
+                'en_cours',
+            ]);
 
         /*
         |--------------------------------------------------------------------------
@@ -32,18 +32,24 @@ class TourneeController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        // Collecteur : uniquement ses tournées
         if ($user->role === 'collecteur' && $user->collecteur) {
             $query->where('collecteur_id', $user->collecteur->id);
-        } elseif ($user->role === 'agent') {
+        }
+
+        // Agent : uniquement ses tournées
+        elseif ($user->role === 'agent') {
             $query->where('agent_id', $user->id);
         }
+
+        // Admin : voit toutes les tournées
+        // Aucun filtre supplémentaire nécessaire
 
         /*
         |--------------------------------------------------------------------------
         | Filtres optionnels
         |--------------------------------------------------------------------------
         */
-
         if ($request->filled('statut')) {
             $query->where('statut', $request->statut);
         }
@@ -56,18 +62,19 @@ class TourneeController extends Controller
         |--------------------------------------------------------------------------
         | Tri professionnel
         |--------------------------------------------------------------------------
-        |
-        | Suppression de heure_prevue car la colonne n'existe pas
-        |
         */
-
         $tournees = $query
             ->orderByDesc('priorite')
-            ->orderByRaw('COALESCE(ordre_passage, 999999) ASC')
+            ->orderBy('ordre_passage')
             ->orderBy('date_prevue')
             ->paginate(15)
             ->withQueryString();
 
-        return view('tournees.index', compact('tournees'));
+        // Si c'est un collecteur, on utilise la vue simplifiée du dossier collecteurfiles
+        if ($user->role === 'collecteur') {
+            return view('collecteur.tournees', compact('tournees'));
+        }
+
+        return view('admin.tournees.index', compact('tournees'));
     }
 }

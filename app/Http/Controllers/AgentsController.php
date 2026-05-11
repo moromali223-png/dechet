@@ -16,7 +16,7 @@ class AgentsController extends Controller
     {
         $agents = Agents::with('user')->latest()->paginate(15);
 
-        return view('agents.index', compact('agents'));
+        return view('admin.agents.index', compact('agents'));
     }
 
     /**
@@ -24,7 +24,7 @@ class AgentsController extends Controller
      */
     public function create()
     {
-        return view('agents.create');
+        return view('admin.agents.create');
     }
 
     /**
@@ -55,18 +55,18 @@ class AgentsController extends Controller
             ]);
         });
 
-        return redirect()->route('agents.index')->with('success', 'Agent créé avec succès !');
+        return redirect()->route('admin.agents.index')->with('success', 'Agent créé avec succès !');
     }
 
     /**
      * Display the specified resource.
      */
     public function show(Agents $agent)
-{
-    $agent->load('user'); // relation
+    {
+        $agent->load('user'); // relation
 
-    return view('agents.show', compact('agent'));
-}
+        return view('admin.agents.show', compact('agent'));
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -75,7 +75,7 @@ class AgentsController extends Controller
     {
         $agent->load('user');
 
-        return view('agents.edit', compact('agent'));
+        return view('admin.agents.edit', compact('agent'));
     }
 
     /**
@@ -104,7 +104,7 @@ class AgentsController extends Controller
             }
         });
 
-        return redirect()->route('agents.index')
+        return redirect()->route('admin.agents.index')
             ->with('success', 'Agent mis à jour avec succès !');
     }
 
@@ -123,6 +123,6 @@ class AgentsController extends Controller
             }
         });
 
-        return redirect()->route('agents.index')->with('success', 'Agent supprimé avec succès !');
+        return redirect()->route('admin.agents.index')->with('success', 'Agent supprimé avec succès !');
     }
 }

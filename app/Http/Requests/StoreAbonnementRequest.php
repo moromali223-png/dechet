@@ -23,6 +23,11 @@ class StoreAbonnementRequest extends FormRequest
             'montant' => ['nullable', 'numeric', 'min:0'],
             'date_debut' => ['required', 'date'],
             'date_fin' => ['required', 'date', 'after_or_equal:date_debut'],
+            // Champs d'adresse
+            'rue' => ['nullable', 'string', 'max:255'],
+            'quartier' => ['nullable', 'string', 'max:255'],
+            'ville' => ['nullable', 'string', 'max:255'],
+            'repere' => ['nullable', 'string', 'max:500'],
         ];
 
         if (auth()->user()->role === 'admin') {

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RejectAbonnementRequest;
 use App\Http\Requests\StoreAbonnementRequest;
 use App\Http\Requests\UpdateAbonnementRequest;
 use App\Models\Abonnement;
 use App\Models\Client;
 use App\Notifications\AbonnementRejectedNotification;
-use Illuminate\Http\Request;
 
 class AbonnementsController extends Controller
 {
@@ -30,7 +30,7 @@ class AbonnementsController extends Controller
 
         $abonnements = $query->latest()->paginate(20);
 
-        return view('abonnements.index', compact('abonnements'));
+        return view('admin.abonnements.index', compact('abonnements'));
     }
 
     /**
@@ -42,7 +42,7 @@ class AbonnementsController extends Controller
             ? Client::with(['user', 'zone'])->orderBy('id')->get()
             : null;
 
-        return view('abonnements.create', compact('clients'));
+        return view('admin.abonnements.create', compact('clients'));
     }
 
     /**
@@ -68,6 +68,9 @@ class AbonnementsController extends Controller
             $data['statut'] = 'en_attente';
         }
 
+        // Pré-remplir l'adresse depuis le client si nécessaire
+        $data = $this->prefillAddressFromClient($data, $client);
+
         // Création de l'abonnement
         $abonnement = Abonnement::create($data);
 
@@ -76,7 +79,7 @@ class AbonnementsController extends Controller
             : 'Votre demande d’abonnement a été envoyée avec succès. Elle sera examinée par un administrateur.';
 
         return redirect()
-            ->route('abonnements.index')
+            ->route('admin.abonnements.index')
             ->with('success', $message);
     }
 
@@ -85,7 +88,7 @@ class AbonnementsController extends Controller
      */
     public function show(Abonnement $abonnement)
     {
-        $this->authorizeAbonnement($abonnement);
+        $this->authorize('view', $abonnement);
 
         $abonnement->load([
             'user',
@@ -96,7 +99,7 @@ class AbonnementsController extends Controller
             'planifications.agent',
         ]);
 
-        return view('abonnements.show', compact('abonnement'));
+        return view('admin.abonnements.show', compact('abonnement'));
     }
 
     /**
@@ -104,9 +107,37 @@ class AbonnementsController extends Controller
      */
     public function edit(Abonnement $abonnement)
     {
-        $this->authorizeAbonnement($abonnement);
+        $this->authorize('update', $abonnement);
 
-        return view('abonnements.edit', compact('abonnement'));
+        return view('admin.abonnements.edit', compact('abonnement'));
+    }
+
+    /**
+     * Pré-remplir l'adresse depuis le client
+     */
+    protected function prefillAddressFromClient(array $data, ?Client $client = null): array
+    {
+        if (! $client && isset($data['client_id'])) {
+            $client = Client::find($data['client_id']);
+        }
+
+        if ($client) {
+            // Pré-remplir seulement si les champs sont vides
+            if (empty($data['rue']) && $client->rue) {
+                $data['rue'] = $client->rue;
+            }
+            if (empty($data['quartier']) && $client->quartier) {
+                $data['quartier'] = $client->quartier;
+            }
+            if (empty($data['ville']) && $client->ville) {
+                $data['ville'] = $client->ville;
+            }
+            if (empty($data['repere']) && $client->repere) {
+                $data['repere'] = $client->repere;
+            }
+        }
+
+        return $data;
     }
 
     /**
@@ -116,12 +147,12 @@ class AbonnementsController extends Controller
         UpdateAbonnementRequest $request,
         Abonnement $abonnement
     ) {
-        $this->authorizeAbonnement($abonnement);
+        $this->authorize('update', $abonnement);
 
         $abonnement->update($request->validated());
 
         return redirect()
-            ->route('abonnements.index')
+            ->route('admin.abonnements.index')
             ->with('success', 'Abonnement mis à jour avec succès.');
     }
 
@@ -130,7 +161,7 @@ class AbonnementsController extends Controller
      */
     public function destroy(Abonnement $abonnement)
     {
-        $this->authorizeAbonnement($abonnement);
+        $this->authorize('delete', $abonnement);
 
         // Suppression des planifications associées
         $abonnement->planifications()->delete();
@@ -138,7 +169,7 @@ class AbonnementsController extends Controller
         $abonnement->delete();
 
         return redirect()
-            ->route('abonnements.index')
+            ->route('admin.abonnements.index')
             ->with('success', 'Abonnement supprimé avec succès.');
     }
 
@@ -147,14 +178,7 @@ class AbonnementsController extends Controller
      */
     public function activer(Abonnement $abonnement)
     {
-        abort_unless(auth()->user()->role === 'admin', 403);
-
-        if ($abonnement->statut !== 'en_attente') {
-            return back()->with(
-                'error',
-                'Seuls les abonnements en attente peuvent être activés.'
-            );
-        }
+        $this->authorize('activer', $abonnement);
 
         $abonnement->update([
             'statut' => 'actif',
@@ -162,7 +186,7 @@ class AbonnementsController extends Controller
         ]);
 
         return redirect()
-            ->route('abonnements.index')
+            ->route('admin.abonnements.index')
             ->with(
                 'success',
                 'Abonnement activé avec succès. Les planifications ont été générées automatiquement.'
@@ -170,12 +194,20 @@ class AbonnementsController extends Controller
     }
 
     /**
+     * Formulaire de rejet
+     */
+    public function rejeterForm(Abonnement $abonnement)
+    {
+        $this->authorize('rejeter', $abonnement);
+
+        return view('admin.abonnements.reject', compact('abonnement'));
+    }
+
+    /**
      * Rejet par l'administrateur
      */
-    public function rejeter(Request $request, Abonnement $abonnement)
+    public function rejeter(RejectAbonnementRequest $request, Abonnement $abonnement)
     {
-        abort_unless(auth()->user()->role === 'admin', 403);
-
         if ($abonnement->statut !== 'en_attente') {
             return back()->with(
                 'error',
@@ -183,9 +215,7 @@ class AbonnementsController extends Controller
             );
         }
 
-        $validated = $request->validate([
-            'motif_rejet' => ['required', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
 
         $abonnement->update([
             'statut' => 'rejete',
@@ -204,23 +234,10 @@ class AbonnementsController extends Controller
         }
 
         return redirect()
-            ->route('abonnements.index')
+            ->route('admin.abonnements.index')
             ->with(
                 'success',
                 'Abonnement rejeté avec succès. Le client a été notifié.'
             );
-    }
-
-    /**
-     * Vérification des autorisations
-     */
-    protected function authorizeAbonnement(Abonnement $abonnement): void
-    {
-        abort_unless(
-            auth()->user()->role === 'admin' ||
-            auth()->id() === $abonnement->user_id,
-            403,
-            'Vous n’êtes pas autorisé à accéder à cet abonnement.'
-        );
     }
 }

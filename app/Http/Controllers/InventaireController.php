@@ -3,20 +3,40 @@
 namespace App\Http\Controllers;
 
 use App\Models\Stock;
-use Illuminate\Support\Facades\DB;
 
 class InventaireController extends Controller
 {
     public function index()
     {
+        /**
+         * STOCKS AVEC PRODUITS
+         */
         $stocks = Stock::with('produit')
-            ->orderBy('quantite_disponible', 'desc')
+            ->orderByDesc('quantite_disponible')
             ->paginate(20);
 
+        /**
+         * TOTAL PRODUITS (stocks uniques)
+         */
         $totalProduits = Stock::count();
+
+        /**
+         * QUANTITÉ TOTALE EN STOCK
+         */
         $stockTotal = Stock::sum('quantite_disponible');
-        $valeurTotale = Stock::sum(DB::raw('quantite_disponible * prix_unitaire'));
-        $produitsEnAlerte = Stock::enAlerte()->count();
+
+        /**
+         * VALEUR TOTALE DU STOCK (SAFE VERSION)
+         */
+        $valeurTotale = Stock::get()->sum(function ($stock) {
+            return ($stock->quantite_disponible ?? 0) * ($stock->prix_unitaire ?? 0);
+        });
+
+        /**
+         * PRODUITS EN ALERTE
+         */
+        $produitsEnAlerte = Stock::whereColumn('quantite_disponible', '<=', 'seuil_alerte')
+            ->count();
 
         return view('inventaire.index', compact(
             'stocks',

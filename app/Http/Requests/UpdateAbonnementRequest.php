@@ -24,6 +24,11 @@ class UpdateAbonnementRequest extends FormRequest
             'date_debut' => ['required', 'date'],
             'date_fin' => ['required', 'date', 'after_or_equal:date_debut'],
             'statut' => ['required', 'in:'.implode(',', Abonnement::STATUSES)],
+            // Champs d'adresse
+            'rue' => ['nullable', 'string', 'max:255'],
+            'quartier' => ['nullable', 'string', 'max:255'],
+            'ville' => ['nullable', 'string', 'max:255'],
+            'repere' => ['nullable', 'string', 'max:500'],
         ];
     }
 

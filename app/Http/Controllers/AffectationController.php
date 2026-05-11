@@ -29,12 +29,12 @@ class AffectationController extends Controller
     public function index(Request $request)
     {
         $planifications = Planification::with([
-                'zone',
-                'agent',
-                'collecteur.user',
-                'declaration.user',
-                'abonnement.client.user',
-            ])
+            'zone',
+            'agent',
+            'collecteur.user',
+            'declaration.user',
+            'abonnement.client.user',
+        ])
             ->whereIn('statut', ['planifiee', 'assignee'])
             ->orderBy('date_prevue')
             ->orderBy('priorite')
@@ -49,7 +49,7 @@ class AffectationController extends Controller
             ->orderBy('id')
             ->get();
 
-        return view('affectations.index', compact(
+        return view('admin.affectations.index', compact(
             'planifications',
             'agents',
             'collecteurs'
@@ -64,12 +64,12 @@ class AffectationController extends Controller
         Planification $planification
     ) {
         $planification->update([
-            'agent_id'        => $request->agent_id,
-            'collecteur_id'   => $request->collecteur_id,
-            'ordre_passage'   => $request->ordre_passage,
-            'priorite'        => $request->priorite,
-            'duree_estimee'   => $request->duree_estimee,
-            'statut'          => 'assignee',
+            'agent_id' => $request->agent_id,
+            'collecteur_id' => $request->collecteur_id,
+            'ordre_passage' => $request->ordre_passage,
+            'priorite' => $request->priorite,
+            'duree_estimee' => $request->duree_estimee,
+            'statut' => 'assignee',
         ]);
 
         $planification->load([
@@ -94,7 +94,7 @@ class AffectationController extends Controller
         }
 
         return redirect()
-            ->route('affectations.index')
+            ->route('admin.affectations.index')
             ->with(
                 'success',
                 'La planification a été affectée avec succès.'

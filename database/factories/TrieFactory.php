@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Pesage;
 use App\Models\Trie;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,7 +22,7 @@ class TrieFactory extends Factory
             'type_dechet' => $this->faker->word(),
             'quantite_trier' => $this->faker->numberBetween(1, 100),
             'unite' => $this->faker->randomElement(['kg', 'litres']),
-            // 'pesage_id' => 1, // Commenté pour éviter les contraintes
+            'pesage_id' => Pesage::factory(),
         ];
     }
 }

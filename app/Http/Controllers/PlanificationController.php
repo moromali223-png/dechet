@@ -19,7 +19,7 @@ class PlanificationController extends Controller
             ->latest('date_prevue')
             ->paginate(10);
 
-        return view('planifications.index', compact('planifications'));
+        return view('admin.planifications.index', compact('planifications'));
     }
 
     public function create()
@@ -30,21 +30,21 @@ class PlanificationController extends Controller
         $abonnements = Abonnement::all();
         $agents = User::where('role', 'agent')->get();
 
-        return view('planifications.create', compact('zones', 'collecteurs', 'declarations', 'abonnements', 'agents'));
+        return view('admin.planifications.create', compact('zones', 'collecteurs', 'declarations', 'abonnements', 'agents'));
     }
 
     public function store(StorePlanificationRequest $request)
     {
         Planification::create($request->validated());
 
-        return redirect()->route('planifications.index')->with('success', 'Planification créée avec succès.');
+        return redirect()->route('admin.planifications.index')->with('success', 'Planification créée avec succès.');
     }
 
     public function show(Planification $planification)
     {
         $planification->load(['zone', 'collecteur.user', 'agent', 'declaration', 'abonnement']);
 
-        return view('planifications.show', compact('planification'));
+        return view('admin.planifications.show', compact('planification'));
     }
 
     public function edit(Planification $planification)
@@ -55,20 +55,27 @@ class PlanificationController extends Controller
         $abonnements = Abonnement::all();
         $agents = User::where('role', 'agent')->get();
 
-        return view('planifications.edit', compact('planification', 'zones', 'collecteurs', 'declarations', 'abonnements', 'agents'));
+        return view('admin.planifications.edit', compact('planification', 'zones', 'collecteurs', 'declarations', 'abonnements', 'agents'));
     }
 
     public function update(UpdatePlanificationRequest $request, Planification $planification)
     {
-        $planification->update($request->validated());
+        $data = $request->validated();
 
-        return redirect()->route('planifications.index')->with('success', 'Planification mise à jour avec succès.');
+        if (! empty($data['collecteur_id']) && $planification->statut === 'planifiee') {
+            $data['statut'] = 'assignee';
+        }
+
+        $planification->update($data);
+
+        return redirect()->route('admin.planifications.index')
+            ->with('success', 'Planification mise à jour avec succès.');
     }
 
     public function destroy(Planification $planification)
     {
         $planification->delete();
 
-        return redirect()->route('planifications.index')->with('success', 'Planification supprimée avec succès.');
+        return redirect()->route('admin.planifications.index')->with('success', 'Planification supprimée avec succès.');
     }
 }

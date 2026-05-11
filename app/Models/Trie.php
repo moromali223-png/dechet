@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Trie extends Model
 {
@@ -15,13 +14,15 @@ class Trie extends Model
         'type_dechet',
         'quantite_trier',
         'unite',
+        'qualite',
+        'destination',       // ← Ajouté
+        'valeur_estimee',    // ← Ajouté
+        'notes',             // ← Ajouté
     ];
 
-    /**
-     * Un tri appartient à un pesage.
-     */
-    public function pesage(): BelongsTo
+    // Relation avec Pesage
+    public function pesage()
     {
-        return $this->belongsTo(Pesage::class, 'pesage_id');
+        return $this->belongsTo(Pesage::class);
     }
 }

@@ -12,7 +12,7 @@ class MouvementController extends Controller
      */
     public function index()
     {
-        $mouvements = Mouvement::with('stock.produit', 'commande')
+        $mouvements = Mouvement::with(['stock.produit', 'commande', 'user'])
             ->orderByDesc('date_mouvement')
             ->orderByDesc('heure_mouvement')
             ->paginate(20);

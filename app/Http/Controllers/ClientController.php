@@ -17,7 +17,7 @@ class ClientController extends Controller
     {
         $clients = Client::with(['user', 'zone'])->latest()->paginate(15);
 
-        return view('clients.index', compact('clients'));
+        return view('admin.clients.index', compact('clients'));
     }
 
     /**
@@ -27,7 +27,7 @@ class ClientController extends Controller
     {
         $zones = Zone::all();
 
-        return view('clients.create', compact('zones'));
+        return view('admin.clients.create', compact('zones'));
     }
 
     /**
@@ -56,7 +56,7 @@ class ClientController extends Controller
             ]);
         });
 
-        return redirect()->route('clients.index')->with('success', 'Client créé avec succès.');
+        return redirect()->route('admin.clients.index')->with('success', 'Client créé avec succès.');
     }
 
     /**
@@ -66,7 +66,7 @@ class ClientController extends Controller
     {
         $client->load(['user', 'zone']);
 
-        return view('clients.show', compact('client'));
+        return view('admin.clients.show', compact('client'));
     }
 
     /**
@@ -76,7 +76,7 @@ class ClientController extends Controller
     {
         $zones = Zone::all();
 
-        return view('clients.edit', compact('client', 'zones'));
+        return view('admin.clients.edit', compact('client', 'zones'));
     }
 
     /**
@@ -117,7 +117,7 @@ class ClientController extends Controller
             ]);
         }
 
-        return redirect()->route('clients.index')->with('success', 'Client mis à jour avec succès.');
+        return redirect()->route('admin.clients.index')->with('success', 'Client mis à jour avec succès.');
     }
 
     /**
