@@ -82,6 +82,11 @@ class Planification extends Model
         return $this->hasOne(Collectes::class);
     }
 
+    public function getClientAttribute()
+    {
+        return $this->abonnement?->client;
+    }
+
     // ==================== SCOPES ====================
 
     public function scopeForToday($query)
@@ -95,7 +100,7 @@ class Planification extends Model
             'planifiee',
             'assignee',
             'en_route',
-            'en_cours'
+            'en_cours',
         ]);
     }
 
@@ -107,7 +112,7 @@ class Planification extends Model
             'planifiee',
             'assignee',
             'en_route',
-            'en_cours'
+            'en_cours',
         ], true);
     }
 
@@ -119,21 +124,21 @@ class Planification extends Model
             ?? Zone::first()?->id;
 
         return self::create([
-            'code_planification' => 'D-' . $declaration->id . '-' . $datePrevue->format('Ymd'),
-            'nom_tournee'        => 'Tournée déclaration #' . $declaration->id,
-            'jour_semaine'       => $datePrevue->translatedFormat('l'),
-            'date_prevue'        => $datePrevue->toDateString(),
-            'periode'            => 'PONCTUELLE',
-            'type_collecte'      => $declaration->type_dechet,
-            'statut'             => 'planifiee',
-            'zone_id'            => $zoneId,
-            'collecteur_id'      => null,
-            'declaration_id'     => $declaration->id,
-            'abonnement_id'      => $declaration->abonnement_id,
-            'agent_id'           => null,
-            'ordre_passage'      => 1,
-            'duree_estimee'      => 60,
-            'priorite'           => 2,
+            'code_planification' => 'D-'.$declaration->id.'-'.$datePrevue->format('Ymd'),
+            'nom_tournee' => 'Tournée déclaration #'.$declaration->id,
+            'jour_semaine' => $datePrevue->translatedFormat('l'),
+            'date_prevue' => $datePrevue->toDateString(),
+            'periode' => 'PONCTUELLE',
+            'type_collecte' => $declaration->type_dechet,
+            'statut' => 'planifiee',
+            'zone_id' => $zoneId,
+            'collecteur_id' => null,
+            'declaration_id' => $declaration->id,
+            'abonnement_id' => $declaration->abonnement_id,
+            'agent_id' => null,
+            'ordre_passage' => 1,
+            'duree_estimee' => 60,
+            'priorite' => 2,
         ]);
     }
 }

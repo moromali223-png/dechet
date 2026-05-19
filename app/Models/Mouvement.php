@@ -24,48 +24,58 @@ class Mouvement extends Model
         'heure_mouvement',
     ];
 
-    protected $hidden = ['user_id']; // Cache l'ID pour les API/Clients
-
     protected $casts = [
         'quantite' => 'decimal:2',
-        'date_mouvement' => 'date',
+        'prix_unitaire' => 'decimal:2',
+        'montant_total' => 'decimal:2',
+        'date_mouvement' => 'datetime',
     ];
 
     /*
-    |-------------------------
-    | MUTATOR PROPRE
-    |-------------------------
+    |--------------------------------
+    | MUTATOR
+    |--------------------------------
     */
-
     public function setTypeMouvementAttribute($value)
     {
-        $this->attributes['type_mouvement'] = strtolower($value) === 'sortie'
-            ? 'sortie'
+        $this->attributes['type_mouvement'] = in_array($value, ['entree', 'sortie'])
+            ? $value
             : 'entree';
     }
 
     /*
-    |-------------------------
+    |--------------------------------
     | ACCESSOR
-    |-------------------------
+    |--------------------------------
     */
-
     public function getTypeMouvementLabelAttribute()
     {
-        return $this->type_mouvement === 'sortie'
-            ? 'Sortie'
-            : 'Entrée';
+        return match ($this->type_mouvement) {
+            'sortie' => 'Sortie',
+            'entree' => 'Entrée',
+            default  => 'Inconnu',
+        };
+    }
+
+    public function getMontantFormatteAttribute()
+    {
+        return number_format($this->montant_total, 2, ',', ' ');
     }
 
     /*
-    |-------------------------
+    |--------------------------------
     | RELATIONS
-    |-------------------------
+    |--------------------------------
     */
 
     public function stock(): BelongsTo
     {
         return $this->belongsTo(Stock::class);
+    }
+
+    public function produit(): BelongsTo
+    {
+        return $this->belongsTo(Produit::class);
     }
 
     public function user(): BelongsTo
@@ -79,9 +89,9 @@ class Mouvement extends Model
     }
 
     /*
-    |-------------------------
+    |--------------------------------
     | SCOPES
-    |-------------------------
+    |--------------------------------
     */
 
     public function scopeEntrees($query)

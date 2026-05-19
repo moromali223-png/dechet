@@ -79,7 +79,7 @@
                                 <td>{{ $tri->qualite ?? '-' }}</td>
                                 <td>{{ $tri->created_at->format('d/m/Y H:i') }}</td>
                                 <td>
-                                    <a href="{{ route('agent.tries.show', $tri) }}" class="btn btn-sm btn-outline-primary">
+                                    <a href="{{ route('tries.show', $tri) }}" class="btn btn-sm btn-outline-primary">
                                         <i class="bx bx-show"></i>
                                     </a>
                                 </td>
@@ -103,7 +103,7 @@
                 <p><strong>Client:</strong> {{ $pesage->collecte->planification->client->nom ?? 'N/A' }}</p>
                 <p><strong>Date:</strong> {{ $pesage->collecte->created_at->format('d/m/Y H:i') }}</p>
                 <p><strong>Statut:</strong>
-                    <span class="badge bg-label-{{ $this->getStatusColor($pesage->collecte->statut) }}">
+                    <span class="badge bg-label-{{ getStatusColor($pesage->collecte->statut) }}">
                         {{ ucfirst(str_replace('_', ' ', $pesage->collecte->statut)) }}
                     </span>
                 </p>

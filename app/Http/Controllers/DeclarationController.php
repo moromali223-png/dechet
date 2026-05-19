@@ -31,7 +31,7 @@ class DeclarationController extends Controller
 
         $declarations = $user->declarations()->latest()->paginate(15);
 
-        return view('declarations.index', compact('declarations'));
+        return view('client.declarations.index', compact('declarations'));
     }
 
     public function create()
@@ -61,7 +61,7 @@ class DeclarationController extends Controller
         Declaration::create($data);
 
         return redirect()
-            ->route('declarations.index')
+            ->route('client.declarations.index')
             ->with('success', 'Déclaration créée avec succès.');
     }
 
@@ -84,14 +84,14 @@ class DeclarationController extends Controller
 
     public function show(Declaration $declaration)
     {
-        return view('declarations.show', compact('declaration'));
+        return view('client.declarations.show', compact('declaration'));
     }
 
     public function edit(Declaration $declaration)
     {
         abort_if($declaration->statut !== 'en_attente', 403, 'Cette déclaration ne peut plus être modifiée.');
 
-        return view('declarations.edit', compact('declaration'));
+        return view('client.declarations.edit', compact('declaration'));
     }
 
     public function update(UpdateDeclarationRequest $request, Declaration $declaration)
@@ -124,7 +124,7 @@ class DeclarationController extends Controller
 
         $declaration->delete();
 
-        return redirect()->route('declarations.index')
+        return redirect()->route('client.declarations.index')
             ->with('success', 'Déclaration supprimée avec succès.');
     }
 

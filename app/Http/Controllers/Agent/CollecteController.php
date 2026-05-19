@@ -13,7 +13,10 @@ class CollecteController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Collectes::with(['planification.client', 'pesages']);
+        $query = Collectes::with([
+            'planification.abonnement.client',
+            'pesage',                    // ← singulier
+        ]);
 
         // Filtres
         if ($request->filled('statut')) {
@@ -29,7 +32,7 @@ class CollecteController extends Controller
         }
 
         if ($request->filled('client')) {
-            $query->whereHas('planification.client', function ($q) use ($request) {
+            $query->whereHas('planification.abonnement.client', function ($q) use ($request) {
                 $q->where('nom', 'like', '%'.$request->client.'%');
             });
         }
@@ -38,7 +41,7 @@ class CollecteController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->whereHas('planification.client', function ($subQ) use ($search) {
+                $q->whereHas('planification.abonnement.client', function ($subQ) use ($search) {
                     $subQ->where('nom', 'like', '%'.$search.'%');
                 })
                     ->orWhere('commentaire', 'like', '%'.$search.'%')
@@ -65,11 +68,10 @@ class CollecteController extends Controller
     public function show(Collectes $collecte)
     {
         $collecte->load([
-            'planification.client',
-            'planification.collecteur',
-            'pesages.tries',
+            'planification.abonnement.client',
+            'planification.collecteur.user',
+            'pesage.tries',        // ← singulier
         ]);
-
         // Timeline des activités
         $timeline = collect();
 

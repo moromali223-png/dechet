@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\AbonnementsController;
+use App\Http\Controllers\Admin\CommandeAdminController;
 use App\Http\Controllers\AffectationController;
 use App\Http\Controllers\Agent\CollecteController;
 use App\Http\Controllers\Agent\MatiereController;
 use App\Http\Controllers\Agent\StockController;
 use App\Http\Controllers\AgentsController;
 use App\Http\Controllers\AlertesController;
+use App\Http\Controllers\Client\CommandeClientController;
+use App\Http\Controllers\Client\SuiviCollecteClientController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\Collecteur\CollecteController as CollecteurCollecteController;
 use App\Http\Controllers\Collecteur\HistoriqueController as CollecteurHistoriqueController;
@@ -41,97 +44,77 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard principal accessible à tous les rôles
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Dashboards spécifiques (URL directes si besoin)
+    // Dashboards spécifiques
     Route::middleware('agent')->get('/dashboard/agent', [DashboardController::class, 'agent'])->name('dashboard.agent');
     Route::middleware('collecteur')->get('/dashboard/collecteur', [DashboardController::class, 'collecteur'])->name('dashboard.collecteur');
     Route::middleware('client')->get('/dashboard/client', [DashboardController::class, 'client'])->name('dashboard.client');
-    Route::middleware(['auth'])->group(function () {
 
-        // === ADMIN ===
-        Route::prefix('admin')->name('admin.')->group(function () {
-            Route::get('/declarations', [DeclarationController::class, 'adminIndex'])
-                ->name('declarations.index');
+    // === ADMIN ===
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/declarations', [DeclarationController::class, 'adminIndex'])
+            ->name('declarations.index');
 
-            Route::post('/declarations/{declaration}/valider', [DeclarationController::class, 'valider'])
-                ->name('declarations.valider');
+        Route::post('/declarations/{declaration}/valider', [DeclarationController::class, 'valider'])
+            ->name('declarations.valider');
 
-            Route::post('/declarations/{declaration}/rejeter', [DeclarationController::class, 'rejeter'])
-                ->name('declarations.rejeter');
-        });
+        Route::post('/declarations/{declaration}/rejeter', [DeclarationController::class, 'rejeter'])
+            ->name('declarations.rejeter');
 
-        // === PLANIFICATIONS ===
-        Route::resource('planifications', PlanificationController::class)
-            ->only(['index', 'edit', 'update']);
+        // Module e-commerce
+        Route::get('/commandes', [CommandeAdminController::class, 'index'])->name('commandes.index');
+        Route::get('/commandes/{commande}', [CommandeAdminController::class, 'show'])->name('commandes.show');
+        Route::post('/commandes/{commande}/accepter', [CommandeAdminController::class, 'accepter'])->name('commandes.accepter');
+        Route::post('/commandes/{commande}/refuser', [CommandeAdminController::class, 'refuser'])->name('commandes.refuser');
+        Route::get('/paiements', [CommandeAdminController::class, 'paiements'])->name('paiements.index');
+        Route::get('/produits', [CommandeAdminController::class, 'produits'])->name('produits.index');
     });
-    // Gestion des Zones
+
+    // === RESSOURCES PARTAGÉES ===
     Route::resource('zones', ZoneController::class);
-    // Gestion des Collecteurs
     Route::resource('collecteurs', CollecteurController::class);
-    // Gestion des Agents
     Route::resource('agents', AgentsController::class);
-    // Gestion des Clients
     Route::resource('clients', ClientController::class);
-    // Gestion des Produits
     Route::resource('produits', ProduitController::class);
-    // Gestion de l'Inventaire
     Route::resource('inventaire', InventaireController::class);
-    // Gestion des Entrées de Stock
-    Route::resource('stock-entree', StockEntreeController::class)->parameters([
-        'stock-entree' => 'stockEntree',
-    ]);
-    // Gestion des Mouvements de Stock
+    Route::resource('stock-entree', StockEntreeController::class)->parameters(['stock-entree' => 'stockEntree']);
     Route::resource('mouvements', MouvementController::class);
-    // Gestion des Alertes de Stock
+    Route::resource('planifications', PlanificationController::class);
+    Route::resource('pesages', PesageController::class);
+
+    // Gestion des Affectations
+    Route::get('affectations', [AffectationController::class, 'index'])->name('affectations.index');
+    Route::post('affectations/{planification}/assign', [AffectationController::class, 'assign'])->name('affectations.assign');
+
+    // TRIS → Partagé entre Admin et Agent (le plus important)
+    Route::resource('tries', TrieController::class)
+        ->parameters(['tries' => 'tri'])
+        ->names('tries');
+
+    // Autres ressources partagées
     Route::get('alertes', [AlertesController::class, 'index'])->name('alertes.index');
     Route::get('alertes/rapport', [AlertesController::class, 'rapport'])->name('alertes.rapport');
     Route::post('alertes/{alerte}/traiter', [AlertesController::class, 'marquerTraitee'])->name('alertes.traiter');
-    // Gestion des Planifications
-    Route::resource('planifications', PlanificationController::class);
-    Route::middleware('admin')->group(function () {
-        Route::get('affectations', [AffectationController::class, 'index'])->name('affectations.index');
-        Route::post('affectations/{planification}/assign', [AffectationController::class, 'assign'])->name('affectations.assign');
-        Route::post('declarations/{declaration}/valider', [DeclarationController::class, 'valider'])->name('declarations.valider');
-    });
 
-    // Tournées pour l'admin/agent
     Route::get('tournees-du-jour', [TourneeController::class, 'index'])->name('tournees.index');
-
     Route::patch('planifications/{planification}/statut', [AffectationController::class, 'updateStatus'])->name('planifications.status.update');
-    Route::resource('pesages', PesageController::class);
-    Route::resource('tries', TrieController::class)
-        ->parameters(['tries' => 'tri']);
-    // Gestion des suivi de collecte
 
-    // ...
-
-    // ====================== SUIVI DES COLLECTES ======================
+    // Suivi des collectes
     Route::resource('suivi/collectes', SuiviCollecteController::class)
         ->only(['index', 'show'])
         ->names('suivi_collecte');
 
+    // Commandes, Rapports, etc.
     Route::get('/stock/entree', [StockEntreeController::class, 'create'])->name('stock.entree.create');
     Route::post('/stock/entree', [StockEntreeController::class, 'store'])->name('stock.entree.store');
-    // Rapport
-    Route::get('/rapports', [RapportController::class, 'index'])
-        ->name('rapports.index');
-    // commande
-    Route::get('commandes', [CommandeController::class, 'index'])->name('commandes.index');
-    Route::post('/commandes/{id}/accepter', [CommandeController::class, 'accepter'])->name('commandes.accepter');
-    Route::post('/commandes/{id}/refuser', [CommandeController::class, 'refuser'])->name('commandes.refuser');
+    Route::get('/rapports', [RapportController::class, 'index'])->name('rapports.index');
+    Route::get('commandes', [CommandeAdminController::class, 'index'])->name('commandes.index');
+    Route::post('/commandes/{id}/accepter', [CommandeAdminController::class, 'accepter'])->name('commandes.accepter');
+    Route::post('/commandes/{id}/refuser', [CommandeAdminController::class, 'refuser'])->name('commandes.refuser');
 
-    // Paiements
     Route::resource('paiements', PaiementController::class);
-
-    // Abonnements
     Route::resource('abonnements', AbonnementsController::class);
-    Route::patch('abonnements/{abonnement}/activer', [AbonnementsController::class, 'activer'])->name('abonnements.activer');
-    Route::get('abonnements/{abonnement}/rejeter', [AbonnementsController::class, 'rejeterForm'])->name('abonnements.rejeter.form');
-    Route::patch('abonnements/{abonnement}/rejeter', [AbonnementsController::class, 'rejeter'])->name('abonnements.rejeter');
-
-    // Déclarations de déchets
     Route::resource('declarations', DeclarationController::class);
 
-    // Configuration
     Route::view('/parametres', 'parametres.index')->name('parametres.index');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
@@ -142,15 +125,53 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/collecte/terminees', [CollecteurCollecteController::class, 'terminees'])->name('collecte.terminees');
         Route::get('/historique', [CollecteurHistoriqueController::class, 'index'])->name('historique');
         Route::get('/zone', [CollecteurZoneController::class, 'index'])->name('zone');
-        Route::get('/tournee/{planification}', [CollecteurTourneeController::class, 'show'])
-            ->name('show');
-        // Actions de changement de statut
+        Route::get('/tournee/{planification}', [CollecteurTourneeController::class, 'show'])->name('show');
+
         Route::post('/planification/{planification}/start', [CollecteurCollecteController::class, 'start'])->name('start');
         Route::post('/planification/{planification}/arrive', [CollecteurCollecteController::class, 'arrive'])->name('arrive');
         Route::post('/planification/{planification}/finish', [CollecteurCollecteController::class, 'finish'])->name('finish');
-        Route::get('/historique/{id}', [CollecteurHistoriqueController::class, 'show'])
-            ->name('historique.show');
-    });
+        Route::get('/historique/{id}', [CollecteurHistoriqueController::class, 'show'])->name('historique.show');
+        Route::get('/client/{client}', [CollecteurZoneController::class, 'showClient'])
+          ->name('client.show');
+        });
+
+    
+    /// ---- bock client ---- /////////
+   Route::prefix('client')->name('client.')->group(function () {
+
+    Route::get('/produits', [CommandeClientController::class, 'produits'])
+        ->name('produits.index');
+
+    Route::get('/produits/{produit}', [CommandeClientController::class, 'showProduit'])
+        ->name('produits.show');
+
+    // ✅ Une seule définition, bon contrôleur
+    Route::post('/produits/{produit}/commander', [CommandeClientController::class, 'commander'])
+        ->name('produits.commander');
+
+    Route::get('/mes-commandes', [CommandeClientController::class, 'mesCommandes'])
+        ->name('commandes.index');
+
+    Route::get('/mes-commandes/{commande}', [CommandeClientController::class, 'showCommande'])
+        ->name('commandes.show');
+});
+
+Route::prefix('client')->middleware(['auth'])->group(function () {
+
+    Route::get('/suivi-collecte', [SuiviCollecteClientController::class, 'index'])
+        ->name('client.suivi_collecte.index');
+
+    Route::get('/suivi-collecte/{id}', [SuiviCollecteClientController::class, 'show'])
+        ->name('client.suivi_collecte.show');
+});
+Route::middleware(['auth'])->prefix('client')->name('client.')->group(function () {
+    Route::get('/mon-compte', [App\Http\Controllers\Client\CompteClientController::class, 'index'])
+        ->name('compte.index');
+
+    Route::put('/mon-compte', [App\Http\Controllers\Client\CompteClientController::class, 'update'])
+        ->name('compte.update');
+});
+
 });
 
 // === MODULE AGENT ===
@@ -161,22 +182,28 @@ Route::prefix('agent')->name('agent.')->middleware(['auth', 'agent'])->group(fun
     // Collectes reçues
     Route::resource('collectes', CollecteController::class)->only(['index', 'show']);
 
-    // Pesages
+    // Pesages Agent (si tu veux un controller différent)
     Route::resource('pesages', App\Http\Controllers\Agent\PesageController::class);
 
-    // Tris des déchets
-    Route::resource('tries', App\Http\Controllers\Agent\TrieController::class)->parameters(['tries' => 'tri']);
-
     // Matières premières
-    Route::resource('matieres', MatiereController::class)->only(['index', 'show']);
+Route::get('/matieres', [MatiereController::class, 'index'])->name('matieres.index');
 
+Route::get('/matieres/{matiere}', [MatiereController::class, 'show'])
+    ->where('matiere', '.*')
+    ->name('matieres.show');
     // Produits
     Route::resource('produits', App\Http\Controllers\Agent\ProduitController::class);
 
     // Stocks produits finis
     Route::resource('stocks', StockController::class)->only(['index', 'show']);
-
-    // Rapports
+    Route::prefix('agent')
+        ->middleware(['auth'])
+        ->name('agent.')
+        ->group(function () {
+            Route::get('/collectes', [CollecteController::class, 'index'])
+                ->name('collectes.index');
+        });
+    // Rapports Agent
     Route::get('rapports', [App\Http\Controllers\Agent\RapportController::class, 'index'])->name('rapports.index');
     Route::get('rapports/journalier', [App\Http\Controllers\Agent\RapportController::class, 'journalier'])->name('rapports.journalier');
     Route::get('rapports/mensuel', [App\Http\Controllers\Agent\RapportController::class, 'mensuel'])->name('rapports.mensuel');

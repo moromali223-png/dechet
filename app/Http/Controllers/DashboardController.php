@@ -29,80 +29,97 @@ class DashboardController extends Controller
         };
     }
 
-    private function adminDashboard(): View
-    {
-        $user = auth()->user();
+private function adminDashboard(): View
+{
+    $user = auth()->user();
 
-        $clientsCount = Client::count();
-        $commandesPending = Commande::where('statut', 'en_attente')->count();
-        $paiementsValidCount = Paiement::where('statut', 'valide')->count();
-        $totalRevenue = Paiement::where('statut', 'valide')->sum('montant');
-        $produitsCount = Produit::count();
-        $agentsCount = Agents::count();
-        $collecteursCount = Collecteur::count();
-        $abonnementsCount = Abonnement::count();
-        $lowStockCount = Stock::enAlerte()->count();
-        $recentCommandes = Commande::with('client')
-            ->orderByDesc('date_commande')
-            ->limit(5)
-            ->get();
+    $clientsCount = Client::count();
 
-        $commandesByStatus = Commande::selectRaw('statut, COUNT(*) as total')
-            ->groupBy('statut')
-            ->pluck('total', 'statut')
-            ->toArray();
+    // Commandes (selon vos vrais statuts)
+    $commandesPending = Commande::where('statut', 'acceptee')->count();
 
-        $revenueByMonth = Paiement::selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, SUM(montant) as total')
-            ->where('statut', 'valide')
-            ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
-            ->groupBy('year', 'month')
-            ->orderBy('year')
-            ->orderBy('month')
-            ->get()
-            ->keyBy(fn ($item) => $item->year.'-'.$item->month);
+    $commandesByStatus = Commande::selectRaw('statut, COUNT(*) as total')
+        ->groupBy('statut')
+        ->pluck('total', 'statut')
+        ->toArray();
 
-        $monthlyRevenue = collect();
+    // Paiements
+    $paiementsValidCount = Paiement::whereIn('statut', [
+        'valide',
+        'paye'
+    ])->count();
 
-        for ($i = 0; $i < 12; $i++) {
-            $date = now()->subMonths(11 - $i);
-            $key = $date->year.'-'.$date->month;
+    $totalRevenue = Paiement::whereIn('statut', [
+        'valide',
+        'paye'
+    ])->sum('montant');
 
-            $monthlyRevenue->push([
-                'month' => $date->format('M'),
-                'amount' => $revenueByMonth[$key]->total ?? 0,
-            ]);
-        }
+    // Divers
+    $produitsCount = Produit::count();
+    $agentsCount = Agents::count();
+    $collecteursCount = Collecteur::count();
+    $abonnementsCount = Abonnement::count();
+    $lowStockCount = Stock::enAlerte()->count();
 
-        $statusLabels = [
-            'en_attente' => 'En attente',
-            'validée' => 'Validées',
-            'livrée' => 'Livrées',
-            'annulée' => 'Annulées',
-        ];
+    // Dernières commandes
+    $recentCommandes = Commande::with([
+        'client.user'
+    ])
+    ->latest('created_at')
+    ->take(5)
+    ->get();
 
-        $statusData = [];
-        foreach ($statusLabels as $status => $label) {
-            $statusData[] = $commandesByStatus[$status] ?? 0;
-        }
+    // Revenu mensuel
+    $revenueByMonth = Paiement::selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, SUM(montant) as total')
+        ->whereIn('statut', ['valide', 'paye'])
+        ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
+        ->groupBy('year', 'month')
+        ->orderBy('year')
+        ->orderBy('month')
+        ->get()
+        ->keyBy(fn($item) => $item->year . '-' . $item->month);
 
-        return view('dashboard', [
-            'userName' => $user?->name ?? 'Utilisateur',
-            'clientsCount' => $clientsCount,
-            'commandesPending' => $commandesPending,
-            'paiementsValidCount' => $paiementsValidCount,
-            'totalRevenue' => $totalRevenue,
-            'produitsCount' => $produitsCount,
-            'agentsCount' => $agentsCount,
-            'collecteursCount' => $collecteursCount,
-            'abonnementsCount' => $abonnementsCount,
-            'lowStockCount' => $lowStockCount,
-            'recentCommandes' => $recentCommandes,
-            'monthlyRevenue' => $monthlyRevenue,
-            'commandesStatusLabels' => array_values($statusLabels),
-            'commandesStatusData' => $statusData,
+    $monthlyRevenue = collect();
+
+    for ($i = 0; $i < 12; $i++) {
+        $date = now()->subMonths(11 - $i);
+        $key = $date->year . '-' . $date->month;
+
+        $monthlyRevenue->push([
+            'month' => $date->translatedFormat('M'),
+            'amount' => $revenueByMonth[$key]->total ?? 0,
         ]);
     }
 
+    // Statuts commandes (vrais statuts DB)
+    $statusLabels = [
+        'acceptee' => 'Acceptées',
+        'refusee' => 'Refusées',
+    ];
+
+    $statusData = [];
+
+    foreach ($statusLabels as $status => $label) {
+        $statusData[] = $commandesByStatus[$status] ?? 0;
+    }
+
+    return view('dashboard', [
+        'userName' => $user->name,
+        'clientsCount' => $clientsCount,
+        'commandesPending' => $commandesPending,
+        'paiementsValidCount' => $paiementsValidCount,
+        'totalRevenue' => $totalRevenue,
+        'produitsCount' => $produitsCount,
+        'agentsCount' => $agentsCount,
+        'collecteursCount' => $collecteursCount,
+        'abonnementsCount' => $abonnementsCount,
+        'lowStockCount' => $lowStockCount,
+        'recentCommandes' => $recentCommandes,
+        'monthlyRevenue' => $monthlyRevenue,
+        'commandesStatusLabels' => array_values($statusLabels),
+        'commandesStatusData' => $statusData,
+    ]);
+}
     public function agent(): View
     {
         $user = auth()->user();
@@ -137,25 +154,54 @@ class DashboardController extends Controller
             'zonesCount' => $zonesCount,
         ]);
     }
+public function client(): View
+{
+    $user = auth()->user();
 
-    public function client(): View
-    {
-        $user = auth()->user();
+    $client = Client::where('user_id', $user->id)->first();
 
-        // Données spécifiques au client
-        $commandesCount = Commande::where('client_id', $user->id)->count();
-        $paiementsCount = Paiement::whereHas('commande', fn ($query) => $query->where('client_id', $user->id)
-        )->count();
-        $recentCommandes = Commande::where('client_id', $user->id)
-            ->orderByDesc('date_commande')
-            ->limit(5)
-            ->get();
-
-        return view('dashboard-client', [
-            'userName' => $user?->name ?? 'Client',
-            'commandesCount' => $commandesCount,
-            'paiementsCount' => $paiementsCount,
-            'recentCommandes' => $recentCommandes,
+    if (!$client) {
+        return view('client.dashboard', [
+            'userName' => $user->name ?? 'Client',
+            'commandesCount' => 0,
+            'paiementsCount' => 0,
+            'recentCommandes' => collect(),
+            'abonnementsCount' => 0,
+            'commandesEnCours' => 0,
+            'commandesLivrees' => 0,
         ]);
     }
+
+    $commandesCount = Commande::where('client_id', $client->id)->count();
+
+    $commandesEnCours = Commande::where('client_id', $client->id)
+        ->whereIn('statut', ['en_attente', 'validée'])
+        ->count();
+
+    $commandesLivrees = Commande::where('client_id', $client->id)
+        ->where('statut', 'livrée')
+        ->count();
+
+    $paiementsCount = Paiement::whereHas('commande', function ($query) use ($client) {
+        $query->where('client_id', $client->id);
+    })->count();
+
+    $abonnementsCount = Abonnement::whereHas('client', function ($q) use ($user) {
+        $q->where('user_id', $user->id);
+    })->count();
+
+    $recentCommandes = Commande::where('client_id', $client->id)
+        ->latest('date_commande')
+        ->take(5)
+        ->get();
+
+    return view('client.dashboard', compact(
+        'commandesCount',
+        'paiementsCount',
+        'recentCommandes',
+        'abonnementsCount',
+        'commandesEnCours',
+        'commandesLivrees'
+    ))->with('userName', $user->name);
+}
 }

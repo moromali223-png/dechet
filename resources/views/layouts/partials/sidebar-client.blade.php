@@ -1,6 +1,6 @@
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
     <div class="app-brand demo d-flex justify-content-center mb-3">
-        <a href="{{ route('dashboard.agent') }}" class="app-brand-link">
+        <a href="{{ route('dashboard.client') }}" class="app-brand-link">
             <span class="app-brand-logo">
                 <img src="{{ asset('assets/img/EcoFlux1.svg') }}"
                      alt="Logo EcoFlux"
@@ -39,7 +39,7 @@
 
     <!-- Suivi des collectes -->
     <li class="menu-item {{ Request::routeIs('suivi_collecte.index') ? 'active' : '' }}">
-        <a href="{{ route('suivi_collecte.index') }}" class="menu-link">
+        <a href="{{ route('client.suivi_collecte.index') }}" class="menu-link">
             <i class="menu-icon tf-icons bx bx-map-alt"></i>
             <div>Suivi des Collectes</div>
         </a>
@@ -54,20 +54,29 @@
     </li>
 
     <!-- Boutique écologique -->
-    <li class="menu-item">
-        <a href="" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-store-alt"></i>
-            <div>Produits Disponibles</div>
+     <!-- PRODUITS (IMPORTANT) -->
+    <li class="menu-item {{ Request::routeIs('client.produits.*') ? 'active' : '' }}">
+        <a href="{{ route('client.produits.index') }}" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-store"></i>
+            <div>Produits recyclés</div>
+        </a>
+    </li>
+
+    <!-- MES COMMANDES -->
+    <li class="menu-item {{ Request::routeIs('client.commandes.*') ? 'active' : '' }}">
+        <a href="{{ route('client.commandes.index') }}" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-cart"></i>
+            <div>Mes commandes</div>
         </a>
     </li>
 
     <!-- Mon compte -->
-    <li class="menu-item">
-        <a href="" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-user-circle"></i>
-            <div>Mon Compte</div>
-        </a>
-    </li>
+    <li class="menu-item {{ Request::routeIs('client.compte.*') ? 'active' : '' }}">
+    <a href="{{ route('client.compte.index') }}" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-user-circle"></i>
+        <div>Mon Compte</div>
+    </a>
+</li>
 
 </ul>
 </aside>

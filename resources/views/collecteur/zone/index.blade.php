@@ -1,137 +1,174 @@
 @extends('collecteur.layouts.app')
 
-@section('title', 'Ma Zone - ' . ($zone->nom ?? 'N/A'))
+@section('title', 'Ma Zone')
 
 @section('content')
 <div class="container-fluid py-4">
 
-    <!-- En-tête -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">
-            <i class="fas fa-map-marker-alt text-primary"></i> 
-            Zone : <strong>{{ $zone->nom ?? 'Non assignée' }}</strong>
-        </h4>
-        <span class="badge bg-success fs-6">
-            {{ $clients->total() }} clients
-        </span>
+    {{-- Header --}}
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h4 class="fw-bold mb-1">
+                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                    Zone : {{ $zone->nom ?? 'Non assignée' }}
+                </h4>
+                <small class="text-muted">
+                    Liste des clients affectés à votre zone de collecte
+                </small>
+            </div>
+
+            <div class="text-end">
+                <span class="badge bg-primary fs-6 px-3 py-2">
+                    {{ $clients->total() }} Clients
+                </span>
+            </div>
+        </div>
     </div>
 
-    <!-- Statistiques -->
+    {{-- Stats --}}
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <h6 class="text-muted">Total Collectes</h6>
-                    <h3 class="mb-0">{{ $totalCollectes }}</h3>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-recycle fa-2x text-success mb-2"></i>
+                    <h3 class="fw-bold">{{ $totalCollectes }}</h3>
+                    <small class="text-muted">Total collectes</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <h6 class="text-muted">Aujourd'hui</h6>
-                    <h3 class="mb-0 text-success">{{ $collectesAujourdhui }}</h3>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-day fa-2x text-info mb-2"></i>
+                    <h3 class="fw-bold">{{ $collectesAujourdhui }}</h3>
+                    <small class="text-muted">Aujourd’hui</small>
                 </div>
             </div>
         </div>
-        <!-- Ajoute d'autres stats selon tes besoins -->
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x text-warning mb-2"></i>
+                    <h3 class="fw-bold">{{ $clients->total() }}</h3>
+                    <small class="text-muted">Clients actifs</small>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Recherche -->
-    <div class="card border-0 shadow mb-4">
+    {{-- Search --}}
+    <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
             <form method="GET">
                 <div class="input-group">
-                    <input type="text" name="search" class="form-control" 
-                           placeholder="Rechercher client (nom, téléphone, adresse...)" 
+                    <input type="text"
+                           name="search"
+                           class="form-control"
+                           placeholder="Rechercher un client..."
                            value="{{ request('search') }}">
-                    <button class="btn btn-primary" type="submit">Rechercher</button>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Tableau des clients -->
-    <div class="card border-0 shadow-lg">
-        <div class="card-header bg-white py-3">
-            <h5 class="mb-0">👥 Mes Clients dans la zone</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Client</th>
-                            <th>Téléphone</th>
-                            <th>Adresse</th>
-                            <th>Dernière collecte</th>
-                            <th>Statut</th>
-                            <th class="text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($clients as $client)
-                            <tr>
-                                <td>{{ $client->id }}</td>
-                                <td>
-                                    <strong>{{ $client->user?->name ?? 'N/A' }}</strong><br>
-                                    <small class="text-muted">{{ $client->user?->email }}</small>
-                                </td>
-                                <td>{{ $client->telephone }}</td>
-                                <td>
-                                    <small>{{ $client->adresse ?? '<span class="text-danger">Non renseignée</span>' }}</small>
-                                </td>
-                                <td>
-                                    @if($client->derniereCollecte)
-                                        <span class="text-success">
-                                            {{ $client->derniereCollecte->created_at->format('d/m/Y') }}
-                                        </span>
-                                    @else
-                                        <span class="text-warning">Jamais</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <span class="badge {{ $client->derniereCollecte ? 'bg-success' : 'bg-secondary' }}">
-                                        {{ $client->derniereCollecte ? 'Collecté' : 'En attente' }}
-                                    </span>
-                                </td>
-                                <td class="text-end">
-                                    <a href="{{ route('collecteur.client.show', $client) }}" 
-                                       class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center py-4 text-muted">
-                                    Aucun client trouvé dans cette zone.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+    {{-- Clients --}}
+    <div class="row g-4">
 
-            <!-- Pagination -->
-            <div class="p-3">
-                {{ $clients->appends(request()->query())->links() }}
+        @forelse($clients as $client)
+
+        <div class="col-lg-4 col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar avatar-lg me-3">
+                            <span class="avatar-initial rounded-circle bg-label-primary">
+                                {{ strtoupper(substr($client->user?->name ?? 'C', 0, 1)) }}
+                            </span>
+                        </div>
+
+                        <div>
+                            <h6 class="mb-0 fw-bold">
+                                {{ $client->user?->name ?? 'Client' }}
+                            </h6>
+                            <small class="text-muted">
+                                {{ $client->user?->email ?? '-' }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <small class="text-muted">Téléphone</small>
+                        <div class="fw-semibold">{{ $client->telephone ?? '-' }}</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <small class="text-muted">Adresse</small>
+                        <div>{{ $client->adresse ?? 'Non renseignée' }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted">Dernière collecte</small>
+                        <div>
+                            @if($client->derniereCollecte)
+                                <span class="text-success fw-semibold">
+                                    {{ $client->derniereCollecte->created_at->format('d/m/Y') }}
+                                </span>
+                            @else
+                                <span class="text-warning">
+                                    Jamais collecté
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <span class="badge {{ $client->derniereCollecte ? 'bg-success' : 'bg-secondary' }}">
+                            {{ $client->derniereCollecte ? 'Collecté' : 'En attente' }}
+                        </span>
+<a href="{{ route('collecteur.client.show', $client->id) }}"
+   class="btn btn-sm btn-primary rounded-pill px-3">
+    <i class="fas fa-eye me-1"></i> Voir
+</a>
+
+                    </div>
+
+                </div>
             </div>
         </div>
+
+        @empty
+
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
+                    <h5 class="fw-bold">Aucun client trouvé</h5>
+                    <p class="text-muted mb-0">
+                        Aucun client dans cette zone actuellement.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        @endforelse
+
     </div>
 
-    <!-- Dernières collectes -->
-    @if($recentCollectes->isNotEmpty())
-    <div class="card border-0 shadow mt-4">
-        <div class="card-header bg-white">
-            <h5>Dernières collectes réalisées</h5>
-        </div>
-        <div class="card-body">
-            <!-- Liste ou tableau des dernières collectes -->
-        </div>
+    {{-- Pagination --}}
+    <div class="mt-4">
+        {{ $clients->appends(request()->query())->links() }}
     </div>
-    @endif
 
 </div>
 @endsection

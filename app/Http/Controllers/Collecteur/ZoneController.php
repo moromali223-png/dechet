@@ -47,19 +47,28 @@ class ZoneController extends Controller
         )->whereDate('created_at', today())->count();
 
         // Clients de la zone
-        $clients = Client::with('user')
-            ->where('zone_id', $zone->id)
-            ->when($request->search, function ($query, $search) {
-                $query->whereHas('user', fn ($q) => $q->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('email', 'LIKE', "%{$search}%")
-                )
-                    ->orWhere('telephone', 'LIKE', "%{$search}%")
-                    ->orWhere('adresse', 'LIKE', "%{$search}%");
-            })
-            ->paginate(15);
+      $clients = Client::with('user')
+    ->where('zone_id', $zone->id)
+    ->when($request->search, function ($query, $search) {
+        $query->whereHas('user', function ($q) use ($search) {
+            $q->where('name', 'LIKE', "%{$search}%")
+              ->orWhere('email', 'LIKE', "%{$search}%");
+        });
+    })
+    ->paginate(15);
+
+$clients->getCollection()->transform(function ($client) {
+    $client->derniereCollecte = Collectes::whereHas('planification.abonnement', function ($q) use ($client) {
+        $q->where('user_id', $client->user_id);
+    })
+    ->latest('created_at')
+    ->first();
+
+    return $client;
+});
 
         // Dernières collectes
-        $recentCollectes = Collectes::with(['client.user', 'planification'])
+        $recentCollectes = Collectes::with(['planification.abonnement.client.user'])
             ->whereHas('planification', fn ($q) => $q->where('collecteur_id', $collecteur->id)
             )
             ->where('created_at', '>=', now()->subDays(30))
@@ -77,4 +86,16 @@ class ZoneController extends Controller
             'recentCollectes'
         ));
     }
+
+    public function showClient(Client $client)
+{
+    $client->load([
+        'user',
+        'zone',
+        'abonnements',
+    ]);
+
+    return view('collecteur.zone.show-client', compact('client'));
 }
+}
+

@@ -67,7 +67,7 @@
                     </div>
                     <div class="col-md-2">
                         <a href="{{ route('agent.stocks.index', ['alerte' => 1]) }}" 
-                           class="btn btn-warning w-100">Voir seulement en alerte</a>
+                           class="btn btn-warning w-100">Voir  en alerte</a>
                     </div>
                 </form>
             </div>
@@ -111,7 +111,8 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('agent.stocks.show', $stock) }}" class="btn btn-sm btn-info">Détails</a>
+                                    <a href="{{ route('agent.stocks.show', $stock) }}" class="btn btn-sm btn-info">
+                                        <i class="bx bx-show"></i></a>
                                 </td>
                             </tr>
                         @empty

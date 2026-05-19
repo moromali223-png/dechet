@@ -5,12 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Produit;
 use App\Models\Trie;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProduitController extends Controller
 {
-    /**
-     * LISTE PRODUITS
-     */
     public function index()
     {
         $produits = Produit::with('trie')
@@ -21,9 +19,6 @@ class ProduitController extends Controller
         return view('produits.index', compact('produits'));
     }
 
-    /**
-     * FORM CREATE
-     */
     public function create()
     {
         $tries = Trie::all();
@@ -31,9 +26,6 @@ class ProduitController extends Controller
         return view('produits.create', compact('tries'));
     }
 
-    /**
-     * STORE → Observer gère stock automatiquement
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -45,7 +37,12 @@ class ProduitController extends Controller
             'description' => 'nullable|string',
             'statut' => 'in:actif,inactif',
             'trie_id' => 'required|exists:tries,id',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
+
+        if ($request->hasFile('photo')) {
+            $validated['photo'] = $request->file('photo')->store('produits', 'public');
+        }
 
         Produit::create($validated);
 
@@ -54,9 +51,13 @@ class ProduitController extends Controller
             ->with('success', 'Produit créé avec succès.');
     }
 
-    /**
-     * EDIT
-     */
+    public function show(Produit $produit)
+    {
+        $produit->load('trie');
+
+        return view('produits.show', compact('produit'));
+    }
+
     public function edit(Produit $produit)
     {
         $tries = Trie::all();
@@ -64,9 +65,6 @@ class ProduitController extends Controller
         return view('produits.edit', compact('produit', 'tries'));
     }
 
-    /**
-     * UPDATE → Observer synchronise stock automatiquement
-     */
     public function update(Request $request, Produit $produit)
     {
         $validated = $request->validate([
@@ -78,7 +76,17 @@ class ProduitController extends Controller
             'description' => 'nullable|string',
             'statut' => 'in:actif,inactif',
             'trie_id' => 'required|exists:tries,id',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
+
+        if ($request->hasFile('photo')) {
+
+            if ($produit->photo && Storage::disk('public')->exists($produit->photo)) {
+                Storage::disk('public')->delete($produit->photo);
+            }
+
+            $validated['photo'] = $request->file('photo')->store('produits', 'public');
+        }
 
         $produit->update($validated);
 
@@ -87,11 +95,12 @@ class ProduitController extends Controller
             ->with('success', 'Produit mis à jour avec succès.');
     }
 
-    /**
-     * DELETE → Observer supprime stock automatiquement
-     */
     public function destroy(Produit $produit)
     {
+        if ($produit->photo && Storage::disk('public')->exists($produit->photo)) {
+            Storage::disk('public')->delete($produit->photo);
+        }
+
         $produit->delete();
 
         return redirect()

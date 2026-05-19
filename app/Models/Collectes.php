@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Collectes extends Model
@@ -19,49 +20,39 @@ class Collectes extends Model
         'heure_fin',
     ];
 
-    /**
-     * Une collecte appartient à une Planification
-     */
+    // ==================== RELATIONS ====================
+
     public function planification(): BelongsTo
     {
         return $this->belongsTo(Planification::class);
     }
 
-    /**
-     * Une collecte appartient à un Client (via la Planification)
-     */
-    public function client()
-    {
-        return $this->hasOneThrough(
-            Client::class,
-            Planification::class,
-            'id',           // Clé primaire de Planification
-            'abonnement_id', // Colonne dans Planification qui pointe vers Client (à confirmer)
-            'planification_id', // Clé étrangère dans Collectes
-            'id'            // Clé primaire de Client
-        );
-    }
-
-    /**
-     * Relation avec le pesage
-     */
     public function pesage(): HasOne
     {
-        return $this->hasOne(Pesage::class, 'collecte_id');
+        return $this->hasOne(Pesage::class, 'id_collecte');
     }
 
     /**
-     * Accès direct à l'utilisateur du client (pratique)
+     * Relation pour la vue détails (show) qui attend un ensemble de pesages
      */
-    public function user()
+    public function pesages(): HasMany
     {
-        return $this->hasOneThrough(
-            User::class,
-            Client::class,
-            'id',
-            'user_id',
-            'planification_id',
-            'id'
-        );
+        return $this->hasMany(Pesage::class, 'id_collecte');
+    }
+
+    /**
+     * Accès direct au client via Planification → Abonnement
+     */
+    public function getClientAttribute()
+    {
+        return $this->planification?->abonnement?->client;
+    }
+
+    /**
+     * Accès direct à l'utilisateur du client (très pratique dans les vues)
+     */
+    public function getUserAttribute()
+    {
+        return $this->client?->user;
     }
 }

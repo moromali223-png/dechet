@@ -34,12 +34,13 @@
         <ul class="menu-sub">
             <li class="menu-item">
                 <a href="{{ route('agent.collectes.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-inbox"></i>
+                <i class="menu-icon tf-icons bx bxs-inbox"></i>
+
                     <div>Collectes reçues</div>
                 </a>
             </li>
           <li class="menu-item">
-            <a href="{{ route('agent.pesages.index') }}" class="menu-link">
+            <a href="{{ route('pesages.index') }}" class="menu-link">
                 <i class="menu-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 3L2 9l10 6 10-6-10-6zm0 13l-10-6v6l10 6 10-6v-6l-10 6z"/>
@@ -58,7 +59,7 @@
         </a>
         <ul class="menu-sub">
              <li class="menu-item">
-                    <a href="{{ route('agent.tries.index') }}" class="menu-link">
+                    <a href="{{ route('tries.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-filter-alt"></i>
                         <div>Tri des déchets</div>
                     </a>

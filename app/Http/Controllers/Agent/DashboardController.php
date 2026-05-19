@@ -3,21 +3,19 @@
 namespace App\Http\Controllers\Agent;
 
 use App\Http\Controllers\Controller;
+use App\Models\Client;
 use App\Models\Collectes;
+use App\Models\Commande;
 use App\Models\Pesage;
 use App\Models\Produit;
 use App\Models\Stock;
 use App\Models\Trie;
-use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    /**
-     * Afficher le dashboard de l'agent
-     */
     public function index()
     {
-        // Statistiques générales
+        // ==================== STATISTIQUES ====================
         $stats = [
             'collectes_today' => Collectes::whereDate('created_at', today())->count(),
             'pesages_today' => Pesage::whereDate('created_at', today())->count(),
@@ -28,83 +26,77 @@ class DashboardController extends Controller
             'alertes_stock' => Stock::whereColumn('quantite_disponible', '<=', 'seuil_alerte')->count(),
         ];
 
-        // Poids collecté aujourd'hui
         $poids_today = Pesage::whereDate('created_at', today())->sum('poids');
-
-        // Quantité triée aujourd'hui
         $quantite_triee_today = Trie::whereDate('created_at', today())->sum('quantite_trier');
-
-        // Produits fabriqués aujourd'hui (si il y a une date_fabrication ou created_at)
         $produits_fabriqués_today = Produit::whereDate('created_at', today())->count();
 
-        // Collectes récentes
-        $collectes_recentes = Collectes::with('planification.client')
+        // ==================== DONNÉES POUR LES KPI EN HAUT ====================
+        $clientsCount = Client::count();
+        $commandesPending = Commande::where('statut', 'en_attente')->count();
+        $recentCommandes = Commande::with('client')
             ->latest()
             ->take(5)
             ->get();
 
-        // Stocks faibles
-        $stocks_faibles = Stock::with('produit')
-            ->whereColumn('quantite_disponible', '<=', 'seuil_alerte')
+        // ==================== COLLECTES RÉCENTES ====================
+        $collectes_recentes = Collectes::with('planification.abonnement.client')
+            ->latest()
+            ->take(6)
             ->get();
 
-        // Activités récentes (combinaison de différentes actions)
-        $activites = collect();
+        // ==================== STOCKS FAIBLES ====================
+        $stocks_faibles = Stock::with('produit')
+            ->whereColumn('quantite_disponible', '<=', 'seuil_alerte')
+            ->orderBy('quantite_disponible', 'asc')
+            ->take(5)
+            ->get();
 
-        // Ajouter les pesages récents
-        $pesages_recent = Pesage::with('collecte.planification.client')
+        // ==================== ACTIVITÉS RÉCENTES (Sécurisé) ====================
+        $pesages_recent = Pesage::with('collecte.planification.abonnement.client')
             ->latest()
-            ->take(3)
+            ->take(4)
             ->get()
             ->map(function ($pesage) {
+                $clientName = optional(optional(optional($pesage->collecte?->planification?->abonnement)?->client))->nom ?? 'Client inconnu';
+
                 return [
                     'type' => 'pesage',
-                    'message' => "Pesage effectué: {$pesage->poids} {$pesage->unite}",
+                    'message' => "Pesage effectué : {$pesage->poids} {$pesage->unite}",
                     'date' => $pesage->created_at,
-                    'client' => $pesage->collecte->planification->client->nom ?? 'N/A',
+                    'client' => $clientName,
                 ];
             });
 
-        // Ajouter les tris récents
-        $tries_recent = Trie::with('pesage.collecte.planification.client')
+        $tries_recent = Trie::with('pesage.collecte.planification.abonnement.client')
             ->latest()
-            ->take(3)
+            ->take(4)
             ->get()
             ->map(function ($tri) {
+                $clientName = optional(optional(optional($tri->pesage?->collecte?->planification?->abonnement)?->client))->nom ?? 'Client inconnu';
+
                 return [
                     'type' => 'tri',
-                    'message' => "Tri effectué: {$tri->quantite_trier} {$tri->unite} de {$tri->type_dechet}",
+                    'message' => "Tri effectué : {$tri->quantite_trier} {$tri->unite} de {$tri->type_dechet}",
                     'date' => $tri->created_at,
-                    'client' => $tri->pesage->collecte->planification->client->nom ?? 'N/A',
+                    'client' => $clientName,
                 ];
             });
 
-        $activites = $pesages_recent->concat($tries_recent)->sortByDesc('date')->take(6);
+        $activites = $pesages_recent->concat($tries_recent)
+            ->sortByDesc('date')
+            ->take(8);
 
         return view('agent.dashboard.index', compact(
             'stats',
             'poids_today',
             'quantite_triee_today',
             'produits_fabriqués_today',
+            'clientsCount',
+            'commandesPending',
+            'recentCommandes',
             'collectes_recentes',
             'stocks_faibles',
             'activites'
         ));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

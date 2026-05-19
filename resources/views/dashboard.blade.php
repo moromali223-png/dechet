@@ -155,7 +155,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-start justify-content-between">
                         <div>
-                            <span class="text-muted small">Commandes en attente</span>
+                            <span class="text-muted small">Commandes acceptées</span>
                             <h2 class="mt-2 mb-1 fw-bold text-dark">{{ number_format($commandesPending, 0, ',', ' ') }}</h2>
                             <p class="text-muted small mb-0">Commandes à traiter</p>
                         </div>

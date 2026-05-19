@@ -1,111 +1,96 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Commande;
-use App\Models\Stock;
-use App\Services\StockService;
+use App\Models\Paiement;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class CommandeController extends Controller
+class CommandeAdminController extends Controller
 {
-    protected $stockService;
-
-    public function __construct(StockService $stockService)
+    public function index(Request $request)
     {
-        $this->stockService = $stockService;
-    }
+        $statut = $request->statut;
 
-    /**
-     * Liste des commandes
-     */
-    public function index()
-    {
-        $commandes = Commande::with(['client.user', 'produit'])
+        $commandes = Commande::with(['client.user', 'produitRelation'])
+            ->when($statut, function ($query) use ($statut) {
+                return $query->where('statut', $statut);
+            })
             ->latest()
-            ->paginate(20);
+            ->paginate(15);
 
         $stats = [
+            'total'      => Commande::count(),
             'en_attente' => Commande::where('statut', 'en_attente')->count(),
-            'acceptee' => Commande::where('statut', 'acceptee')->count(),
-            'refusee' => Commande::where('statut', 'refusee')->count(),
-            'livree' => Commande::where('statut', 'livree')->count(),
+            'acceptee'   => Commande::where('statut', 'acceptee')->count(),
+            'refusee'    => Commande::where('statut', 'refusee')->count(),
+            'livree'     => Commande::where('statut', 'livree')->count(),
         ];
 
-        return view('admin.commandes.index', compact('commandes', 'stats'));
+        return view('admin.commandes.index', compact('commandes', 'statut', 'stats'));
     }
 
-    /**
-     * Accepter une commande
-     */
-    public function accepter($id)
+    public function show(Commande $commande)
     {
-        $commande = Commande::with('produit')->findOrFail($id);
+        $commande->load(['client.user', 'produitRelation', 'paiements']);
 
+        return view('admin.commandes.show', compact('commande'));
+    }
+
+    public function accepter(Commande $commande)
+    {
         if ($commande->statut !== 'en_attente') {
-            return back()->withErrors([
-                'error' => 'Cette commande ne peut pas être acceptée.',
-            ]);
+            return back()->with('error', 'Cette commande ne peut pas être acceptée.');
         }
 
-        $stock = Stock::where('produit_id', $commande->produit_id)->first();
+        $commande->load('produitRelation');
 
-        if (! $stock) {
-            return back()->withErrors([
-                'error' => 'Stock non trouvé pour ce produit.',
-            ]);
+        $produit = $commande->produitRelation;
+
+        if (!$produit) {
+            return back()->with('error', 'Produit introuvable.');
         }
 
-        if ($stock->quantite_disponible < $commande->quantite) {
-            return back()->withErrors([
-                'error' => "Stock insuffisant. Disponible : {$stock->quantite_disponible} {$stock->unite_mesure}",
-            ]);
+        if ($produit->quantite < $commande->quantite) {
+            return back()->with('error', 'Stock insuffisant.');
         }
 
         try {
+            DB::transaction(function () use ($commande, $produit) {
 
-            DB::transaction(function () use ($commande, $stock) {
-
-                $this->stockService->sortieStock(
-                    $stock->id,
-                    $commande->quantite,
-                    'commande_client',
-                    'Sortie liée à la commande '.$commande->code_commande,
-                    $commande->id
-                );
+                $produit->decrement('quantite', $commande->quantite);
 
                 $commande->update([
-                    'statut' => 'acceptee',
+                    'statut' => 'acceptee'
+                ]);
+
+                Paiement::create([
+                    'commande_id'   => $commande->id,
+                    'mode_paiement' => 'en_ligne',
+                    'montant'       => $commande->montant_total,
+                    'statut'        => 'valide',
                 ]);
             });
 
-            return back()->with('success', 'Commande acceptée et stock mis à jour.');
+            return back()->with('success', 'Commande acceptée.');
 
         } catch (\Exception $e) {
-
-            return back()->withErrors([
-                'error' => 'Erreur lors du traitement de la commande.',
-            ]);
+            return back()->with('error', $e->getMessage());
         }
     }
 
-    /**
-     * Refuser une commande
-     */
-    public function refuser($id)
+    public function refuser(Commande $commande)
     {
-        $commande = Commande::findOrFail($id);
-
         if ($commande->statut !== 'en_attente') {
-            return back()->withErrors([
-                'error' => 'Cette commande ne peut pas être refusée.',
-            ]);
+            return back()->with('error', 'Cette commande ne peut pas être refusée.');
         }
 
         $commande->update([
-            'statut' => 'refusee',
+            'statut' => 'refusee'
         ]);
 
-        return back()->with('success', 'Commande refusée avec succès.');
+        return back()->with('success', 'Commande refusée.');
     }
 }

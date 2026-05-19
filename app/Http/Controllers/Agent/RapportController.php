@@ -8,8 +8,9 @@ use App\Models\Pesage;
 use App\Models\Produit;
 use App\Models\Stock;
 use App\Models\Trie;
-use Illuminate\Http\Request;
-use PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;   // ← C'est cette ligne qui manquait !
+use Illuminate\Support\Facades\DB;
 
 class RapportController extends Controller
 {
@@ -33,7 +34,7 @@ class RapportController extends Controller
         ];
 
         if ($request->get('format') === 'pdf') {
-            $pdf = PDF::loadView('agent.rapports.journalier_pdf', $data);
+            $pdf = Pdf::loadView('agent.rapports.journalier_pdf', $data);
 
             return $pdf->download("rapport-journalier-{$date}.pdf");
         }
@@ -59,7 +60,7 @@ class RapportController extends Controller
         ];
 
         if ($request->get('format') === 'pdf') {
-            $pdf = PDF::loadView('agent.rapports.mensuel_pdf', $data);
+            $pdf = Pdf::loadView('agent.rapports.mensuel_pdf', $data);
 
             return $pdf->download("rapport-mensuel-{$mois}.pdf");
         }
@@ -76,7 +77,7 @@ class RapportController extends Controller
             'poids_total' => Pesage::whereYear('created_at', $year)->whereMonth('created_at', $month)->sum('poids'),
             'quantite_triee' => Trie::whereYear('created_at', $year)->whereMonth('created_at', $month)->sum('quantite_trier'),
             'produits_fabriqués' => Produit::whereYear('created_at', $year)->whereMonth('created_at', $month)->count(),
-            'valeur_stock' => Stock::sum(\DB::raw('quantite_disponible * prix_unitaire')),
+            'valeur_stock' => Stock::sum(DB::raw('quantite_disponible * prix_unitaire')),
         ];
     }
 }

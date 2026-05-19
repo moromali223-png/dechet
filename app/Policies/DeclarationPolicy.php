@@ -10,24 +10,27 @@ class DeclarationPolicy
 {
     public function viewAny(User $user): bool
     {
-        // Only authenticated users should be able to view their declarations.
-        return $user !== null;
+        return in_array($user->role, ['client', 'admin']);
     }
 
     public function view(User $user, Declaration $declaration): Response
     {
-        return $user->id === $declaration->user_id
+        return ($user->id === $declaration->user_id || $user->role === 'admin')
             ? Response::allow()
             : Response::deny('Vous ne pouvez pas voir cette déclaration.');
     }
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->role === 'client';
     }
 
     public function update(User $user, Declaration $declaration): Response
     {
+        if ($user->role === 'admin') {
+            return Response::allow();
+        }
+
         if ($user->id !== $declaration->user_id) {
             return Response::deny('Vous ne pouvez pas modifier cette déclaration.');
         }
@@ -39,6 +42,10 @@ class DeclarationPolicy
 
     public function delete(User $user, Declaration $declaration): Response
     {
+        if ($user->role === 'admin') {
+            return Response::allow();
+        }
+
         if ($user->id !== $declaration->user_id) {
             return Response::deny('Vous ne pouvez pas supprimer cette déclaration.');
         }

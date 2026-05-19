@@ -102,9 +102,9 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="{{ route('agent.matieres.show', $matiere['type_dechet']) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="bx bx-show"></i>
-                                    </a>
+                                 <a href="{{ route('agent.matieres.show', ['matiere' => urlencode($matiere['type_dechet'])]) }}" class="btn btn-sm btn-outline-primary">
+    <i class="bx bx-show"></i>
+</a>
                                 </td>
                             </tr>
                             @empty

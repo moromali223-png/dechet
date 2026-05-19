@@ -25,7 +25,7 @@ class PaiementController extends Controller
         $commandes = Commande::latest()->get();
         $abonnements = Abonnement::with('user')->latest()->get();
 
-        return view('paiements.create', compact('commandes', 'abonnements'));
+        return view('admin.paiements.create', compact('commandes', 'abonnements'));
     }
 
     public function store(Request $request)

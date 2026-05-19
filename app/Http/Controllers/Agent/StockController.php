@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Agent;
 
 use App\Http\Controllers\Controller;
 use App\Models\Stock;
+use App\Models\Trie;
 use Illuminate\Http\Request;
 
 class StockController extends Controller
@@ -23,9 +24,9 @@ class StockController extends Controller
 
             $query->where(function ($q) use ($search) {
                 $q->where('nom', 'like', "%{$search}%")
-                  ->orWhereHas('produit', function ($p) use ($search) {
-                      $p->where('nom', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('produit', function ($p) use ($search) {
+                        $p->where('nom', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -37,7 +38,7 @@ class StockController extends Controller
         }
 
         $stocks = $query->orderByDesc('quantite_disponible')
-                        ->paginate(20);
+            ->paginate(20);
 
         /**
          * STATISTIQUES
@@ -75,13 +76,32 @@ class StockController extends Controller
     /**
      * DETAIL STOCK
      */
-    public function show(Stock $stock)
+    public function show($type)
     {
-        $stock->load([
-            'produit',
-            'mouvements' => fn($q) => $q->latest()
-        ]);
+        $tries = Trie::where('type_dechet', $type)
+            ->latest()
+            ->get();
 
-        return view('agent.stocks.show', compact('stock'));
+        if ($tries->isEmpty()) {
+            abort(404);
+        }
+
+        $quantiteTotale = $tries->sum('quantite_trier');
+
+        return view('agent.matieres.show', compact(
+            'tries',
+            'type',
+            'quantiteTotale'
+        ));
+    }
+
+    private function getStatusColor($statut)
+    {
+        return match ($statut) {
+            'terminee' => 'success',
+            'en_cours' => 'warning',
+            'annulee' => 'danger',
+            default => 'secondary',
+        };
     }
 }

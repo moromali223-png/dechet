@@ -4,181 +4,94 @@
 
 @section('content')
 
-<div class="container-fluid">
+<div class="container-fluid py-4">
 
     <!-- HEADER -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-
         <div>
-            <h3 class="fw-bold mb-1">
-                Liste des Produits
-            </h3>
-
-            <p class="text-muted mb-0">
-                Gestion complète des produits recyclés et matières transformées
-            </p>
+            <h3 class="fw-bold mb-1">Liste des Produits</h3>
+            <p class="text-muted mb-0">Gestion des produits recyclés</p>
         </div>
 
-        <a href="{{ route('produits.create') }}"
-           class="btn btn-primary shadow-sm">
-
-            <i class="bx bx-plus"></i>
-            Ajouter un Produit
-
+        <a href="{{ route('produits.create') }}" class="btn btn-primary shadow-sm rounded-3">
+            <i class="bx bx-plus"></i> Ajouter un Produit
         </a>
-
     </div>
 
     <!-- STATS -->
-    <div class="row mb-4">
+    <div class="row g-3 mb-4">
 
-        <!-- TOTAL -->
-        <div class="col-md-4 mb-3">
-
-            <div class="card border-0 shadow-sm h-100">
-
-                <div class="card-body">
-
-                    <div class="d-flex justify-content-between align-items-center">
-
-                        <div>
-
-                            <p class="text-muted mb-1">
-                                Total Produits
-                            </p>
-
-                            <h3 class="fw-bold mb-0">
-                                {{ $produits->count() }}
-                            </h3>
-
-                        </div>
-
-                        <div class="bg-primary bg-opacity-10 p-3 rounded">
-
-                            <i class="bx bx-package text-primary fs-3"></i>
-
-                        </div>
-
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 rounded-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Total Produits</small>
+                        <h3 class="fw-bold mb-0">{{ $produits->count() }}</h3>
                     </div>
-
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                        <i class="bx bx-package fs-3 text-primary"></i>
+                    </div>
                 </div>
-
             </div>
-
         </div>
 
-        <!-- PRODUITS ACTIFS -->
-        <div class="col-md-4 mb-3">
-
-            <div class="card border-0 shadow-sm h-100">
-
-                <div class="card-body">
-
-                    <div class="d-flex justify-content-between align-items-center">
-
-                        <div>
-
-                            <p class="text-muted mb-1">
-                                Produits Actifs
-                            </p>
-
-                            <h3 class="fw-bold mb-0">
-                                {{ $produits->where('statut', 'actif')->count() }}
-                            </h3>
-
-                        </div>
-
-                        <div class="bg-success bg-opacity-10 p-3 rounded">
-
-                            <i class="bx bx-check-circle text-success fs-3"></i>
-
-                        </div>
-
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 rounded-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Produits Actifs</small>
+                        <h3 class="fw-bold mb-0">{{ $produits->where('statut','actif')->count() }}</h3>
                     </div>
-
+                    <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                        <i class="bx bx-check-circle fs-3 text-success"></i>
+                    </div>
                 </div>
-
             </div>
-
         </div>
 
-        <!-- VALEUR STOCK -->
-        <div class="col-md-4 mb-3">
-
-            <div class="card border-0 shadow-sm h-100">
-
-                <div class="card-body">
-
-                    <div class="d-flex justify-content-between align-items-center">
-
-                        <div>
-
-                            <p class="text-muted mb-1">
-                                Valeur Totale
-                            </p>
-
-                            <h5 class="fw-bold mb-0">
-
-                                {{ number_format($produits->sum(fn($p) => $p->quantite * $p->prix_unitaire), 0, ',', ' ') }}
-
-                                FCFA
-
-                            </h5>
-
-                        </div>
-
-                        <div class="bg-warning bg-opacity-10 p-3 rounded">
-
-                            <i class="bx bx-money text-warning fs-3"></i>
-
-                        </div>
-
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 rounded-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Valeur Totale</small>
+                        <h5 class="fw-bold mb-0">
+                            {{ number_format($produits->sum(fn($p) => $p->quantite * $p->prix_unitaire), 0, ',', ' ') }} FCFA
+                        </h5>
                     </div>
-
+                    <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                        <i class="bx bx-money fs-3 text-warning"></i>
+                    </div>
                 </div>
-
             </div>
-
         </div>
 
     </div>
 
     <!-- TABLE -->
-    <div class="card border-0 shadow-sm">
-
+    <div class="card border-0 shadow-sm rounded-4">
         <div class="card-body">
 
             @if(session('success'))
-
-                <div class="alert alert-success border-0 shadow-sm">
-
-                    <i class="bx bx-check-circle me-1"></i>
-
+                <div class="alert alert-success shadow-sm border-0 rounded-3">
                     {{ session('success') }}
-
                 </div>
-
             @endif
 
             <div class="table-responsive">
 
-                <table class="table align-middle table-hover">
+                <table class="table table-hover align-middle">
 
                     <thead class="table-light">
-
                         <tr>
-
-                            <th>#</th>
+                            <th>ID</th>
+                            <th>Image</th>
                             <th>Produit</th>
                             <th>Type</th>
                             <th>Quantité</th>
-                            <th>Prix Unitaire</th>
+                            <th>Prix</th>
                             <th>Statut</th>
-                            <th>Tri Associé</th>
                             <th class="text-center">Actions</th>
-
                         </tr>
-
                     </thead>
 
                     <tbody>
@@ -188,135 +101,87 @@
                             <tr>
 
                                 <!-- ID -->
-                                <td class="fw-semibold">
+                                <td class="fw-bold text-primary">
                                     #{{ $produit->id }}
                                 </td>
 
+                                <!-- PHOTO -->
+                                <!-- PHOTO dans le tableau -->
+<td>
+    <img src="{{ $produit->photo_url }}"
+         class="rounded shadow-sm border"
+         width="70"
+         height="70"
+         style="object-fit: cover;"
+         alt="{{ $produit->nom }}">
+</td>
+
                                 <!-- NOM -->
                                 <td>
-
-                                    <div class="fw-semibold">
-                                        {{ $produit->nom }}
-                                    </div>
-
-                                    <small class="text-muted">
-                                        {{ $produit->unite_mesure }}
-                                    </small>
-
+                                    <div class="fw-semibold">{{ $produit->nom }}</div>
+                                    <small class="text-muted">{{ $produit->unite_mesure }}</small>
                                 </td>
 
                                 <!-- TYPE -->
                                 <td>
-
-                                    <span class="badge bg-info">
-
+                                    <span class="badge bg-info px-3 py-2">
                                         {{ ucfirst($produit->type) }}
-
                                     </span>
-
                                 </td>
 
                                 <!-- QUANTITE -->
                                 <td>
-
                                     <span class="fw-bold">
-
-                                        {{ number_format($produit->quantite, 2, ',', ' ') }}
-
+                                        {{ number_format($produit->quantite,2,',',' ') }}
                                     </span>
-
                                     {{ $produit->unite_mesure }}
-
                                 </td>
 
                                 <!-- PRIX -->
                                 <td>
-
-                                    <span class="text-success fw-semibold">
-
-                                        {{ number_format($produit->prix_unitaire, 0, ',', ' ') }}
-
-                                        FCFA
-
+                                    <span class="text-success fw-bold">
+                                        {{ number_format($produit->prix_unitaire,0,',',' ') }} FCFA
                                     </span>
-
                                 </td>
 
                                 <!-- STATUT -->
                                 <td>
-
                                     @if($produit->statut == 'actif')
-
-                                        <span class="badge bg-success">
-                                            Actif
-                                        </span>
-
-                                    @elseif($produit->statut == 'inactif')
-
-                                        <span class="badge bg-secondary">
-                                            Inactif
-                                        </span>
-
+                                        <span class="badge bg-success">Actif</span>
                                     @else
-
-                                        <span class="badge bg-danger">
-                                            Obsolète
-                                        </span>
-
+                                        <span class="badge bg-secondary">Inactif</span>
                                     @endif
-
                                 </td>
 
-                                <!-- TRI -->
+                                <!-- ACTION -->
                                 <td>
+                                    <div class="d-flex justify-content-center gap-2">
 
-                                    {{ $produit->trie->type_dechet ?? 'Non défini' }}
-
-                                </td>
-
-                                <!-- ACTIONS -->
-                                <td>
-
-                                    <div class="d-flex justify-content-center gap-2 flex-nowrap">
-
-                                        <!-- VOIR -->
-                                        <a href="{{ route('produits.show', $produit) }}"
-                                           class="btn btn-sm btn-light border"
+                                        <a href="{{ route('produits.show',$produit) }}"
+                                           class="btn btn-sm btn-info text-white rounded-3"
                                            title="Voir">
-
                                             <i class="bx bx-show"></i>
-
                                         </a>
 
-                                        <!-- EDIT -->
-                                        <a href="{{ route('produits.edit', $produit) }}"
-                                           class="btn btn-sm btn-warning"
+                                        <a href="{{ route('produits.edit',$produit) }}"
+                                           class="btn btn-sm btn-warning rounded-3"
                                            title="Modifier">
-
                                             <i class="bx bx-edit"></i>
-
                                         </a>
 
-                                        <!-- DELETE -->
-                                        <form action="{{ route('produits.destroy', $produit) }}"
+                                        <form action="{{ route('produits.destroy',$produit) }}"
                                               method="POST"
-                                              onsubmit="return confirm('Voulez-vous vraiment supprimer ce produit ?')">
+                                              onsubmit="return confirm('Supprimer ce produit ?')">
 
                                             @csrf
                                             @method('DELETE')
 
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-danger"
-                                                    title="Supprimer">
-
+                                            <button class="btn btn-sm btn-danger rounded-3">
                                                 <i class="bx bx-trash"></i>
-
                                             </button>
-
                                         </form>
 
                                     </div>
-
                                 </td>
 
                             </tr>
@@ -324,19 +189,10 @@
                         @empty
 
                             <tr>
-
-                                <td colspan="8" class="text-center py-5">
-
-                                    <div class="text-muted">
-
-                                        <i class="bx bx-package fs-1 d-block mb-2"></i>
-
-                                        Aucun produit trouvé.
-
-                                    </div>
-
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bx bx-package fs-1 d-block mb-2"></i>
+                                    Aucun produit disponible
                                 </td>
-
                             </tr>
 
                         @endforelse
@@ -347,15 +203,11 @@
 
             </div>
 
-            <!-- PAGINATION -->
             <div class="mt-4 d-flex justify-content-end">
-
                 {{ $produits->links() }}
-
             </div>
 
         </div>
-
     </div>
 
 </div>

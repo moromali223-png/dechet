@@ -1,77 +1,104 @@
 @extends('layouts.app')
 
-@section('title', 'Détails du Produit')
+@section('title', 'Détail du Produit')
 
 @section('content')
-<div class="container">
-    <div class="card">
-        <div class="card-header d-flex justify-content-between">
-            <h4>Détails du Produit : {{ $produit->nom }}</h4>
-            <a href="{{ route('produits.index') }}" class="btn btn-secondary">Retour à la liste</a>
+<div class="container-fluid py-4">
+    <div class="card shadow-sm border-0 rounded-4">
+        
+        <!-- Header -->
+        <div class="card-header bg-info text-white rounded-top-4 py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="bx bx-package me-2"></i>
+                    Détail du Produit
+                </h4>
+                <a href="{{ route('produits.index') }}" class="btn btn-light btn-sm">
+                    <i class="bx bx-arrow-back"></i> Retour à la liste
+                </a>
+            </div>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <table class="table table-bordered">
-                        <tr>
-                            <th width="40%">Nom</th>
-                            <td>{{ $produit->nom }}</td>
-                        </tr>
-                        <tr>
-                            <th>Type</th>
-                            <td>{{ $produit->type }}</td>
-                        </tr>
-                        <tr>
-                            <th>Unité de mesure</th>
-                            <td>{{ $produit->unite_mesure }}</td>
-                        </tr>
-                        <tr>
-                            <th>Prix unitaire</th>
-                            <td>{{ number_format($produit->prix_unitaire, 0, ',', ' ') }} FCFA</td>
-                        </tr>
-                        <tr>
-                            <th>Statut</th>
-                            <td>
+
+        <div class="card-body p-5">
+            <div class="row g-5">
+
+                <!-- Photo -->
+                <div class="col-md-5 text-center">
+                    <img src="{{ $produit->photo_url }}" 
+                         class="img-fluid rounded-4 shadow-sm"
+                         style="max-height: 380px; object-fit: cover; width: 100%;"
+                         alt="{{ $produit->nom }}">
+                </div>
+
+                <!-- Informations -->
+                <div class="col-md-7">
+
+                    <!-- Nom + Type -->
+                    <h2 class="fw-bold mb-1">{{ $produit->nom }}</h2>
+                    <p class="text-muted fs-5 mb-4">{{ $produit->type ?? 'Non défini' }}</p>
+
+                    <!-- Type de Déchet -->
+                    @if($produit->trie)
+                        <div class="alert alert-light border mb-4">
+                            <strong>Type de déchet associé :</strong> 
+                            <span class="badge bg-primary fs-6">
+                                {{ $produit->trie->type_dechet }}
+                            </span>
+                        </div>
+                    @endif
+
+                    <div class="row g-4">
+
+                        <div class="col-6 col-lg-4">
+                            <label class="text-muted small">Quantité</label>
+                            <h4 class="mb-0">{{ number_format($produit->quantite ?? 0, 2) }} 
+                                <small class="text-muted">{{ $produit->unite_mesure ?? '' }}</small>
+                            </h4>
+                        </div>
+
+                        <div class="col-6 col-lg-4">
+                            <label class="text-muted small">Prix Unitaire</label>
+                            <h4 class="mb-0 text-success">
+                                {{ number_format($produit->prix_unitaire ?? 0, 2) }} <small>FCFA</small>
+                            </h4>
+                        </div>
+
+                        <div class="col-6 col-lg-4">
+                            <label class="text-muted small">Statut</label>
+                            <h5>
                                 @if($produit->statut == 'actif')
                                     <span class="badge bg-success">Actif</span>
                                 @else
                                     <span class="badge bg-secondary">Inactif</span>
                                 @endif
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+                            </h5>
+                        </div>
 
-                <div class="col-md-6">
-                    <table class="table table-bordered">
-                        <tr>
-                            <th>Tri Associé</th>
-                            <td>{{ $produit->trie->type_dechet ?? 'Non défini' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Stock Actuel</th>
-                            <td>
-                                @if($produit->stock)
-                                    <strong>{{ number_format($produit->stock->quantite_disponible, 2) }} {{ $produit->stock->unite_mesure }}</strong>
-                                @else
-                                    <span class="text-danger">Aucun stock</span>
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Date de création</th>
-                            <td>{{ $produit->created_at->format('d/m/Y H:i') }}</td>
-                        </tr>
-                    </table>
+                    </div>
+
+                    <!-- Description -->
+                    @if($produit->description)
+                    <div class="mt-5">
+                        <h5 class="fw-bold border-bottom pb-2">Description</h5>
+                        <p class="text-muted lh-base">
+                            {{ $produit->description }}
+                        </p>
+                    </div>
+                    @endif
+
+                    <!-- Actions -->
+                    <div class="mt-5">
+                        <a href="{{ route('produits.edit', $produit) }}" 
+                           class="btn btn-warning me-2">
+                            <i class="bx bx-edit"></i> Modifier
+                        </a>
+                        <a href="{{ route('produits.index') }}" 
+                           class="btn btn-secondary">
+                            Retour
+                        </a>
+                    </div>
                 </div>
             </div>
-
-            @if($produit->description)
-                <div class="mt-4">
-                    <h5>Description</h5>
-                    <p class="border p-3 bg-light">{{ $produit->description }}</p>
-                </div>
-            @endif
         </div>
     </div>
 </div>

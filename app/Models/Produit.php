@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Produit extends Model
 {
@@ -17,12 +18,24 @@ class Produit extends Model
         'prix_unitaire',
         'description',
         'statut',
-        'trie_id'
+        'trie_id',
+        'photo',
+        'categorie',
+        'stock_disponible',
     ];
+protected $casts = [
+    'prix_unitaire' => 'decimal:2',
+    'quantite' => 'integer',
+];
 
-    protected $casts = [
-        'prix_unitaire' => 'decimal:2',
-    ];
+    public function getPhotoUrlAttribute(): string
+    {
+        if ($this->photo && Storage::disk('public')->exists($this->photo)) {
+            return asset('storage/'.$this->photo);
+        }
+
+        return asset('images/produit-default.svg');
+    }
 
     /*
     |--------------------------------------------------
@@ -40,6 +53,11 @@ class Produit extends Model
         return $this->hasOne(Stock::class);
     }
 
+    public function ligneCommandes()
+    {
+        return $this->hasMany(LigneCommande::class);
+    }
+
     /*
     |--------------------------------------------------
     | SCOPES
@@ -50,4 +68,13 @@ class Produit extends Model
     {
         return $query->where('statut', 'actif');
     }
+
+    public function commandes()
+{
+    return $this->hasMany(Commande::class);
+}
+public function produitRelation()
+{
+    return $this->belongsTo(Produit::class, 'produit_id');
+}
 }
