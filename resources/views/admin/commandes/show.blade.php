@@ -80,7 +80,7 @@
                                     <p class="mb-0"><strong>Quantité:</strong> {{ $commande->quantite }}</p>
                                     <p class="mb-0"><strong>Prix unitaire:</strong> {{ number_format($commande->produitRelation?->prix_unitaire ?? 0, 2) }} FCFA</p>
                                     <p class="mb-0"><strong>Total:</strong> {{ number_format($commande->montant_total, 2) }} FCFA</p>
-                                    <p class="mb-0"><strong>Stock disponible:</strong> {{ $commande->produitRelation?->quantite ?? 0 }}</p>
+                                    <p class="mb-0"><strong>Stock disponible:</strong> {{ $commande->produitRelation?->stock?->quantite_disponible ?? 0 }}</p>
                                 </div>
                             </div>
                         </div>

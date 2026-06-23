@@ -1,131 +1,189 @@
 @extends('layouts.app')
 
-@section('title', 'Nouveau Tri')
+@section('title', 'Ajouter un tri')
 
 @section('content')
-<div class="container-xxl flex-grow-1 container-p-y">
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Ajouter un Tri</h5>
-            <a href="{{ route('tries.index') }}" class="btn btn-outline-secondary">← Retour à la liste</a>
-        </div>
 
-        <div class="card-body">
-            <form action="{{ route('tries.store') }}" method="POST">
-                @csrf
+<div class="card shadow-sm border-0">
 
-                @if($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+    <div class="card-header bg-white">
+        <h4 class="mb-1 fw-bold">
+            Ajouter un tri
+        </h4>
+        <small class="text-muted">
+            Enregistrer une opération de tri des déchets
+        </small>
+    </div>
 
-                <div class="row">
-                    <!-- Type de Déchet -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Type de Déchet <span class="text-danger">*</span></label>
-                        <select name="type_dechet" class="form-select @error('type_dechet') is-invalid @enderror" required>
-                            <option value="">-- Sélectionner --</option>
-                            <option value="Plastique" {{ old('type_dechet') == 'Plastique' ? 'selected' : '' }}>Plastique</option>
-                            <option value="Métal" {{ old('type_dechet') == 'Métal' ? 'selected' : '' }}>Métal</option>
-                            <option value="Papier/Carton" {{ old('type_dechet') == 'Papier/Carton' ? 'selected' : '' }}>Papier / Carton</option>
-                            <option value="Verre" {{ old('type_dechet') == 'Verre' ? 'selected' : '' }}>Verre</option>
-                            <option value="Organique" {{ old('type_dechet') == 'Organique' ? 'selected' : '' }}>Organique</option>
-                            <option value="Autre" {{ old('type_dechet') == 'Autre' ? 'selected' : '' }}>Autre</option>
-                        </select>
-                        @error('type_dechet') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
+    <div class="card-body">
 
-                    <!-- Quantité -->
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">Quantité <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="quantite_trier" 
-                               class="form-control @error('quantite_trier') is-invalid @enderror" 
-                               value="{{ old('quantite_trier') }}" required>
-                        @error('quantite_trier') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
+        {{-- ERREURS --}}
+        @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show">
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
 
-                    <!-- Unité (Select) -->
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">Unité <span class="text-danger">*</span></label>
-                        <select name="unite" class="form-select @error('unite') is-invalid @enderror" required>
-                            <option value="kg" {{ old('unite', 'kg') == 'kg' ? 'selected' : '' }}>Kilogramme (kg)</option>
-                            <option value="g" {{ old('unite') == 'g' ? 'selected' : '' }}>Gramme (g)</option>
-                            <option value="T" {{ old('unite') == 'T' ? 'selected' : '' }}>Tonne (T)</option>
-                            <option value="L" {{ old('unite') == 'L' ? 'selected' : '' }}>Litre (L)</option>
-                        </select>
-                        @error('unite') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert">
+                </button>
+            </div>
+        @endif
+
+        <form action="{{ route('tries.store') }}" method="POST">
+            @csrf
+
+            <div class="row g-3">
+
+                {{-- ================= INFO TRI ================= --}}
+                <div class="col-12">
+                    <h5 class="fw-bold text-primary mb-3">
+                        <i class="bx bx-recycle me-2"></i>
+                        Informations du tri
+                    </h5>
                 </div>
 
-                <!-- Pesage associé -->
-                <div class="mb-3">
-                    <label class="form-label">Pesage associé <span class="text-danger">*</span></label>
-                    <select name="pesage_id" class="form-select @error('pesage_id') is-invalid @enderror" required>
+                {{-- Type de déchet --}}
+                <div class="col-md-6">
+                    <label class="form-label">Type de déchet</label>
+                    <select name="type_dechet"
+                            class="form-select"
+                            required>
+                        <option value="">-- Sélectionner --</option>
+                        <option value="Plastique">Plastique</option>
+                        <option value="Métal">Métal</option>
+                        <option value="Papier/Carton">Papier / Carton</option>
+                        <option value="Verre">Verre</option>
+                        <option value="Organique">Organique</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+
+                {{-- Quantité --}}
+                <div class="col-md-3">
+                    <label class="form-label">Quantité</label>
+                    <input type="number"
+                           step="0.01"
+                           name="quantite_trier"
+                           class="form-control"
+                           required>
+                </div>
+
+                {{-- Unité --}}
+                <div class="col-md-3">
+                    <label class="form-label">Unité</label>
+                    <select name="unite" class="form-select" required>
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="T">T</option>
+                        <option value="L">L</option>
+                    </select>
+                </div>
+
+                <hr class="my-4">
+
+                {{-- ================= PESA GE ================= --}}
+                <div class="col-12">
+                    <h5 class="fw-bold text-primary mb-3">
+                        <i class="bx bx-weight me-2"></i>
+                        Pesage associé
+                    </h5>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Pesage</label>
+                    <select name="pesage_id" class="form-select" required>
                         <option value="">-- Sélectionner un pesage --</option>
                         @foreach($pesages as $pesage)
-                            <option value="{{ $pesage->id }}" {{ old('pesage_id') == $pesage->id ? 'selected' : '' }}>
-                                Pesage #{{ $pesage->id }} — 
+                            <option value="{{ $pesage->id }}">
+                                Pesage #{{ $pesage->id }} —
                                 {{ number_format($pesage->poids, 2) }} {{ $pesage->unite ?? 'kg' }}
                             </option>
                         @endforeach
                     </select>
-                    @error('pesage_id') 
-                        <div class="invalid-feedback">{{ $message }}</div> 
-                    @enderror
                 </div>
 
-                <!-- Qualité du Tri -->
-                <div class="mb-3">
-                    <label class="form-label">Qualité du Tri <span class="text-danger">*</span></label>
-                    <select name="qualite" class="form-select @error('qualite') is-invalid @enderror" required>
-                        <option value="Excellent" {{ old('qualite') == 'Excellent' ? 'selected' : '' }}>Excellent</option>
-                        <option value="Bon" {{ old('qualite', 'Bon') == 'Bon' ? 'selected' : '' }}>Bon</option>
-                        <option value="Moyen" {{ old('qualite') == 'Moyen' ? 'selected' : '' }}>Moyen</option>
-                        <option value="Mauvais" {{ old('qualite') == 'Mauvais' ? 'selected' : '' }}>Mauvais</option>
+                <hr class="my-4">
+
+                {{-- ================= QUALITÉ ================= --}}
+                <div class="col-12">
+                    <h5 class="fw-bold text-primary mb-3">
+                        <i class="bx bx-check-circle me-2"></i>
+                        Qualité et traitement
+                    </h5>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Qualité du tri</label>
+                    <select name="qualite" class="form-select" required>
+                        <option value="Excellent">Excellent</option>
+                        <option value="Bon">Bon</option>
+                        <option value="Moyen">Moyen</option>
+                        <option value="Mauvais">Mauvais</option>
                     </select>
-                    @error('qualite') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
-                <!-- Destination -->
-                <div class="mb-3">
+                <div class="col-md-6">
                     <label class="form-label">Destination</label>
-                    <select name="destination" class="form-select @error('destination') is-invalid @enderror">
+                    <select name="destination" class="form-select">
                         <option value="">-- Sélectionner --</option>
-                        <option value="Recyclé" {{ old('destination') == 'Recyclé' ? 'selected' : '' }}>Recyclé</option>
-                        <option value="Revendu" {{ old('destination') == 'Revendu' ? 'selected' : '' }}>Revendu</option>
-                        <option value="Stocké" {{ old('destination') == 'Stocké' ? 'selected' : '' }}>Stocké</option>
-                        <option value="Déchet final" {{ old('destination') == 'Déchet final' ? 'selected' : '' }}>Déchet final</option>
+                        <option value="Recyclé">Recyclé</option>
+                        <option value="Revendu">Revendu</option>
+                        <option value="Stocké">Stocké</option>
+                        <option value="Déchet final">Déchet final</option>
                     </select>
                 </div>
 
-                <!-- Valeur Estimée -->
-                <div class="mb-3">
-                    <label class="form-label">Valeur Estimée (FCFA)</label>
-                    <input type="number" step="0.01" name="valeur_estimee" 
-                           class="form-control @error('valeur_estimee') is-invalid @enderror" 
-                           value="{{ old('valeur_estimee') }}">
-                    @error('valeur_estimee') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <hr class="my-4">
+
+                {{-- ================= VALEUR ================= --}}
+                <div class="col-12">
+                    <h5 class="fw-bold text-primary mb-3">
+                        <i class="bx bx-money me-2"></i>
+                        Informations financières
+                    </h5>
                 </div>
 
-                <!-- Notes -->
-                <div class="mb-3">
-                    <label class="form-label">Notes / Observations</label>
-                    <textarea name="notes" class="form-control @error('notes') is-invalid @enderror" 
-                              rows="4">{{ old('notes') }}</textarea>
-                    @error('notes') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <div class="col-md-6">
+                    <label class="form-label">Valeur estimée (FCFA)</label>
+                    <input type="number"
+                           step="0.01"
+                           name="valeur_estimee"
+                           class="form-control">
                 </div>
 
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary me-2">Enregistrer le Tri</button>
-                    <a href="{{ route('tries.index') }}" class="btn btn-outline-secondary">Annuler</a>
+                <div class="col-md-6">
+                    <label class="form-label">Notes</label>
+                    <textarea name="notes"
+                              rows="2"
+                              class="form-control"
+                              placeholder="Observations sur le tri..."></textarea>
                 </div>
-            </form>
-        </div>
+
+            </div>
+
+            {{-- BOUTONS --}}
+            <div class="mt-4 d-flex justify-content-end gap-2">
+
+                <a href="{{ route('tries.index') }}"
+                   class="btn btn-light">
+                    Annuler
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    <i class="bx bx-save me-1"></i>
+                    Enregistrer le tri
+                </button>
+
+            </div>
+
+        </form>
+
     </div>
 </div>
+
 @endsection

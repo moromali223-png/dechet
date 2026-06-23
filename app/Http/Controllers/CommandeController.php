@@ -40,46 +40,66 @@ class CommandeAdminController extends Controller
     }
 
     public function accepter(Commande $commande)
-    {
-        if ($commande->statut !== 'en_attente') {
-            return back()->with('error', 'Cette commande ne peut pas être acceptée.');
-        }
-
-        $commande->load('produitRelation');
-
-        $produit = $commande->produitRelation;
-
-        if (!$produit) {
-            return back()->with('error', 'Produit introuvable.');
-        }
-
-        if ($produit->quantite < $commande->quantite) {
-            return back()->with('error', 'Stock insuffisant.');
-        }
-
-        try {
-            DB::transaction(function () use ($commande, $produit) {
-
-                $produit->decrement('quantite', $commande->quantite);
-
-                $commande->update([
-                    'statut' => 'acceptee'
-                ]);
-
-                Paiement::create([
-                    'commande_id'   => $commande->id,
-                    'mode_paiement' => 'en_ligne',
-                    'montant'       => $commande->montant_total,
-                    'statut'        => 'valide',
-                ]);
-            });
-
-            return back()->with('success', 'Commande acceptée.');
-
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
+{
+    if ($commande->statut !== 'en_attente') {
+        return back()->with(
+            'error',
+            'Cette commande ne peut pas être acceptée.'
+        );
     }
+
+    try {
+
+        DB::transaction(function () use ($commande) {
+
+            $commande->load('produitRelation.stock');
+
+            $produit = $commande->produitRelation;
+
+            if (!$produit) {
+                throw new \Exception('Produit introuvable.');
+            }
+
+            $stock = $produit->stock;
+
+            if (!$stock) {
+                throw new \Exception('Stock introuvable.');
+            }
+
+            if ($stock->quantite_disponible < $commande->quantite) {
+                throw new \Exception('Stock insuffisant.');
+            }
+
+            $stock->decrement(
+                'quantite_disponible',
+                $commande->quantite
+            );
+
+            $commande->update([
+                'statut' => 'acceptee'
+            ]);
+
+            Paiement::create([
+                'commande_id'   => $commande->id,
+                'mode_paiement' => 'en_ligne',
+                'montant'       => $commande->montant_total,
+                'statut'        => 'valide',
+            ]);
+        });
+
+        return back()->with(
+            'success',
+            'Commande acceptée avec succès.'
+        );
+
+    } catch (\Exception $e) {
+
+        return back()->with(
+            'error',
+            $e->getMessage()
+        );
+    }
+}
 
     public function refuser(Commande $commande)
     {

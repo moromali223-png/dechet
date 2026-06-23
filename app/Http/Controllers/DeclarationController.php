@@ -36,7 +36,7 @@ class DeclarationController extends Controller
 
     public function create()
     {
-        return view('declarations.create');
+        return view('client.declarations.create');
     }
 
     public function store(StoreDeclarationRequest $request)
@@ -61,7 +61,7 @@ class DeclarationController extends Controller
         Declaration::create($data);
 
         return redirect()
-            ->route('client.declarations.index')
+            ->route('declarations.index')
             ->with('success', 'Déclaration créée avec succès.');
     }
 
@@ -124,7 +124,7 @@ class DeclarationController extends Controller
 
         $declaration->delete();
 
-        return redirect()->route('client.declarations.index')
+        return redirect()->route('declarations.index')
             ->with('success', 'Déclaration supprimée avec succès.');
     }
 

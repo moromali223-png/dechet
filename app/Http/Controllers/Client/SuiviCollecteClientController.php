@@ -11,28 +11,35 @@ class SuiviCollecteClientController extends Controller
     public function index(Request $request)
     {
         $clientUserId = auth()->id();
-        $type = $request->get('type', 'toutes');
+      $type = $request->get('type', 'toutes');
 
-        $query = Planification::with([
-            'zone',
-            'collecteur.user',
-            'collecte',
-            'abonnement.client.user',
-        ])->whereHas('abonnement.client', function ($q) use ($clientUserId) {
-            $q->where('user_id', $clientUserId);
-        });
+$query = Planification::with([
+    'zone',
+    'collecteur.user',
+    'collecte',
+    'abonnement.client.user',
+])->whereHas('abonnement.client', function ($q) use ($clientUserId) {
+    $q->where('user_id', $clientUserId);
+});
 
-        if ($type === 'en_cours') {
-            $query->whereIn('statut', ['planifiee', 'assignee', 'en_route', 'en_cours']);
-        }
+$query->when($type !== 'toutes', function ($q) use ($type) {
 
-        if ($type === 'terminees') {
-            $query->where('statut', 'terminee')->whereHas('collecte');
-        }
+    if ($type === 'en_cours') {
+        $q->whereIn('statut', ['assignee', 'en_route', 'en_cours']);
+    }
 
-        if ($type === 'annulees') {
-            $query->where('statut', 'annulee');
-        }
+    elseif ($type === 'terminee') {
+        $q->where('statut', 'terminee');
+    }
+
+    elseif ($type === 'annulee') {
+        $q->where('statut', 'annulee');
+    }
+
+    else {
+        $q->where('statut', $type);
+    }
+});
 
         $collectes = $query->latest('date_prevue')->paginate(10);
 

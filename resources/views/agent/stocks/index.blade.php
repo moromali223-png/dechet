@@ -6,13 +6,35 @@
 <div class="container-fluid">
 
     <div class="card">
-        <div class="card-header d-flex align-items-center justify-content-between">
-            <div>
-                <h4 class="card-title mb-1">Mon Stock</h4>
-                <small class="text-muted">Vue Agent - Inventaire en temps réel</small>
-            </div>
-            <a href="{{ route('agent.dashboard') }}" class="btn btn-outline-secondary btn-sm">Retour Dashboard</a>
-        </div>
+        <div class="card-header d-flex justify-content-between align-items-center">
+
+    <div>
+        <h4 class="card-title mb-1">
+            <i class="bx bx-package me-2"></i>
+            Mon Stock
+        </h4>
+        <small class="text-muted">
+            Vue Agent - Inventaire en temps réel
+        </small>
+    </div>
+
+    <div class="d-flex gap-2">
+
+        <a href="{{ route('inventaire.create') }}"
+           class="btn btn-success btn-sm">
+            <i class="bx bx-plus-circle me-1"></i>
+            Ajouter Stock
+        </a>
+
+        <a href="{{ route('agent.dashboard') }}"
+           class="btn btn-outline-secondary btn-sm">
+            <i class="bx bx-arrow-back me-1"></i>
+            Retour Dashboard
+        </a>
+
+    </div>
+
+</div>
 
         <div class="card-body">
 
@@ -111,7 +133,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('agent.stocks.show', $stock) }}" class="btn btn-sm btn-info">
+                                    <a href="{{ route('inventaire.show', $stock) }}" class="btn btn-sm btn-info">
                                         <i class="bx bx-show"></i></a>
                                 </td>
                             </tr>

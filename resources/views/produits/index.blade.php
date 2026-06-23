@@ -87,7 +87,6 @@
                             <th>Image</th>
                             <th>Produit</th>
                             <th>Type</th>
-                            <th>Quantité</th>
                             <th>Prix</th>
                             <th>Statut</th>
                             <th class="text-center">Actions</th>
@@ -130,12 +129,7 @@
                                 </td>
 
                                 <!-- QUANTITE -->
-                                <td>
-                                    <span class="fw-bold">
-                                        {{ number_format($produit->quantite,2,',',' ') }}
-                                    </span>
-                                    {{ $produit->unite_mesure }}
-                                </td>
+                                
 
                                 <!-- PRIX -->
                                 <td>

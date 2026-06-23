@@ -12,7 +12,7 @@
     <ul class="menu-inner py-1">
 
         <!-- DASHBOARD -->
-        <li class="menu-item">
+        <li class="menu-item {{ request()->routeIs('dashboard.collecteur') ? 'active' : '' }}">
             <a href="{{ route('dashboard.collecteur') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home"></i>
                 <div>Tableau de bord</div>
@@ -21,7 +21,7 @@
 
      
 
-        <li class="menu-item">
+        <li class="menu-item {{ request()->routeIs('collecteur.tournees') ? 'active' : '' }}">
             <a href="{{ route('collecteur.tournees') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calendar-check"></i>
                 <div>Mes tournées d’aujourd’hui</div>
@@ -29,14 +29,14 @@
         </li>
 
         
-        <li class="menu-item">
+        <li class="menu-item {{ request()->routeIs('collecteur.collecte.encours') ? 'active' : '' }}">
             <a href="{{ route('collecteur.collecte.encours') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-play-circle"></i>
                 <div>Collecte en cours</div>
             </a>
         </li>
 
-        <li class="menu-item">
+        <li class="menu-item {{ request()->routeIs('collecteur.collecte.terminees') ? 'active' : '' }}">
             <a href="{{ route('collecteur.collecte.terminees') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-check-circle"></i>
                 <div>Collectes terminées</div>
@@ -45,7 +45,7 @@
 
       
 
-        <li class="menu-item">
+        <li class="menu-item {{ request()->routeIs('collecteur.historique*') ? 'active' : '' }}">
             <a href="{{ route('collecteur.historique') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-history"></i>
                 <div>Mes activités</div>
@@ -57,7 +57,7 @@
             <span>Zone</span>
         </li>
 
-        <li class="menu-item">
+        <li class="menu-item {{ request()->routeIs('collecteur.zone') ? 'active' : '' }}">
             <a href="{{ route('collecteur.zone') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-map"></i>
                 <div>Ma zone</div>

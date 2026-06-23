@@ -1,14 +1,17 @@
 /* Menu actif EcoFlux */
 #layout-menu .menu-item.active > .menu-link,
+#layout-menu .menu-item.active.open > .menu-link,
 #layout-menu .menu-item.active > .menu-link:hover,
 #layout-menu .menu-item.active > .menu-link:focus {
     background-color: #16a34a !important;
     color: #ffffff !important;
-    border-color: rgba(22, 163, 74, 0.4) !important;
+    border-left: 4px solid #d1fae5 !important;
+    box-shadow: 0 12px 24px rgba(16, 185, 129, 0.18) !important;
 }
 
 /* Icône active */
 #layout-menu .menu-item.active > .menu-link i,
+#layout-menu .menu-item.active.open > .menu-link i,
 #layout-menu .menu-item.active > .menu-link:hover i,
 #layout-menu .menu-item.active > .menu-link:focus i {
     color: #ffffff !important;
@@ -17,6 +20,30 @@
 /* Hover */
 #layout-menu .menu-item > .menu-link:hover {
     background-color: #059669 !important;
+    color: #ffffff !important;
+}
+
+#layout-menu .menu-item.active > .menu-link,
+#layout-menu .menu-item.active.open > .menu-link {
+    transition: all 0.25s ease !important;
+}
+
+#layout-menu .menu-item > .menu-link {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    text-transform: none;
+}
+
+#layout-menu .menu-item.active.open > .menu-link {
+    padding-left: 0.95rem;
+}
+
+#layout-menu .menu-item.active > .menu-link .menu-icon,
+#layout-menu .menu-item.active.open > .menu-link .menu-icon {
     color: #ffffff !important;
 }
 

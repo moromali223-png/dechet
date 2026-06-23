@@ -37,24 +37,11 @@
                     <h2 class="fw-bold mb-1">{{ $produit->nom }}</h2>
                     <p class="text-muted fs-5 mb-4">{{ $produit->type ?? 'Non défini' }}</p>
 
-                    <!-- Type de Déchet -->
-                    @if($produit->trie)
-                        <div class="alert alert-light border mb-4">
-                            <strong>Type de déchet associé :</strong> 
-                            <span class="badge bg-primary fs-6">
-                                {{ $produit->trie->type_dechet }}
-                            </span>
-                        </div>
-                    @endif
+                  
 
                     <div class="row g-4">
 
-                        <div class="col-6 col-lg-4">
-                            <label class="text-muted small">Quantité</label>
-                            <h4 class="mb-0">{{ number_format($produit->quantite ?? 0, 2) }} 
-                                <small class="text-muted">{{ $produit->unite_mesure ?? '' }}</small>
-                            </h4>
-                        </div>
+                
 
                         <div class="col-6 col-lg-4">
                             <label class="text-muted small">Prix Unitaire</label>

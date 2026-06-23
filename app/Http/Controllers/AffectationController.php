@@ -94,7 +94,7 @@ class AffectationController extends Controller
         }
 
         return redirect()
-            ->route('admin.affectations.index')
+            ->route('affectations.index')
             ->with(
                 'success',
                 'La planification a été affectée avec succès.'

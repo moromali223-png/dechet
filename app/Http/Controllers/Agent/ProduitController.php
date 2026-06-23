@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Agent;
 
 use App\Http\Controllers\Controller;
 use App\Models\Produit;
-use App\Models\Trie;
 use Illuminate\Http\Request;
 
 class ProduitController extends Controller
@@ -14,7 +13,7 @@ class ProduitController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Produit::with('trie');
+        $query = Produit::query();
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
@@ -42,49 +41,50 @@ class ProduitController extends Controller
      */
     public function create()
     {
-        $tries = Trie::latest()->get();
-
-        return view('agent.produits.create', compact('tries'));
+        return view('agent.produits.create');
     }
 
     /**
-     * STORE → Observer gère stock automatiquement
+     * STORE
      */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'trie_id' => 'required|exists:tries,id',
-            'quantite' => 'required|numeric|min:0.01',
-            'type' => 'required|string|max:255',
-            'unite_mesure' => 'required|string|max:50',
-            'description' => 'nullable|string',
-            'prix_unitaire' => 'nullable|numeric|min:0',
-        ]);
+ 
 
-        Produit::create([
-            'nom' => $request->nom,
-            'trie_id' => $request->trie_id,
-            'quantite' => $request->quantite,
-            'type' => $request->type,
-            'unite_mesure' => $request->unite_mesure,
-            'description' => $request->description,
-            'prix_unitaire' => $request->prix_unitaire ?? 0,
-            'statut' => 'actif',
-        ]);
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'nom' => 'required|string|max:255',
+        'type' => 'required|string|max:255',
+        'unite_mesure' => 'required|string|max:50',
+        'description' => 'nullable|string',
+        'prix_unitaire' => 'nullable|numeric|min:0',
+        'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+    ]);
 
-        return redirect()
-            ->route('agent.produits.index')
-            ->with('success', 'Produit créé avec succès.');
+    if ($request->hasFile('photo')) {
+        $validated['photo'] = $request->file('photo')
+            ->store('produits', 'public');
     }
+
+    Produit::create([
+        'nom' => $validated['nom'],
+        'type' => $validated['type'],
+        'unite_mesure' => $validated['unite_mesure'],
+        'description' => $validated['description'] ?? null,
+        'prix_unitaire' => $validated['prix_unitaire'] ?? 0,
+        'photo' => $validated['photo'] ?? null,
+        'statut' => 'actif',
+    ]);
+
+    return redirect()
+        ->route('agent.produits.index')
+        ->with('success', 'Produit créé avec succès.');
+}
 
     /**
      * SHOW
      */
     public function show(Produit $produit)
     {
-        $produit->load('trie');
-
         return view('agent.produits.show', compact('produit'));
     }
 
@@ -93,23 +93,19 @@ class ProduitController extends Controller
      */
     public function edit(Produit $produit)
     {
-        $tries = Trie::latest()->get();
-
-        return view('agent.produits.edit', compact('produit', 'tries'));
+        return view('agent.produits.edit', compact('produit'));
     }
 
     /**
-     * UPDATE → Observer synchronise stock
+     * UPDATE
      */
     public function update(Request $request, Produit $produit)
     {
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
-            'trie_id' => 'required|exists:tries,id',
-            'quantite' => 'required|numeric|min:0',
+            'type' => 'required|string|max:255',
             'unite_mesure' => 'required|string|max:50',
             'description' => 'nullable|string',
-            'type' => 'required|string|max:255',
             'prix_unitaire' => 'nullable|numeric|min:0',
             'statut' => 'required|in:actif,termine,stocke',
         ]);
@@ -122,7 +118,7 @@ class ProduitController extends Controller
     }
 
     /**
-     * DELETE → Observer supprime stock
+     * DELETE
      */
     public function destroy(Produit $produit)
     {

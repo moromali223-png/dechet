@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produit;
-use App\Models\Trie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -11,8 +10,7 @@ class ProduitController extends Controller
 {
     public function index()
     {
-        $produits = Produit::with('trie')
-            ->actif()
+        $produits = Produit::actif()
             ->latest()
             ->paginate(15);
 
@@ -21,9 +19,7 @@ class ProduitController extends Controller
 
     public function create()
     {
-        $tries = Trie::all();
-
-        return view('produits.create', compact('tries'));
+        return view('produits.create');
     }
 
     public function store(Request $request)
@@ -32,16 +28,15 @@ class ProduitController extends Controller
             'nom' => 'required|string|max:255',
             'type' => 'required|string|max:100',
             'unite_mesure' => 'required|string|max:20',
-            'quantite' => 'required|numeric|min:0',
             'prix_unitaire' => 'required|numeric|min:0',
             'description' => 'nullable|string',
-            'statut' => 'in:actif,inactif',
-            'trie_id' => 'required|exists:tries,id',
+            'statut' => 'required|in:actif,inactif',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('produits', 'public');
+            $validated['photo'] = $request->file('photo')
+                ->store('produits', 'public');
         }
 
         Produit::create($validated);
@@ -53,16 +48,12 @@ class ProduitController extends Controller
 
     public function show(Produit $produit)
     {
-        $produit->load('trie');
-
         return view('produits.show', compact('produit'));
     }
 
     public function edit(Produit $produit)
     {
-        $tries = Trie::all();
-
-        return view('produits.edit', compact('produit', 'tries'));
+        return view('produits.edit', compact('produit'));
     }
 
     public function update(Request $request, Produit $produit)
@@ -71,21 +62,22 @@ class ProduitController extends Controller
             'nom' => 'required|string|max:255',
             'type' => 'required|string|max:100',
             'unite_mesure' => 'required|string|max:20',
-            'quantite' => 'required|numeric|min:0',
             'prix_unitaire' => 'required|numeric|min:0',
             'description' => 'nullable|string',
-            'statut' => 'in:actif,inactif',
-            'trie_id' => 'required|exists:tries,id',
+            'statut' => 'required|in:actif,inactif',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         if ($request->hasFile('photo')) {
 
-            if ($produit->photo && Storage::disk('public')->exists($produit->photo)) {
+            if ($produit->photo &&
+                Storage::disk('public')->exists($produit->photo)) {
+
                 Storage::disk('public')->delete($produit->photo);
             }
 
-            $validated['photo'] = $request->file('photo')->store('produits', 'public');
+            $validated['photo'] = $request->file('photo')
+                ->store('produits', 'public');
         }
 
         $produit->update($validated);
@@ -97,7 +89,9 @@ class ProduitController extends Controller
 
     public function destroy(Produit $produit)
     {
-        if ($produit->photo && Storage::disk('public')->exists($produit->photo)) {
+        if ($produit->photo &&
+            Storage::disk('public')->exists($produit->photo)) {
+
             Storage::disk('public')->delete($produit->photo);
         }
 

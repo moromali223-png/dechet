@@ -5,18 +5,18 @@
 @section('content')
 <div class="container py-4" style="max-width: 760px;">
 
-    {{-- message --}}
+    {{-- Message de succès --}}
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0">
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i>
             {{ session('success') }}
-            <button class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
         </div>
     @endif
 
-    {{-- erreurs --}}
+    {{-- Erreurs --}}
     @if($errors->any())
-        <div class="alert alert-danger shadow-sm border-0">
+        <div class="alert alert-danger shadow-sm border-0" role="alert">
             <ul class="mb-0 ps-3">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -25,23 +25,20 @@
         </div>
     @endif
 
-
     <div class="card shadow-lg border-0 overflow-hidden">
 
         {{-- HEADER --}}
-        <div class="bg-success text-white p-4 text-center">
-
-            <div class="mb-3">
-                <div class="rounded-circle bg-white d-inline-flex align-items-center justify-content-center shadow"
-                     style="width:110px;height:110px;">
-                    <i class="bi bi-person-fill text-success" style="font-size: 4rem;"></i>
+        <div class="bg-primary text-white p-4 p-md-5 text-center">
+            <div class="mb-4">
+                <div class="rounded-circle bg-white d-inline-flex align-items-center justify-content-center shadow-sm mx-auto"
+                     style="width: 120px; height: 120px;">
+                    <i class="bi bi-person-fill text-success" style="font-size: 4.2rem;"></i>
                 </div>
             </div>
 
-            <h3 class="fw-bold mb-1">{{ $user->name }}</h3>
-            <small class="opacity-75">{{ $user->email }}</small>
+            <h2 class="fw-bold mb-1">{{ $user->name }}</h2>
+            <p class="opacity-75 mb-0">{{ $user->email }}</p>
         </div>
-
 
         {{-- BODY --}}
         <div class="card-body p-4 p-md-5">
@@ -50,18 +47,16 @@
                 @csrf
                 @method('PUT')
 
-                {{-- INFORMATIONS --}}
+                {{-- Informations personnelles --}}
                 <div class="mb-5">
-
-                    <h5 class="fw-bold mb-4 text-success">
+                    <h5 class="fw-bold mb-4 text-primary border-bottom pb-2">
                         <i class="bi bi-person-vcard me-2"></i>
                         Informations personnelles
                     </h5>
 
-                    <div class="row g-3">
-
+                    <div class="row g-4">
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Nom complet</label>
+                            <label class="form-label fw-semibold">Nom complet <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light">
                                     <i class="bi bi-person"></i>
@@ -69,16 +64,16 @@
                                 <input type="text"
                                        name="name"
                                        class="form-control @error('name') is-invalid @enderror"
-                                       value="{{ old('name', $user->name) }}">
+                                       value="{{ old('name', $user->name) }}"
+                                       required>
                             </div>
                             @error('name')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Adresse email</label>
+                            <label class="form-label fw-semibold">Adresse email <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light">
                                     <i class="bi bi-envelope"></i>
@@ -86,27 +81,24 @@
                                 <input type="email"
                                        name="email"
                                        class="form-control @error('email') is-invalid @enderror"
-                                       value="{{ old('email', $user->email) }}">
+                                       value="{{ old('email', $user->email) }}"
+                                       required>
                             </div>
                             @error('email')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
                     </div>
                 </div>
 
-
-                {{-- MOT DE PASSE --}}
-                <div class="mb-4">
-
-                    <h5 class="fw-bold mb-4 text-success">
+                {{-- Sécurité --}}
+                <div class="mb-5">
+                    <h5 class="fw-bold mb-4 text-primary border-bottom pb-2">
                         <i class="bi bi-shield-lock me-2"></i>
                         Sécurité du compte
                     </h5>
 
-                    <div class="row g-3">
-
+                    <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Nouveau mot de passe</label>
                             <div class="input-group">
@@ -119,13 +111,12 @@
                                        placeholder="Laisser vide si inchangé">
                             </div>
                             @error('password')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Confirmation</label>
+                            <label class="form-label fw-semibold">Confirmation du mot de passe</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light">
                                     <i class="bi bi-lock-fill"></i>
@@ -133,30 +124,43 @@
                                 <input type="password"
                                        name="password_confirmation"
                                        class="form-control"
-                                       placeholder="Confirmer">
+                                       placeholder="Confirmer le nouveau mot de passe">
                             </div>
                         </div>
-
                     </div>
                 </div>
 
+                <hr class="my-5">
 
-                <hr class="my-4">
+               {{-- Actions --}}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 pt-3">
 
+    <small class="text-muted">
+        Dernière mise à jour :
+        <strong>{{ $user->updated_at?->format('d/m/Y à H:i') }}</strong>
+    </small>
 
-                {{-- ACTION --}}
-                <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-2 w-100 w-sm-auto justify-content-end">
 
-                    <small class="text-muted">
-                        Dernière mise à jour : {{ $user->updated_at?->format('d/m/Y H:i') }}
-                    </small>
+        {{-- ANNULER (secondaire discret) --}}
+        <a href="{{ route('dashboard') }}"
+           class="btn btn-light border px-4 py-2 shadow-sm d-flex align-items-center gap-2">
 
-                    <button class="btn btn-success px-4 py-2 shadow-sm">
-                        <i class="bi bi-check-circle me-2"></i>
-                        Enregistrer
-                    </button>
+            <i class="bi bi-x-circle text-muted"></i>
+            <span>Annuler</span>
+        </a>
 
-                </div>
+        {{-- ENREGISTRER (PRIMARY ACTION) --}}
+        <button type="submit"
+                class="btn btn-primary px-5 py-2 shadow-sm d-flex align-items-center gap-2 fw-semibold">
+
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Enregistrer</span>
+        </button>
+
+    </div>
+
+</div>
 
             </form>
 

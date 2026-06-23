@@ -48,23 +48,24 @@ class CommandeAdminController extends Controller
         return back()->with('error', 'Cette commande ne peut pas être acceptée.');
     }
 
-    $commande->load('produitRelation');
+    $commande->load('produitRelation.stock');
 
     $produit = $commande->produitRelation;
+    $stock = $produit?->stock;
 
-    if (!$produit) {
-        return back()->with('error', 'Produit introuvable.');
+    if (!$produit || !$stock) {
+        return back()->with('error', 'Produit ou stock introuvable.');
     }
 
-    if ($produit->quantite < $commande->quantite) {
+    if ($stock->quantite_disponible < $commande->quantite) {
         return back()->with('error', 'Stock insuffisant.');
     }
 
     try {
-        DB::transaction(function () use ($commande, $produit) {
+        DB::transaction(function () use ($commande, $produit, $stock) {
 
-            // 1. Décrémenter le stock produit
-            $produit->decrement('quantite', $commande->quantite);
+            // 1. Décrémenter le stock réel
+            $stock->decrement('quantite_disponible', $commande->quantite);
 
             // 2. Créer paiement
             Paiement::create([
@@ -76,27 +77,22 @@ class CommandeAdminController extends Controller
                 'commande_id'        => $commande->id,
             ]);
 
-            // 3. Récupérer stock (si existe)
-            $stock = $produit->stock;
+            // 3. Créer le mouvement de stock
+            Mouvement::create([
+                'stock_id'        => $stock->id,
+                'type_mouvement'  => 'sortie',
+                'quantite'        => $commande->quantite,
+                'prix_unitaire'   => $produit->prix_unitaire,
+                'montant_total'   => $commande->montant_total,
+                'source'          => 'commande',
+                'description'     => 'Commande acceptée - ' . $commande->code_commande,
+                'commande_id'     => $commande->id,
+                'user_id'         => auth()->id(),
+                'date_mouvement'  => now()->toDateString(),
+                'heure_mouvement' => now()->toTimeString(),
+            ]);
 
-            // 4. Créer mouvement seulement si stock existe
-            if ($stock) {
-                Mouvement::create([
-                    'stock_id'        => $stock->id,
-                    'type_mouvement'  => 'sortie',
-                    'quantite'        => $commande->quantite,
-                    'prix_unitaire'   => $produit->prix_unitaire,
-                    'montant_total'   => $commande->montant_total,
-                    'source'          => 'commande',
-                    'description'     => 'Commande acceptée - ' . $commande->code_commande,
-                    'commande_id'     => $commande->id,
-                    'user_id'         => auth()->id(),
-                    'date_mouvement'  => now()->toDateString(),
-                    'heure_mouvement' => now()->toTimeString(),
-                ]);
-            }
-
-            // 5. Update statut commande
+            // 4. Update statut commande
             $commande->update([
                 'statut' => 'acceptee'
             ]);

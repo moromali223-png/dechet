@@ -37,7 +37,7 @@ class PlanificationController extends Controller
     {
         Planification::create($request->validated());
 
-        return redirect()->route('admin.planifications.index')->with('success', 'Planification créée avec succès.');
+        return redirect()->route('planifications.index')->with('success', 'Planification créée avec succès.');
     }
 
     public function show(Planification $planification)
@@ -68,7 +68,7 @@ class PlanificationController extends Controller
 
         $planification->update($data);
 
-        return redirect()->route('admin.planifications.index')
+        return redirect()->route('planifications.index')
             ->with('success', 'Planification mise à jour avec succès.');
     }
 
@@ -76,6 +76,6 @@ class PlanificationController extends Controller
     {
         $planification->delete();
 
-        return redirect()->route('admin.planifications.index')->with('success', 'Planification supprimée avec succès.');
+        return redirect()->route('planifications.index')->with('success', 'Planification supprimée avec succès.');
     }
 }

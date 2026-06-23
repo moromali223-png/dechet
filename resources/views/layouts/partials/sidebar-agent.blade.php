@@ -16,82 +16,83 @@
 
     <div class="menu-inner-shadow"></div>
 
-    <!-- resources/views/partials/sidebar-agent.blade.php -->
-<ul class="menu-inner py-1">
+    @php
+        $isCollectesOpen = request()->routeIs('agent.collectes.*') || request()->routeIs('agent.agent.collectes.*') || request()->routeIs('agent.pesages.*') || request()->routeIs('pesages.*');
+        $isTriProductionOpen = request()->routeIs('tries.*') || request()->routeIs('agent.matieres.*') || request()->routeIs('agent.produits.*');
+    @endphp
 
-    <li class="menu-item">
-        <a href="{{ route('agent.dashboard') }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-tachometer"></i>
-            <div>Tableau de bord</div>
-        </a>
-    </li>
-
-    <li class="menu-item">
-        <a href="javascript:void(0);" class="menu-link menu-toggle">
-            <i class="menu-icon tf-icons bx bx-package"></i>
-            <div>Collectes & Pesage</div>
-        </a>
-        <ul class="menu-sub">
-            <li class="menu-item">
-                <a href="{{ route('agent.collectes.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bxs-inbox"></i>
-
-                    <div>Collectes reçues</div>
-                </a>
-            </li>
-          <li class="menu-item">
-            <a href="{{ route('pesages.index') }}" class="menu-link">
-                <i class="menu-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 3L2 9l10 6 10-6-10-6zm0 13l-10-6v6l10 6 10-6v-6l-10 6z"/>
-                    </svg>
-                </i>
-                <div>Pesage</div>
+    <ul class="menu-inner py-1">
+        <li class="menu-item {{ request()->routeIs('agent.dashboard') ? 'active' : '' }}">
+            <a href="{{ route('agent.dashboard') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-tachometer"></i>
+                <div>Tableau de bord</div>
             </a>
-          </li>
-        </ul>
-    </li>
+        </li>
 
-    <li class="menu-item">
-        <a href="javascript:void(0);" class="menu-link menu-toggle">
-            <i class="menu-icon tf-icons bx bx-filter-alt"></i>
-            <div>Tri & Production</div>
-        </a>
-        <ul class="menu-sub">
-             <li class="menu-item">
+        <li class="menu-item {{ $isCollectesOpen ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-package"></i>
+                <div>Collectes & Pesage</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('agent.collectes.*') || request()->routeIs('agent.agent.collectes.*') ? 'active' : '' }}">
+                    <a href="{{ route('agent.collectes.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bxs-inbox"></i>
+                        <div>Collectes reçues</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('agent.pesages.*') || request()->routeIs('pesages.*') ? 'active' : '' }}">
+                    <a href="{{ route('agent.pesages.index') }}" class="menu-link">
+                        <i class="menu-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 3L2 9l10 6 10-6-10-6zm0 13l-10-6v6l10 6 10-6v-6l-10 6z"/>
+                            </svg>
+                        </i>
+                        <div>Pesage</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="menu-item {{ $isTriProductionOpen ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-filter-alt"></i>
+                <div>Tri & Production</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('tries.*') ? 'active' : '' }}">
                     <a href="{{ route('tries.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-filter-alt"></i>
                         <div>Tri des déchets</div>
                     </a>
                 </li>
-             <li class="menu-item">
+                <li class="menu-item {{ request()->routeIs('agent.matieres.*') ? 'active' : '' }}">
                     <a href="{{ route('agent.matieres.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-recycle"></i>
                         <div>Matières premières</div>
                     </a>
                 </li>
-             <li class="menu-item">
+                <li class="menu-item {{ request()->routeIs('agent.produits.*') ? 'active' : '' }}">
                     <a href="{{ route('agent.produits.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-box"></i>
                         <div>Produits</div>
                     </a>
                 </li>
-        </ul>
-    </li>
+            </ul>
+        </li>
 
-    <li class="menu-item">
-        <a href="{{ route('agent.stocks.index') }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-archive"></i>
-            <div>Stock produits finis</div>
-        </a>
-    </li>
+        <li class="menu-item {{ request()->routeIs('agent.stocks.*') ? 'active' : '' }}">
+            <a href="{{ route('agent.stocks.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-archive"></i>
+                <div>Stock produits finis</div>
+            </a>
+        </li>
 
-    <li class="menu-item">
-        <a href="{{ route('agent.rapports.index') }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-bar-chart-alt-2"></i>
-            <div>Rapports</div>
-        </a>
-    </li>
-
-</ul>
+        <li class="menu-item {{ request()->routeIs('agent.rapports.*') ? 'active' : '' }}">
+            <a href="{{ route('agent.rapports.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-bar-chart-alt-2"></i>
+                <div>Rapports</div>
+            </a>
+        </li>
+    </ul>
 </aside>

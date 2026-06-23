@@ -11,7 +11,6 @@ class Mouvement extends Model
 
     protected $fillable = [
         'stock_id',
-        'produit_id',
         'type_mouvement',
         'quantite',
         'prix_unitaire',
@@ -28,7 +27,7 @@ class Mouvement extends Model
         'quantite' => 'decimal:2',
         'prix_unitaire' => 'decimal:2',
         'montant_total' => 'decimal:2',
-        'date_mouvement' => 'datetime',
+        'date_mouvement' => 'date',
     ];
 
     /*

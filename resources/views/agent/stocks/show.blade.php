@@ -110,13 +110,13 @@
                             @foreach($historique as $mouvement)
 
                                 @php
-                                    $color = match($mouvement->type) {
+                                    $color = match($mouvement->type_mouvement) {
                                         'entree' => 'success',
                                         'sortie' => 'danger',
                                         default => 'warning'
                                     };
 
-                                    $icon = match($mouvement->type) {
+                                    $icon = match($mouvement->type_mouvement) {
                                         'entree' => 'bx-plus-circle',
                                         'sortie' => 'bx-minus-circle',
                                         default => 'bx-refresh'
@@ -137,7 +137,7 @@
 
                                         <div class="d-flex justify-content-between">
                                             <h6 class="mb-1">
-                                                {{ ucfirst($mouvement->type) }}
+                                                {{ ucfirst($mouvement->type_mouvement) }}
                                             </h6>
 
                                             <small class="text-muted">
@@ -146,11 +146,11 @@
                                         </div>
 
                                         <p class="mb-1 text-muted small">
-                                            {{ $mouvement->observation ?? 'Aucune observation' }}
+                                            {{ $mouvement->description ?? 'Aucune observation' }}
                                         </p>
 
                                         <span class="fw-bold text-{{ $color }}">
-                                            {{ $mouvement->type == 'entree' ? '+' : '-' }}
+                                            {{ $mouvement->type_mouvement === 'entree' ? '+' : '-' }}
                                             {{ number_format($mouvement->quantite, 2, ',', ' ') }}
                                         </span>
 

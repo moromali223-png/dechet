@@ -33,9 +33,10 @@ class StockEntreeController extends Controller
         $request->validate([
             'stock_id' => 'required|exists:stocks,id',
             'quantite' => 'required|numeric|min:0.01',
+            'prix_unitaire' => 'nullable|numeric|min:0',
             'source' => 'required|in:Source du produit,Retour client,Retour de stock,Fournisseur,Ajustement inventaire,Autre',
             'description' => 'nullable|string|max:255',
-            'client_nom' => 'nullable|string|max:100', // Nouveau champ optionnel pour le nom du client
+            'client_nom' => 'nullable|string|max:100',
         ]);
 
         try {
@@ -47,6 +48,7 @@ class StockEntreeController extends Controller
             $this->stockService->entreeStock(
                 $request->stock_id,
                 $request->quantite,
+                $request->prix_unitaire,
                 $request->source,
                 $description
             );

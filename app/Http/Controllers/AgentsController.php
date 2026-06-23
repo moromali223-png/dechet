@@ -55,7 +55,7 @@ class AgentsController extends Controller
             ]);
         });
 
-        return redirect()->route('admin.agents.index')->with('success', 'Agent créé avec succès !');
+        return redirect()->route('agents.index')->with('success', 'Agent créé avec succès !');
     }
 
     /**
@@ -104,7 +104,7 @@ class AgentsController extends Controller
             }
         });
 
-        return redirect()->route('admin.agents.index')
+        return redirect()->route('agents.index')
             ->with('success', 'Agent mis à jour avec succès !');
     }
 
@@ -123,6 +123,6 @@ class AgentsController extends Controller
             }
         });
 
-        return redirect()->route('admin.agents.index')->with('success', 'Agent supprimé avec succès !');
+        return redirect()->route('agents.index')->with('success', 'Agent supprimé avec succès !');
     }
 }

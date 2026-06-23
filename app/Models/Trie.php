@@ -25,4 +25,10 @@ class Trie extends Model
     {
         return $this->belongsTo(Pesage::class);
     }
+
+    // Relation inverse : un Trie peut avoir plusieurs Produits
+    public function produits()
+    {
+        return $this->hasMany(Produit::class);
+    }
 }

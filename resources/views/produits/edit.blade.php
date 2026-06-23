@@ -97,14 +97,14 @@
                             </div>
 
                             <!-- Autres champs -->
-                            <div class="col-md-4">
+                            <!-- <div class="col-md-6">
                                 <label class="form-label fw-bold">Quantité</label>
                                 <input type="number" step="0.01" name="quantite" 
                                        class="form-control" 
                                        value="{{ old('quantite', $produit->quantite) }}" required>
-                            </div>
+                            </div> -->
 
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">Unité de Mesure</label>
                                 <select name="unite_mesure" class="form-select" required>
                                     <option value="kg" {{ old('unite_mesure', $produit->unite_mesure) == 'kg' ? 'selected' : '' }}>Kilogramme (kg)</option>
@@ -114,7 +114,7 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">Prix Unitaire</label>
                                 <div class="input-group">
                                     <input type="number" step="0.01" name="prix_unitaire" 
@@ -131,20 +131,6 @@
                                     <option value="inactif" {{ old('statut', $produit->statut) == 'inactif' ? 'selected' : '' }}>Inactif</option>
                                 </select>
                             </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Tri Associé</label>
-                                <select name="trie_id" class="form-select" required>
-                                    <option value="">-- Sélectionner un tri --</option>
-                                    @foreach($tries as $trie)
-                                        <option value="{{ $trie->id }}" 
-                                            {{ old('trie_id', $produit->trie_id) == $trie->id ? 'selected' : '' }}>
-                                            {{ $trie->type_dechet }} | {{ $trie->quantite_trier ?? '' }} {{ $trie->unite ?? '' }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
                             <div class="col-12">
                                 <label class="form-label fw-bold">Description</label>
                                 <textarea name="description" rows="4" class="form-control">{{ old('description', $produit->description) }}</textarea>

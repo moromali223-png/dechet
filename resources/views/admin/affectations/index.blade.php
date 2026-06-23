@@ -3,7 +3,7 @@
 @section('title', 'Affectations')
 
 @section('content')
-<div class="container-fluid px-4">
+<div class="container-fluid px-2">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -22,7 +22,7 @@
         </div>
     @endif
 
-    <div class="card border-0 shadow-lg rounded-4">
+    <div class="card border-0 shadow-lg rounded-2">
         <div class="card-body p-0">
 
             <div class="table-responsive">
@@ -32,7 +32,7 @@
                             <th>Code</th>
                             <th>Client</th>
                             <th>Source</th>
-                            <th>Collecte</th>
+                            <!-- <th>Collecte</th> -->
                             <th>Date</th>
                             <th>Zone</th>
                             <th>Statut</th>
@@ -67,7 +67,7 @@
                                     @endif
                                 </td>
 
-                                <td>{{ ucfirst($planification->type_collecte) }}</td>
+                                <!-- <td>{{ ucfirst($planification->type_collecte) }}</td> -->
 
                                 <td>
                                     {{ $planification->date_prevue?->format('d/m/Y') }}
@@ -111,119 +111,27 @@
                                                     class="btn-close btn-close-white"
                                                     data-bs-dismiss="modal"></button>
                                         </div>
+<form action="{{ route('affectations.assign', $planification) }}" 
+      method="POST" 
+      id="assignForm{{ $planification->id }}">
 
-                                        <form action="{{ route('affectations.assign', $planification) }}"
-                                              method="POST">
-                                            @csrf
+    @csrf
 
-                                            <div class="modal-body p-4">
+    <!-- ... tes champs ... -->
 
-                                                <div class="alert alert-light border mb-4">
-                                                    <strong>Planification :</strong>
-                                                    {{ $planification->code_planification }}
-                                                    <br>
-                                                    <strong>Client :</strong>
-                                                    {{
-                                                        optional(optional($planification->declaration)->user)->name
-                                                        ?? optional(optional($planification->abonnement)->client?->user)->name
-                                                        ?? 'N/A'
-                                                    }}
-                                                </div>
+    <div class="modal-footer border-0">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+            Annuler
+        </button>
 
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">
-                                                            Agent
-                                                        </label>
-                                                        <select name="agent_id"
-                                                                class="form-select"
-                                                                required>
-                                                            <option value="">
-                                                                Sélectionnez un agent
-                                                            </option>
-
-                                                            @foreach($agents as $agent)
-                                                                <option value="{{ $agent->id }}"
-                                                                    {{ $planification->agent_id == $agent->id ? 'selected' : '' }}>
-                                                                    {{ $agent->name }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">
-                                                            Collecteur
-                                                        </label>
-                                                        <select name="collecteur_id"
-                                                                class="form-select"
-                                                                required>
-                                                            <option value="">
-                                                                Sélectionnez un collecteur
-                                                            </option>
-
-                                                            @foreach($collecteurs as $collecteur)
-                                                                <option value="{{ $collecteur->id }}"
-                                                                    {{ $planification->collecteur_id == $collecteur->id ? 'selected' : '' }}>
-                                                                    {{ $collecteur->user->name ?? 'Collecteur' }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-
-                                                    <div class="col-md-4">
-                                                        <label class="form-label">
-                                                            Ordre
-                                                        </label>
-                                                        <input type="number"
-                                                               name="ordre_passage"
-                                                               class="form-control"
-                                                               value="{{ $planification->ordre_passage ?? 1 }}"
-                                                               min="1"
-                                                               required>
-                                                    </div>
-
-                                                    <div class="col-md-4">
-                                                        <label class="form-label">
-                                                            Priorité
-                                                        </label>
-                                                        <input type="number"
-                                                               name="priorite"
-                                                               class="form-control"
-                                                               value="{{ $planification->priorite ?? 1 }}"
-                                                               min="1"
-                                                               max="5"
-                                                               required>
-                                                    </div>
-
-                                                    <div class="col-md-4">
-                                                        <label class="form-label">
-                                                            Durée (min)
-                                                        </label>
-                                                        <input type="number"
-                                                               name="duree_estimee"
-                                                               class="form-control"
-                                                               value="{{ $planification->duree_estimee ?? 30 }}"
-                                                               min="15"
-                                                               required>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="modal-footer border-0">
-                                                <button type="button"
-                                                        class="btn btn-light"
-                                                        data-bs-dismiss="modal">
-                                                    Annuler
-                                                </button>
-
-                                                <button type="submit"
-                                                        class="btn btn-primary">
-                                                    <i class="bx bx-check-circle me-1"></i>
-                                                    Confirmer l'affectation
-                                                </button>
-                                            </div>
-                                        </form>
+        <button type="submit" 
+                form="assignForm{{ $planification->id }}" 
+                class="btn btn-primary">
+            <i class="bx bx-check-circle me-1"></i>
+            Confirmer l'affectation
+        </button>
+    </div>
+</form>
 
                                     </div>
                                 </div>

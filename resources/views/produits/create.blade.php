@@ -91,8 +91,8 @@
                                 </select>
                             </div>
 
-                            <!-- QUANTITÉ -->
-                            <div class="col-md-4">
+                         
+                            <!-- <div class="col-md-4">
                                 <label class="form-label fw-bold">Quantité</label>
                                 <input type="number" 
                                        step="0.01" 
@@ -100,10 +100,10 @@
                                        class="form-control" 
                                        value="{{ old('quantite') }}" 
                                        required>
-                            </div>
+                            </div> -->
 
                             <!-- UNITÉ -->
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">Unité de Mesure</label>
                                 <select name="unite_mesure" class="form-select" required>
                                     <option value="kg" {{ old('unite_mesure') == 'kg' ? 'selected' : '' }}>Kilogramme (kg)</option>
@@ -114,7 +114,7 @@
                             </div>
 
                             <!-- PRIX -->
-                            <div class="col-md-4">
+                            <div class="col-md-6     ">
                                 <label class="form-label fw-bold">Prix Unitaire</label>
                                 <div class="input-group">
                                     <input type="number" 
@@ -136,18 +136,8 @@
                                 </select>
                             </div>
 
-                            <!-- TRI ASSOCIÉ -->
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Tri Associé</label>
-                                <select name="trie_id" class="form-select" required>
-                                    <option value="">-- Sélectionner un tri --</option>
-                                    @foreach($tries as $trie)
-                                        <option value="{{ $trie->id }}" {{ old('trie_id') == $trie->id ? 'selected' : '' }}>
-                                            {{ $trie->type_dechet }} | {{ $trie->quantite_trier }} {{ $trie->unite }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                           
+                          
 
                             <!-- DESCRIPTION -->
                             <div class="col-12">

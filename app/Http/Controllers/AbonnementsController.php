@@ -11,8 +11,18 @@ use App\Notifications\AbonnementRejectedNotification;
 
 class AbonnementsController extends Controller
 {
+    private function isAdmin(): bool
+    {
+        return auth()->user()->role === 'admin';
+    }
+
+    private function isClient(): bool
+    {
+        return auth()->user()->role === 'client';
+    }
+
     /**
-     * Liste des abonnements
+     * LISTE
      */
     public function index()
     {
@@ -23,8 +33,8 @@ class AbonnementsController extends Controller
             'planifications',
         ]);
 
-        // Un client ne voit que ses abonnements
-        if (auth()->user()->role === 'client') {
+        // CLIENT = uniquement ses abonnements
+        if ($this->isClient()) {
             $query->where('user_id', auth()->id());
         }
 
@@ -34,210 +44,124 @@ class AbonnementsController extends Controller
     }
 
     /**
-     * Formulaire de création
+     * CREATE (ADMIN ONLY)
      */
     public function create()
     {
-        $clients = auth()->user()->role === 'admin'
-            ? Client::with(['user', 'zone'])->orderBy('id')->get()
-            : null;
+        if (! $this->isAdmin()) {
+            abort(403, "Accès refusé");
+        }
+
+        $clients = Client::with(['user', 'zone'])->orderBy('id')->get();
 
         return view('admin.abonnements.create', compact('clients'));
     }
 
     /**
-     * Enregistrer un nouvel abonnement
+     * STORE
      */
     public function store(StoreAbonnementRequest $request)
     {
         $data = $request->validated();
 
-        // Détermination du client
-        if (auth()->user()->role === 'admin') {
+        if ($this->isAdmin()) {
+
             $client = Client::findOrFail($request->client_id);
             $data['user_id'] = $client->user_id;
 
-            // Création par l'admin = activation immédiate
             $data['statut'] = 'actif';
             $data['date_activation'] = now();
+
         } else {
+
             $client = Client::where('user_id', auth()->id())->firstOrFail();
             $data['user_id'] = auth()->id();
 
-            // Création par le client = validation admin requise
             $data['statut'] = 'en_attente';
         }
 
-        // Pré-remplir l'adresse depuis le client si nécessaire
         $data = $this->prefillAddressFromClient($data, $client);
 
-        // Création de l'abonnement
-        $abonnement = Abonnement::create($data);
-
-        $message = auth()->user()->role === 'admin'
-            ? 'Abonnement créé avec succès et planifications générées automatiquement.'
-            : 'Votre demande d’abonnement a été envoyée avec succès. Elle sera examinée par un administrateur.';
+        Abonnement::create($data);
 
         return redirect()
-            ->route('admin.abonnements.index')
-            ->with('success', $message);
+            ->route('abonnements.index')
+            ->with('success', 'Abonnement enregistré avec succès.');
     }
 
     /**
-     * Afficher un abonnement
+     * SHOW (ADMIN + CLIENT OWNER)
      */
     public function show(Abonnement $abonnement)
     {
-        $this->authorize('view', $abonnement);
-
-        $abonnement->load([
-            'user',
-            'client.user',
-            'client.zone',
-            'planifications.zone',
-            'planifications.collecteur.user',
-            'planifications.agent',
-        ]);
+        $this->authorizeAccess($abonnement);
 
         return view('admin.abonnements.show', compact('abonnement'));
     }
 
     /**
-     * Formulaire d'édition
+     * EDIT (ADMIN ONLY)
      */
     public function edit(Abonnement $abonnement)
     {
-        $this->authorize('update', $abonnement);
+        if (! $this->isAdmin()) {
+            abort(403);
+        }
 
         return view('admin.abonnements.edit', compact('abonnement'));
     }
 
     /**
-     * Pré-remplir l'adresse depuis le client
+     * UPDATE (ADMIN ONLY)
      */
-    protected function prefillAddressFromClient(array $data, ?Client $client = null): array
+    public function update(UpdateAbonnementRequest $request, Abonnement $abonnement)
     {
-        if (! $client && isset($data['client_id'])) {
-            $client = Client::find($data['client_id']);
+        if (! $this->isAdmin()) {
+            abort(403);
         }
-
-        if ($client) {
-            // Pré-remplir seulement si les champs sont vides
-            if (empty($data['rue']) && $client->rue) {
-                $data['rue'] = $client->rue;
-            }
-            if (empty($data['quartier']) && $client->quartier) {
-                $data['quartier'] = $client->quartier;
-            }
-            if (empty($data['ville']) && $client->ville) {
-                $data['ville'] = $client->ville;
-            }
-            if (empty($data['repere']) && $client->repere) {
-                $data['repere'] = $client->repere;
-            }
-        }
-
-        return $data;
-    }
-
-    /**
-     * Mise à jour
-     */
-    public function update(
-        UpdateAbonnementRequest $request,
-        Abonnement $abonnement
-    ) {
-        $this->authorize('update', $abonnement);
 
         $abonnement->update($request->validated());
 
-        return redirect()
-            ->route('admin.abonnements.index')
-            ->with('success', 'Abonnement mis à jour avec succès.');
+        return back()->with('success', 'Abonnement mis à jour.');
     }
 
     /**
-     * Suppression
+     * DELETE (ADMIN ONLY)
      */
     public function destroy(Abonnement $abonnement)
     {
-        $this->authorize('delete', $abonnement);
+        if (! $this->isAdmin()) {
+            abort(403);
+        }
 
-        // Suppression des planifications associées
         $abonnement->planifications()->delete();
-
         $abonnement->delete();
 
-        return redirect()
-            ->route('admin.abonnements.index')
-            ->with('success', 'Abonnement supprimé avec succès.');
+        return back()->with('success', 'Abonnement supprimé.');
     }
 
     /**
-     * Activation par l'administrateur
+     * ACCESS CONTROL SHOW
      */
-    public function activer(Abonnement $abonnement)
+    private function authorizeAccess(Abonnement $abonnement)
     {
-        $this->authorize('activer', $abonnement);
-
-        $abonnement->update([
-            'statut' => 'actif',
-            'date_activation' => now(),
-        ]);
-
-        return redirect()
-            ->route('admin.abonnements.index')
-            ->with(
-                'success',
-                'Abonnement activé avec succès. Les planifications ont été générées automatiquement.'
-            );
-    }
-
-    /**
-     * Formulaire de rejet
-     */
-    public function rejeterForm(Abonnement $abonnement)
-    {
-        $this->authorize('rejeter', $abonnement);
-
-        return view('admin.abonnements.reject', compact('abonnement'));
-    }
-
-    /**
-     * Rejet par l'administrateur
-     */
-    public function rejeter(RejectAbonnementRequest $request, Abonnement $abonnement)
-    {
-        if ($abonnement->statut !== 'en_attente') {
-            return back()->with(
-                'error',
-                'Seuls les abonnements en attente peuvent être rejetés.'
-            );
+        if ($this->isClient() && $abonnement->user_id !== auth()->id()) {
+            abort(403);
         }
-
-        $validated = $request->validated();
-
-        $abonnement->update([
-            'statut' => 'rejete',
-            'motif_rejet' => $validated['motif_rejet'],
-            'date_rejet' => now(),
-        ]);
-
-        // Notification du client
-        if ($abonnement->user) {
-            $abonnement->user->notify(
-                new AbonnementRejectedNotification(
-                    $abonnement,
-                    $validated['motif_rejet']
-                )
-            );
-        }
-
-        return redirect()
-            ->route('admin.abonnements.index')
-            ->with(
-                'success',
-                'Abonnement rejeté avec succès. Le client a été notifié.'
-            );
     }
+
+    /**
+     * PREFILL ADDRESS
+     */
+   protected function prefillAddressFromClient(array $data, ?Client $client = null): array
+{
+    if ($client) {
+        $data['rue'] = $data['rue'] ?? $client->rue;
+        $data['quartier'] = $data['quartier'] ?? $client->quartier;
+        $data['ville'] = $data['ville'] ?? $client->ville;
+        $data['repere'] = $data['repere'] ?? $client->repere;
+    }
+
+    return $data;
+}
 }

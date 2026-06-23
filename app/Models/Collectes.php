@@ -19,9 +19,6 @@ class Collectes extends Model
         'heure_depart',
         'heure_fin',
     ];
-
-    // ==================== RELATIONS ====================
-
     public function planification(): BelongsTo
     {
         return $this->belongsTo(Planification::class);

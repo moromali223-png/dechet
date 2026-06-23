@@ -3,211 +3,234 @@
 @section('title', 'Détails de l\'abonnement')
 
 @section('content')
+
 <div class="container py-4">
 
-    <!-- En-tête -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    {{-- HEADER --}}
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
         <div>
-            <h1 class="fw-bold mb-1">
+            <h2 class="fw-bold mb-1">
                 Abonnement #{{ $abonnement->id }}
-            </h1>
+            </h2>
             <p class="text-muted mb-0">
-                Détails complets de l'abonnement.
+                Détails complets de l’abonnement
             </p>
         </div>
 
         <div class="d-flex gap-2">
-            <a href="{{ route('abonnements.index') }}" class="btn btn-secondary">
-                <i class="bx bx-arrow-back me-1"></i>
-                Retour
+
+            <a href="{{ route('abonnements.index') }}" class="btn btn-outline-secondary">
+                ← Retour
             </a>
 
-            <a href="{{ route('abonnements.edit', $abonnement->id) }}" class="btn btn-warning">
-                <i class="bx bx-edit me-1"></i>
-                Modifier
-            </a>
+            {{-- ADMIN ONLY ACTIONS --}}
+            @if(auth()->user()->role === 'admin')
 
-            @if(auth()->user()->role === 'admin' && $abonnement->statut === 'en_attente')
-                <form action="{{ route('abonnements.activer', $abonnement->id) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('PATCH')
-                    <button type="submit" class="btn btn-success" onclick="return confirm('Êtes-vous sûr d\'activer cet abonnement ?')">
-                        <i class="bx bx-check me-1"></i>
-                        Activer
-                    </button>
-                </form>
-
-                <a href="{{ route('abonnements.rejeter.form', $abonnement->id) }}" class="btn btn-danger">
-                    <i class="bx bx-x me-1"></i>
-                    Rejeter
+                <a href="{{ route('abonnements.edit', $abonnement->id) }}"
+                   class="btn btn-warning">
+                    Modifier
                 </a>
+
+                @if($abonnement->statut === 'en_attente')
+
+                    <form action="{{ route('abonnements.activer', $abonnement->id) }}"
+                          method="POST">
+                        @csrf
+                        @method('PATCH')
+
+                        <button class="btn btn-success"
+                                onclick="return confirm('Activer cet abonnement ?')">
+                            Activer
+                        </button>
+                    </form>
+
+                    <a href="{{ route('abonnements.rejeter.form', $abonnement->id) }}"
+                       class="btn btn-danger">
+                        Rejeter
+                    </a>
+
+                @endif
+
             @endif
+
         </div>
     </div>
 
-    <div class="row">
-        <!-- Informations client -->
-        <div class="col-lg-4 mb-4">
-            <div class="card shadow-sm border-0 h-100">
+    <div class="row g-4">
+
+        {{-- CLIENT INFO --}}
+        <div class="col-lg-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
-                        <i class="bx bx-user me-2"></i>
-                        Informations du client
-                    </h5>
+                    Client
                 </div>
 
                 <div class="card-body">
+
                     <p class="mb-3">
-                        <strong>Nom :</strong><br>
-                        {{ $abonnement->user->name ?? 'Non défini' }}
+                        <span class="text-muted">Nom</span><br>
+                        <strong>{{ $abonnement->client?->user?->name }}</strong>
                     </p>
 
                     <p class="mb-3">
-                        <strong>Email :</strong><br>
-                        {{ $abonnement->user->email ?? 'Non renseigné' }}
+                        <span class="text-muted">Email</span><br>
+                        {{ $abonnement->client?->user?->email }}
                     </p>
 
                     <p class="mb-0">
-                        <strong>Zone :</strong><br>
-                        {{ $abonnement->user->zone->nom ?? 'Non définie' }}
+                        <span class="text-muted">Zone</span><br>
+                        {{ $abonnement->client?->zone?->nom }}
                     </p>
+
                 </div>
+
             </div>
+
         </div>
 
-        <!-- Informations abonnement -->
+        {{-- ABONNEMENT INFO --}}
         <div class="col-lg-8">
-            <div class="card shadow-sm border-0">
+
+            <div class="card border-0 shadow-sm">
+
                 <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">
-                        <i class="bx bx-package me-2"></i>
-                        Détails de l'abonnement
-                    </h5>
+                    Informations abonnement
                 </div>
 
                 <div class="card-body">
-                    <div class="row g-4">
+
+                    <div class="row g-3">
 
                         <div class="col-md-6">
-                            <label class="text-muted small">Type d'abonnement</label>
+                            <small class="text-muted">Type abonnement</small>
                             <div class="fw-semibold">{{ $abonnement->type_abonnement }}</div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="text-muted small">Type de déchet</label>
+                            <small class="text-muted">Type déchet</small>
                             <div class="fw-semibold">{{ $abonnement->type_dechet }}</div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="text-muted small">Fréquence</label>
+                            <small class="text-muted">Fréquence</small>
                             <div>{{ ucfirst($abonnement->frequence) }}</div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="text-muted small">Jour de collecte</label>
+                            <small class="text-muted">Jour collecte</small>
                             <div>{{ ucfirst($abonnement->jour_collecte) }}</div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="text-muted small">Poids estimé</label>
+                            <small class="text-muted">Poids estimé</small>
                             <div>{{ number_format($abonnement->poids_estime, 2, ',', ' ') }} kg</div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="text-muted small">Montant</label>
+                            <small class="text-muted">Montant</small>
                             <div class="fw-bold text-success">
                                 {{ number_format($abonnement->montant, 0, ',', ' ') }} FCFA
                             </div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="text-muted small">Date de début</label>
-                            <div>
-                                {{ \Carbon\Carbon::parse($abonnement->date_debut)->format('d/m/Y') }}
-                            </div>
+                            <small class="text-muted">Début</small>
+                            <div>{{ $abonnement->date_debut->format('d/m/Y') }}</div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="text-muted small">Date de fin</label>
-                            <div>
-                                {{ \Carbon\Carbon::parse($abonnement->date_fin)->format('d/m/Y') }}
-                            </div>
+                            <small class="text-muted">Fin</small>
+                            <div>{{ $abonnement->date_fin->format('d/m/Y') }}</div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="text-muted small">Statut</label>
+                            <small class="text-muted">Statut</small>
                             <div>
                                 @php
-                                    $badge = match($abonnement->statut) {
+                                    $statusClass = match($abonnement->statut) {
                                         'actif' => 'success',
-                                        'expire', 'expiré' => 'secondary',
+                                        'en_attente' => 'warning',
                                         'annule', 'annulé' => 'danger',
-                                        default => 'warning text-dark',
+                                        default => 'secondary'
                                     };
                                 @endphp
 
-                                <span class="badge bg-{{ $badge }}">
+                                <span class="badge bg-{{ $statusClass }}">
                                     {{ ucfirst(str_replace('_', ' ', $abonnement->statut)) }}
                                 </span>
                             </div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="text-muted small">Créé le</label>
-                            <div>
-                                {{ $abonnement->created_at->format('d/m/Y à H:i') }}
-                            </div>
+                            <small class="text-muted">Créé le</small>
+                            <div>{{ $abonnement->created_at->format('d/m/Y H:i') }}</div>
                         </div>
 
                     </div>
+
                 </div>
+
             </div>
+
         </div>
 
-        <!-- Adresse de collecte -->
-        <div class="col-lg-12 mb-4">
-            <div class="card shadow-sm border-0">
+        {{-- ADRESSE --}}
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
                 <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="bx bx-map-pin me-2"></i>
-                        Adresse de collecte
-                    </h5>
+                    Adresse de collecte
                 </div>
 
                 <div class="card-body">
+
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="text-muted small">Rue</label>
-                            <div class="fw-semibold">{{ $abonnement->rue ?: 'Non renseignée' }}</div>
+
+                        <div class="col-md-4">
+                            <small class="text-muted">Rue</small>
+                            <div>{{ $abonnement->rue ?? '-' }}</div>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="text-muted small">Quartier</label>
-                            <div class="fw-semibold">{{ $abonnement->quartier ?: 'Non renseigné' }}</div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Quartier</small>
+                            <div>{{ $abonnement->quartier ?? '-' }}</div>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="text-muted small">Porte</label>
-                            <div class="fw-semibold">{{ $abonnement->porte ?: 'Non renseignée' }}</div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Porte</small>
+                            <div>{{ $abonnement->porte ?? '-' }}</div>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="text-muted small">Adresse complète</label>
-                            <div class="fw-semibold">{{ $abonnement->adresse_complete }}</div>
+                        <div class="col-12">
+                            <small class="text-muted">Adresse complète</small>
+                            <div class="fw-semibold">
+                                {{ $abonnement->adresse_complete }}
+                            </div>
                         </div>
 
                         @if($abonnement->repere)
                             <div class="col-12">
-                                <label class="text-muted small">Références / Point de repère</label>
-                                <div class="fw-semibold text-primary">
-                                    <i class="bx bx-info-circle me-1"></i>
+                                <small class="text-muted">Repère</small>
+                                <div class="text-primary">
                                     {{ $abonnement->repere }}
                                 </div>
                             </div>
                         @endif
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
+    </div>
+
 </div>
+
 @endsection

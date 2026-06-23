@@ -56,7 +56,7 @@ class ClientController extends Controller
             ]);
         });
 
-        return redirect()->route('admin.clients.index')->with('success', 'Client créé avec succès.');
+        return redirect()->route('clients.index')->with('success', 'Client créé avec succès.');
     }
 
     /**
@@ -117,7 +117,7 @@ class ClientController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.clients.index')->with('success', 'Client mis à jour avec succès.');
+        return redirect()->route('clients.index')->with('success', 'Client mis à jour avec succès.');
     }
 
     /**

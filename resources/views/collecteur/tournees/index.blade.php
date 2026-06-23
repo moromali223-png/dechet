@@ -39,10 +39,10 @@
                 <table class="table table-hover align-middle mb-0 text-nowrap">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-4"># Ordre</th>
+                            <th class="ps-4"> Ordre</th>
                             <th>Client</th>
                             <th>Zone / Secteur</th>
-                            <th>Type</th>
+                            <!-- <th>Type</th> -->
                             <th>Statut</th>
                             <th>Est. Durée</th>
                             <th class="text-center">Détails</th>
@@ -79,7 +79,7 @@
         <!-- ORDRE -->
         <td class="ps-4">
             <div class="fw-bold text-primary">
-                #{{ $tournee->ordre_passage ?? $loop->iteration }}
+                {{ $tournee->ordre_passage ?? $loop->iteration }}
             </div>
         </td>
 
@@ -133,7 +133,7 @@
 
         </td>
 
-        <!-- TYPE -->
+        <!-- TYPE
         <td>
 
             <span class="badge bg-label-secondary">
@@ -142,7 +142,7 @@
 
             </span>
 
-        </td>
+        </td> -->
 
         <!-- STATUT -->
         <td>

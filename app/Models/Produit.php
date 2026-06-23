@@ -18,39 +18,43 @@ class Produit extends Model
         'prix_unitaire',
         'description',
         'statut',
-        'trie_id',
         'photo',
-        'categorie',
-        'stock_disponible',
+        'trie_id',
     ];
-protected $casts = [
-    'prix_unitaire' => 'decimal:2',
-    'quantite' => 'integer',
-];
+
+    protected $casts = [
+        'prix_unitaire' => 'decimal:2',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESSORS
+    |--------------------------------------------------------------------------
+    */
 
     public function getPhotoUrlAttribute(): string
     {
         if ($this->photo && Storage::disk('public')->exists($this->photo)) {
-            return asset('storage/'.$this->photo);
+            return asset('storage/' . $this->photo);
         }
 
         return asset('images/produit-default.svg');
     }
 
     /*
-    |--------------------------------------------------
+    |--------------------------------------------------------------------------
     | RELATIONS
-    |--------------------------------------------------
+    |--------------------------------------------------------------------------
     */
-
-    public function trie()
-    {
-        return $this->belongsTo(Trie::class);
-    }
 
     public function stock()
     {
         return $this->hasOne(Stock::class);
+    }
+
+    public function commandes()
+    {
+        return $this->hasMany(Commande::class);
     }
 
     public function ligneCommandes()
@@ -58,23 +62,19 @@ protected $casts = [
         return $this->hasMany(LigneCommande::class);
     }
 
+    public function trie()
+    {
+        return $this->belongsTo(Trie::class);
+    }
+
     /*
-    |--------------------------------------------------
+    |--------------------------------------------------------------------------
     | SCOPES
-    |--------------------------------------------------
+    |--------------------------------------------------------------------------
     */
 
     public function scopeActif($query)
     {
         return $query->where('statut', 'actif');
     }
-
-    public function commandes()
-{
-    return $this->hasMany(Commande::class);
-}
-public function produitRelation()
-{
-    return $this->belongsTo(Produit::class, 'produit_id');
-}
 }

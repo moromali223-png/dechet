@@ -57,7 +57,7 @@ class ZoneController extends Controller
             $zone = Zone::create($validated);
 
             return redirect()
-                ->route('admin.zones.index')
+                ->route('zones.index')
                 ->with('success', "La zone '{$zone->nom}' a été créée avec succès !");
 
         } catch (\Exception $e) {
@@ -108,7 +108,7 @@ class ZoneController extends Controller
             $zone->update($validated);
 
             return redirect()
-                ->route('admin.zones.index')
+                ->route('zones.index')
                 ->with('success', "La zone '{$zone->nom}' a été mise à jour.");
 
         } catch (\Exception $e) {
@@ -133,7 +133,7 @@ class ZoneController extends Controller
             $zone->delete();
 
             return redirect()
-                ->route('qdmin.zones.index')
+                ->route('zones.index')
                 ->with('success', "La zone '{$zoneName}' a été supprimée.");
 
         } catch (\Exception $e) {
