@@ -116,7 +116,7 @@ class CollecteurController extends Controller
             }
         });
 
-        return redirect()->route('admin.collecteurs.index')
+        return redirect()->route('collecteurs.index')
             ->with('success', 'Collecteur mis à jour avec succès !');
     }
 
@@ -129,7 +129,7 @@ class CollecteurController extends Controller
             $collecteur->user->delete(); // supprime l'utilisateur et donc le collecteur si cascade
         });
 
-        return redirect()->route('admin.collecteurs.index')
+        return redirect()->route('collecteurs.index')
             ->with('success', 'Collecteur supprimé avec succès !');
     }
 }

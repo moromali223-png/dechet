@@ -32,7 +32,8 @@
                             <th>Code</th>
                             <th>Client</th>
                             <th>Source</th>
-                            <!-- <th>Collecte</th> -->
+                            <th>Agent</th>
+                            <th>Collecteur</th>
                             <th>Date</th>
                             <th>Zone</th>
                             <th>Statut</th>
@@ -57,16 +58,19 @@
 
                                 <td>
                                     @if($planification->declaration_id)
-                                        <span class="badge bg-warning text-dark">
-                                            Déclaration
-                                        </span>
+                                        <span class="badge bg-warning text-dark">Déclaration</span>
                                     @else
-                                        <span class="badge bg-success">
-                                            Abonnement
-                                        </span>
+                                        <span class="badge bg-success">Abonnement</span>
                                     @endif
                                 </td>
 
+                                <td>
+                                    {{ optional($planification->agent)->name ?? '—' }}
+                                </td>
+
+                                <td>
+                                    {{ optional(optional($planification->collecteur)->user)->name ?? '—' }}
+                                </td>
                                 <!-- <td>{{ ucfirst($planification->type_collecte) }}</td> -->
 
                                 <td>
@@ -117,7 +121,58 @@
 
     @csrf
 
-    <!-- ... tes champs ... -->
+    <div class="modal-body">
+        @if($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Agent</label>
+                <select name="agent_id" class="form-select" required>
+                    <option value="">-- Sélectionner un agent --</option>
+                    @foreach($agents as $agent)
+                        <option value="{{ $agent->id }}" {{ $planification->agent_id == $agent->id ? 'selected' : '' }}>
+                            {{ $agent->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Collecteur</label>
+                <select name="collecteur_id" class="form-select" required>
+                    <option value="">-- Sélectionner un collecteur --</option>
+                    @foreach($collecteurs as $collecteur)
+                        <option value="{{ $collecteur->id }}" {{ $planification->collecteur_id == $collecteur->id ? 'selected' : '' }}>
+                            {{ optional($collecteur->user)->name ?? ('Collecteur #'.$collecteur->id) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Ordre de passage</label>
+                <input type="number" name="ordre_passage" min="1" class="form-control" value="{{ old('ordre_passage', $planification->ordre_passage ?? 1) }}">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Durée estimée (min)</label>
+                <input type="number" name="duree_estimee" min="1" class="form-control" value="{{ old('duree_estimee', $planification->duree_estimee ?? 60) }}">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Priorité</label>
+                <input type="number" name="priorite" min="1" max="5" class="form-control" value="{{ old('priorite', $planification->priorite ?? 1) }}">
+            </div>
+        </div>
+    </div>
 
     <div class="modal-footer border-0">
         <button type="button" class="btn btn-light" data-bs-dismiss="modal">

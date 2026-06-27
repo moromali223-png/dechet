@@ -28,86 +28,127 @@
 
                 <table class="table table-hover align-middle mb-0">
 
-                    <thead class="table-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>Client</th>
-                            <th>Déchet</th>
-                            <th>Adresse</th>
-                            <th>Période</th>
-                            <th>Statut</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
+            
+<thead class="table-light">
+    <tr>
+        <th><i class=""></i> ID</th>
+        <th><i class="bx bx-user"></i> Client</th>
+        <th><i class="bx bx-recycle"></i> Déchet</th>
+        <th><i class="bx bx-map"></i> Adresse</th>
+        <th><i class="bx bx-calendar"></i> Période</th>
+        <th><i class="bx bx-check-shield"></i> Statut</th>
+        <th class="text-center">
+            <i class="bx bx-cog"></i> Actions
+        </th>
+    </tr>
+</thead>
 
-                    <tbody>
+<tbody>
 
-                        @forelse($abonnements as $abonnement)
-                            <tr>
+@forelse($abonnements as $abonnement)
+<tr>
 
-                                <td>{{ $abonnement->id }}</td>
+    <td>
+        <strong>{{ $abonnement->id }}</strong>
+    </td>
 
-                                <td>
-                                    {{ $abonnement->client?->user?->name ?? $abonnement->user?->name }}
-                                </td>
+    <td>
+        <strong>
+            {{ $abonnement->client?->user?->name ?? $abonnement->user?->name }}
+        </strong>
+    </td>
 
-                                <td>{{ $abonnement->type_dechet }}</td>
+    <td>
+        <span class="badge bg-info">
+            {{ $abonnement->type_dechet }}
+        </span>
+    </td>
 
-                                <td>{{ $abonnement->adresse_complete }}</td>
+    <td>{{ $abonnement->adresse_complete }}</td>
 
-                                <td>
-                                    {{ $abonnement->date_debut->format('d/m/Y') }}
-                                    →
-                                    {{ $abonnement->date_fin->format('d/m/Y') }}
-                                </td>
+    <td>
+        <small class="text-muted">
+            {{ $abonnement->date_debut->format('d/m/Y') }}
+            →
+            {{ $abonnement->date_fin->format('d/m/Y') }}
+        </small>
+    </td>
 
-                                <td>
-                                    <span class="badge bg-secondary">
-                                        {{ ucfirst($abonnement->statut) }}
-                                    </span>
-                                </td>
+    <td>
+        @if($abonnement->statut == 'actif')
+            <span class="badge bg-success">
+                <i class="bx bx-check-circle"></i>
+                Actif
+            </span>
 
-                                <td class="d-flex gap-2">
+        @elseif($abonnement->statut == 'expiré')
+            <span class="badge bg-danger">
+                <i class="bx bx-x-circle"></i>
+                Expiré
+            </span>
 
-                                    {{-- TOUS PEUVENT VOIR --}}
-                                    <a href="{{ route('abonnements.show', $abonnement->id) }}"
-                                       class="btn btn-sm btn-info">
-                                        Voir
-                                    </a>
+        @else
+            <span class="badge bg-warning text-dark">
+                <i class="bx bx-time"></i>
+                {{ ucfirst($abonnement->statut) }}
+            </span>
+        @endif
+    </td>
 
-                                    {{-- ADMIN ONLY --}}
-                                    @if(auth()->user()->role === 'admin')
+    <td class="text-center">
+        <div class="d-flex align-items-center justify-content-center gap-2 flex-nowrap">
 
-                                        <a href="{{ route('abonnements.edit', $abonnement->id) }}"
-                                           class="btn btn-sm btn-warning">
-                                            Modifier
-                                        </a>
+            <!-- Voir -->
+            <a href="{{ route('abonnements.show', $abonnement->id) }}"
+               class="btn btn-sm btn-info rounded-pill"
+               title="Voir">
+                <i class="bx bx-show"></i>
+            </a>
 
-                                        <form method="POST"
-                                              action="{{ route('abonnements.destroy', $abonnement->id) }}">
-                                            @csrf
-                                            @method('DELETE')
+            @if(auth()->user()->role === 'admin')
 
-                                            <button class="btn btn-sm btn-danger"
-                                                    onclick="return confirm('Supprimer ?')">
-                                                Supprimer
-                                            </button>
-                                        </form>
+                <!-- Modifier -->
+                <a href="{{ route('abonnements.edit', $abonnement->id) }}"
+                   class="btn btn-sm btn-warning rounded-pill"
+                   title="Modifier">
+                    <i class="bx bx-edit"></i>
+                </a>
 
-                                    @endif
+                <!-- Supprimer -->
+                <form method="POST"
+                      action="{{ route('abonnements.destroy', $abonnement->id) }}"
+                      class="m-0">
+                    @csrf
+                    @method('DELETE')
 
-                                </td>
+                    <button type="submit"
+                            class="btn btn-sm btn-danger rounded-pill"
+                            title="Supprimer"
+                            onclick="return confirm('Voulez-vous vraiment supprimer cet abonnement ?')">
+                        <i class="bx bx-trash"></i>
+                    </button>
+                </form>
 
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center py-4 text-muted">
-                                    Aucun abonnement
-                                </td>
-                            </tr>
-                        @endforelse
+            @endif
 
-                    </tbody>
+        </div>
+    </td>
+
+</tr>
+
+@empty
+<tr>
+    <td colspan="7" class="text-center py-5">
+        <i class="bx bx-calendar-x display-4 text-muted"></i>
+        <p class="mt-3 text-muted">
+            Aucun abonnement trouvé
+        </p>
+    </td>
+</tr>
+@endforelse
+
+</tbody>
+```
 
                 </table>
 

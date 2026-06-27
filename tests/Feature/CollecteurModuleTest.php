@@ -84,3 +84,41 @@ test('collecteur can terminer une collecte et créer un enregistrement', functio
     expect(Collectes::where('planification_id', $planification->id)->exists())->toBeTrue();
     expect($planification->fresh()->statut)->toBe('terminee');
 });
+
+test('admin can update collecteur and is redirected to collecteurs index', function () {
+    $admin = User::factory()->create([
+        'role' => 'admin',
+        'email_verified_at' => now(),
+    ]);
+
+    $zone = Zone::factory()->create();
+
+    $collecteurUser = User::factory()->create([
+        'role' => 'collecteur',
+        'email_verified_at' => now(),
+    ]);
+
+    $collecteur = Collecteur::create([
+        'user_id' => $collecteurUser->id,
+        'zone_id' => $zone->id,
+        'numpermis' => 'TEST-003',
+        'matricul' => 'MAT-003',
+    ]);
+
+    $response = $this->actingAs($admin)
+        ->put(route('collecteurs.update', $collecteur), [
+            'nom' => 'Ousmane Doucoure',
+            'email' => 'OusmaneCollecteur@gmail.com',
+            'telephone' => '90502980',
+            'mot_de_passe' => 'o12345678',
+            'address' => 'kabala',
+            'numpermis' => 'N22335',
+            'zone_id' => $zone->id,
+        ]);
+
+    $response->assertRedirect(route('collecteurs.index'));
+    $response->assertSessionHas('success', 'Collecteur mis à jour avec succès !');
+
+    expect($collecteur->fresh()->numpermis)->toBe('N22335');
+    expect($collecteur->user->fresh()->email)->toBe('OusmaneCollecteur@gmail.com');
+});

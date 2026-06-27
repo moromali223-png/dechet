@@ -54,10 +54,11 @@
                         </label>
 
                         <select
-                            name="client_id"
-                            class="form-select @error('client_id') is-invalid @enderror"
-                            required
-                        >
+                                id="client-select"
+                                name="client_id"
+                                class="form-select @error('client_id') is-invalid @enderror"
+                                required
+                            >
                             <option value="">
                                 -- Sélectionner un client --
                             </option>
@@ -278,23 +279,24 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Rue</label>
-                    <input type="text" name="rue" class="form-control">
+                    <input type="text" id="rue" name="rue" class="form-control">
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Quartier</label>
-                    <input type="text" name="quartier" class="form-control">
+                    <input type="text" id="quartier" name="quartier" class="form-control">
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Porte</label>
-                    <input type="text" name="porte" class="form-control">
+                    <input type="text" id="porte" name="porte" class="form-control">
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Repère</label>
 
                     <textarea
+                        id="repere"
                         name="repere"
                         rows="2"
                         class="form-control"
@@ -323,3 +325,44 @@
 </div>
 
 @endsection
+
+@if(auth()->user()->role === 'admin')
+    @php
+        $clients_map = $clients->mapWithKeys(function($c) {
+            return [$c->id => [
+                'rue' => $c->rue ?? '',
+                // fallback to user->address when client->quartier is empty
+                'quartier' => $c->quartier ?? ($c->user->address ?? ''),
+                'porte' => $c->porte ?? '',
+                'repere' => $c->repere ?? '',
+            ]];
+        });
+    @endphp
+
+    <script>
+        (function () {
+            const clients = @json($clients_map);
+
+            const select = document.getElementById('client-select');
+            if (! select) return;
+
+            const fill = (id) => {
+                const data = clients[id] || {};
+                document.getElementById('rue').value = data.rue || '';
+                document.getElementById('quartier').value = data.quartier || '';
+                document.getElementById('porte').value = data.porte || '';
+                document.getElementById('repere').value = data.repere || '';
+            };
+
+            select.addEventListener('change', function (e) {
+                fill(this.value);
+            });
+
+            // If old input present (validation fail), prefill
+            document.addEventListener('DOMContentLoaded', function () {
+                const initial = select.value || '{{ old('client_id', '') }}';
+                if (initial) fill(initial);
+            });
+        })();
+    </script>
+@endif
