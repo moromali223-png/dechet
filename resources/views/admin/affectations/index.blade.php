@@ -18,7 +18,52 @@
         <div class="alert alert-success alert-dismissible fade show shadow-sm border-0">
             <i class="bx bx-check-circle me-2"></i>
             {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <form method="POST" action="/agents">
+    @csrf
+    <input type="text" name="nom" placeholder="Nom de l'agent">
+    <select name="client_id">
+        @foreach ($clients as $client)
+            <option value="{{ $client->id }}">{{ $client->nom }}</option>
+        @endforeach
+    </select>
+    <button type="submit">Enregistrer</button>
+</form><form method="POST" action="/agents">
+    @csrf
+    <input type="text" name="nom" placeholder="Nom de l'agent">
+    <select name="client_id">
+        @foreach ($clients as $client)
+            <option value="{{ $client->id }}">{{ $client->nom }}</option>
+        @endforeach
+    </select>
+    <button type="submit">Enregistrer</button>
+</form><form method="POST" action="/agents">
+    @csrf
+    <input type="text" name="nom" placeholder="Nom de l'agent">
+    <select name="client_id">
+        @foreach ($clients as $client)
+            <option value="{{ $client->id }}">{{ $client->nom }}</option>
+        @endforeach
+    </select>
+    <button type="submit">Enregistrer</button>
+</form><form method="POST" action="/agents">
+    @csrf
+    <input type="text" name="nom" placeholder="Nom de l'agent">
+    <select name="client_id">
+        @foreach ($clients as $client)
+            <option value="{{ $client->id }}">{{ $client->nom }}</option>
+        @endforeach
+    </select>
+    <button type="submit">Enregistrer</button>
+</form><form method="POST" action="/agents">
+    @csrf
+    <input type="text" name="nom" placeholder="Nom de l'agent">
+    <select name="client_id">
+        @foreach ($clients as $client)
+            <option value="{{ $client->id }}">{{ $client->nom }}</option>
+        @endforeach
+    </select>
+    <button type="submit">Enregistrer</button>
+</form><button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 

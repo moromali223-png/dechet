@@ -40,13 +40,18 @@ return new class extends Migration
                 ->constrained('declarations')
                 ->nullOnDelete();
 
-            $table->foreignId('abonnement_id')
-                ->nullable()
-                ->constrained('abonnements')
-                ->cascadeOnDelete();
+            // $table->foreignId('abonnement_id')
+            //     ->nullable()
+            //     ->constrained('abonnements')
+            //     ->cascadeOnDelete();
 
             $table->foreignId('agent_id')->nullable()->constrained('users');
+             
 
+
+          
+
+              
             $table->timestamps();
         });
     }
