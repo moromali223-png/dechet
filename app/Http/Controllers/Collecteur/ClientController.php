@@ -3,17 +3,29 @@
 namespace App\Http\Controllers\Collecteur;
 
 use App\Http\Controllers\Controller;
-use App\Models\Client;
-use App\Models\Collectes;
+use App\Models\Collecte;     // ← Singulier
+use App\Models\User;         // Le client est maintenant un User
+use Illuminate\Support\Facades\Auth;
 
 class ClientController extends Controller
 {
-    public function show(Client $client)
+    public function show(User $client)
     {
-        $client->load('user', 'zone');
+        // Vérification de sécurité : le collecteur ne voit que les clients de ses tournées
+        $user = Auth::user();
 
-        $collectes = Collectes::whereHas('planification.abonnement', function ($q) use ($client) {
-            $q->where('client_id', $client->id);
+        if ($user->role !== 'collecteur') {
+            abort(403, 'Accès refusé.');
+        }
+
+        $client->load(['zone']);
+
+        $collectes = Collecte::with([
+            'planification.zone',
+            'planification.abonnement'
+        ])
+        ->whereHas('planification.abonnement', function ($q) use ($client) {
+            $q->where('user_id', $client->id);   // ← Correction importante
         })
         ->latest()
         ->paginate(10);

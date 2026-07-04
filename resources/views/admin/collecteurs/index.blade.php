@@ -35,67 +35,61 @@
                         <tr>
                             <th>Nom</th>
                             <th>Email</th>
-                            <!-- <th>Téléphone</th> -->
-                            <th>Num Permis</th>
-                            <th>Matricule</th>
+                             <th>Téléphone</th> 
+                            
                             <th>Adresse</th>
                             <th>Zone</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
+<tbody>
+@forelse($collecteurs as $collecteur)
+    <tr>
+        <td><strong>{{ $collecteur->name }}</strong></td>
+        <td>{{ $collecteur->email }}</td>
+        <td>{{ $collecteur->telephone }}</td>
+        <td>{{ $collecteur->address ?? 'Non renseignée' }}</td>
 
-                    <tbody>
-                        @forelse($collecteurs as $collecteur)
-                            <tr>
-                                <td><strong>{{ $collecteur->user->name }}</strong></td>
-                                <td>{{ $collecteur->user->email }}</td>
-                                <!-- <td>{{ $collecteur->user->telephone }}</td> -->
-                                <td>{{ $collecteur->numpermis ?? 'Non renseigné' }}</td>
-                                <td><strong>{{ $collecteur->matricul }}</strong></td>
-                                <td>{{ $collecteur->user->address ?? 'Non renseignée' }}</td>
-                                <td>{{ $collecteur->zone->nom ?? 'Non défini' }}</td>
+        {{-- ZONE CORRIGÉE --}}
+        <td>
+            {{ $collecteur->zone->nom ?? 'Non défini' }}
+        </td>
 
-                                <td class="text-center">
-                                    <div class="d-flex align-items-center justify-content-center gap-2 flex-nowrap">
-                                        
-                                        <!-- Voir -->
-                                        <a href="{{ route('collecteurs.show', $collecteur->id) }}"
-                                           class="btn btn-sm btn-info rounded-pill"
-                                           title="Voir">
-                                            <i class="bx bx-show"></i>
-                                        </a>
+        <td class="text-center">
+            <div class="d-flex justify-content-center gap-2">
 
-                                        <!-- Modifier -->
-                                        <a href="{{ route('collecteurs.edit', $collecteur->id) }}"
-                                           class="btn btn-sm btn-warning rounded-pill"
-                                           title="Modifier">
-                                            <i class="bx bx-edit"></i>
-                                        </a>
+                <a href="{{ route('collecteurs.show', $collecteur->id) }}"
+                   class="btn btn-info btn-sm rounded-pill">
+                    <i class="bx bx-show"></i>
+                </a>
 
-                                        <!-- Supprimer -->
-                                        <form action="{{ route('collecteurs.destroy', $collecteur->id) }}"
-                                              method="POST" class="m-0">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-danger rounded-pill"
-                                                    title="Supprimer"
-                                                    onclick="return confirm('Voulez-vous vraiment supprimer ce collecteur ?')">
-                                                <i class="bx bx-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-5">
-                                    <i class="bx bx-user-x display-4 text-muted"></i>
-                                    <p class="mt-3 text-muted">Aucun collecteur trouvé</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
+                <a href="{{ route('collecteurs.edit', $collecteur->id) }}"
+                   class="btn btn-warning btn-sm rounded-pill">
+                    <i class="bx bx-edit"></i>
+                </a>
+
+                <form action="{{ route('collecteurs.destroy', $collecteur->id) }}"
+                      method="POST">
+                    @csrf
+                    @method('DELETE')
+
+                    <button class="btn btn-danger btn-sm rounded-pill"
+                            onclick="return confirm('Supprimer ?')">
+                        <i class="bx bx-trash"></i>
+                    </button>
+                </form>
+
+            </div>
+        </td>
+    </tr>
+@empty
+    <tr>
+        <td colspan="6" class="text-center py-4">
+            Aucun collecteur trouvé
+        </td>
+    </tr>
+@endforelse
+</tbody>
                 </table>
             </div>
 

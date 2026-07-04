@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePlanificationRequest;
 use App\Http\Requests\UpdatePlanificationRequest;
 use App\Models\Abonnement;
-use App\Models\Collecteur;
 use App\Models\Declaration;
 use App\Models\Planification;
 use App\Models\User;
@@ -15,9 +14,15 @@ class PlanificationController extends Controller
 {
     public function index()
     {
-        $planifications = Planification::with(['zone', 'collecteur.user', 'agent', 'declaration', 'abonnement'])
-            ->latest('date_prevue')
-            ->paginate(10);
+        $planifications = Planification::with([
+            'zone',
+            'collecteur',
+            'agent',
+            'declaration',
+            'abonnement.user',
+        ])
+        ->latest('date_prevue')
+        ->paginate(10);
 
         return view('admin.planifications.index', compact('planifications'));
     }
@@ -25,24 +30,53 @@ class PlanificationController extends Controller
     public function create()
     {
         $zones = Zone::all();
-        $collecteurs = Collecteur::with('user')->get();
-        $declarations = Declaration::all();
-        $abonnements = Abonnement::all();
-        $agents = User::where('role', 'agent')->get();
 
-        return view('admin.planifications.create', compact('zones', 'collecteurs', 'declarations', 'abonnements', 'agents'));
+        $collecteurs = User::where('role', 'collecteur')
+            ->orderBy('name')
+            ->get();
+
+        $declarations = Declaration::all();
+
+        $abonnements = Abonnement::with('user')
+            ->get();
+
+        $agents = User::where('role', 'agent')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.planifications.create', compact(
+            'zones',
+            'collecteurs',
+            'declarations',
+            'abonnements',
+            'agents'
+        ));
     }
 
     public function store(StorePlanificationRequest $request)
     {
-        Planification::create($request->validated());
+        $data = $request->validated();
 
-        return redirect()->route('planifications.index')->with('success', 'Planification créée avec succès.');
+        if (!empty($data['collecteur_id']) && $data['statut'] === 'planifiee') {
+            $data['statut'] = 'assignee';
+        }
+
+        Planification::create($data);
+
+        return redirect()
+            ->route('planifications.index')
+            ->with('success', 'Planification créée avec succès.');
     }
 
     public function show(Planification $planification)
     {
-        $planification->load(['zone', 'collecteur.user', 'agent', 'declaration', 'abonnement']);
+        $planification->load([
+            'zone',
+            'collecteur',
+            'agent',
+            'declaration',
+            'abonnement.user',
+        ]);
 
         return view('admin.planifications.show', compact('planification'));
     }
@@ -50,25 +84,42 @@ class PlanificationController extends Controller
     public function edit(Planification $planification)
     {
         $zones = Zone::all();
-        $collecteurs = Collecteur::with('user')->get();
-        $declarations = Declaration::all();
-        $abonnements = Abonnement::all();
-        $agents = User::where('role', 'agent')->get();
 
-        return view('admin.planifications.edit', compact('planification', 'zones', 'collecteurs', 'declarations', 'abonnements', 'agents'));
+        $collecteurs = User::where('role', 'collecteur')
+            ->orderBy('name')
+            ->get();
+
+        $declarations = Declaration::all();
+
+        $abonnements = Abonnement::with('user')
+            ->get();
+
+        $agents = User::where('role', 'agent')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.planifications.edit', compact(
+            'planification',
+            'zones',
+            'collecteurs',
+            'declarations',
+            'abonnements',
+            'agents'
+        ));
     }
 
     public function update(UpdatePlanificationRequest $request, Planification $planification)
     {
         $data = $request->validated();
 
-        if (! empty($data['collecteur_id']) && $planification->statut === 'planifiee') {
+        if (!empty($data['collecteur_id']) && $planification->statut === 'planifiee') {
             $data['statut'] = 'assignee';
         }
 
         $planification->update($data);
 
-        return redirect()->route('planifications.index')
+        return redirect()
+            ->route('planifications.index')
             ->with('success', 'Planification mise à jour avec succès.');
     }
 
@@ -76,6 +127,8 @@ class PlanificationController extends Controller
     {
         $planification->delete();
 
-        return redirect()->route('planifications.index')->with('success', 'Planification supprimée avec succès.');
+        return redirect()
+            ->route('planifications.index')
+            ->with('success', 'Planification supprimée avec succès.');
     }
 }

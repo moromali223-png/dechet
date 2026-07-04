@@ -3,6 +3,7 @@
 @section('title', 'Détail du Client')
 
 @section('content')
+
 <div class="container">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -20,17 +21,17 @@
 
                 <div class="col-md-6 mb-3">
                     <strong>Nom :</strong>
-                    <p>{{ $client->user->name }}</p>
+                    <p>{{ $client->name }}</p>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <strong>Email :</strong>
-                    <p>{{ $client->user->email }}</p>
+                    <p>{{ $client->email }}</p>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <strong>Téléphone :</strong>
-                    <p>{{ $client->user->telephone }}</p>
+                    <p>{{ $client->telephone }}</p>
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -40,18 +41,18 @@
 
                 <div class="col-md-6 mb-3">
                     <strong>Type client :</strong>
-                    <p>{{ $client->typeclient }}</p>
+                    <p>{{ $client->typeclient ?? 'client' }}</p>
                 </div>
 
-                <div class="col-md-6 mb-3">
+                <!-- <div class="col-md-6 mb-3">
                     <strong>Longitude :</strong>
-                    <p>{{ $client->longitude }}</p>
+                    <p>{{ $client->longitude ?? '-' }}</p>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <strong>Latitude :</strong>
-                    <p>{{ $client->latitude }}</p>
-                </div>
+                    <p>{{ $client->latitude ?? '-' }}</p>
+                </div> -->
 
                 <div class="col-md-6 mb-3">
                     <strong>Créé le :</strong>
@@ -69,4 +70,5 @@
     </div>
 
 </div>
+
 @endsection

@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\RejectAbonnementRequest;
 use App\Http\Requests\StoreAbonnementRequest;
 use App\Http\Requests\UpdateAbonnementRequest;
 use App\Models\Abonnement;
-use App\Models\Client;
-use App\Notifications\AbonnementRejectedNotification;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class AbonnementsController extends Controller
 {
@@ -22,18 +21,16 @@ class AbonnementsController extends Controller
     }
 
     /**
-     * LISTE
+     * Liste des abonnements
      */
     public function index()
     {
         $query = Abonnement::with([
             'user',
-            'client.user',
-            'client.zone',
+            'user.zone',
             'planifications',
         ]);
 
-        // CLIENT = uniquement ses abonnements
         if ($this->isClient()) {
             $query->where('user_id', auth()->id());
         }
@@ -44,63 +41,70 @@ class AbonnementsController extends Controller
     }
 
     /**
-     * CREATE (ADMIN ONLY)
+     * Formulaire de création (Admin seulement)
      */
     public function create()
     {
         if (! $this->isAdmin()) {
-            abort(403, "Accès refusé");
+            abort(403);
         }
 
-        $clients = Client::with(['user', 'zone'])->orderBy('id')->get();
+        $clients = User::with('zone')
+            ->where('role', 'client')
+            ->orderBy('name')
+            ->get();
 
         return view('admin.abonnements.create', compact('clients'));
     }
 
     /**
-     * STORE
+     * Enregistrement d'un abonnement + création automatique de Déclaration + Planification
      */
     public function store(StoreAbonnementRequest $request)
     {
         $data = $request->validated();
 
         if ($this->isAdmin()) {
+            $client = User::where('role', 'client')
+                ->findOrFail($request->client_id);
 
-            $client = Client::findOrFail($request->client_id);
-            $data['user_id'] = $client->user_id;
-
+            $data['user_id'] = $client->id;
             $data['statut'] = 'actif';
             $data['date_activation'] = now();
-
         } else {
-
-            $client = Client::where('user_id', auth()->id())->firstOrFail();
-            $data['user_id'] = auth()->id();
-
+            $client = auth()->user();
+            $data['user_id'] = $client->id;
             $data['statut'] = 'en_attente';
         }
 
         $data = $this->prefillAddressFromClient($data, $client);
 
-        Abonnement::create($data);
+        // Création transactionnelle + génération automatique
+        $abonnement = DB::transaction(function () use ($data) {
+            $abonnement = Abonnement::create($data);
+            $abonnement->generateNextPlanification();   // ← Crée Déclaration + Planification
+            return $abonnement;
+        });
 
         return redirect()
             ->route('abonnements.index')
-            ->with('success', 'Abonnement enregistré avec succès.');
+            ->with('success', 'Abonnement créé avec succès (déclaration + planification générées automatiquement).');
     }
 
     /**
-     * SHOW (ADMIN + CLIENT OWNER)
+     * Affichage
      */
     public function show(Abonnement $abonnement)
     {
-        $this->authorizeAccess($abonnement);
+        if ($this->isClient() && $abonnement->user_id !== auth()->id()) {
+            abort(403);
+        }
 
         return view('admin.abonnements.show', compact('abonnement'));
     }
 
     /**
-     * EDIT (ADMIN ONLY)
+     * Modification (Admin seulement)
      */
     public function edit(Abonnement $abonnement)
     {
@@ -112,7 +116,7 @@ class AbonnementsController extends Controller
     }
 
     /**
-     * UPDATE (ADMIN ONLY)
+     * Mise à jour
      */
     public function update(UpdateAbonnementRequest $request, Abonnement $abonnement)
     {
@@ -126,7 +130,7 @@ class AbonnementsController extends Controller
     }
 
     /**
-     * DELETE (ADMIN ONLY)
+     * Suppression
      */
     public function destroy(Abonnement $abonnement)
     {
@@ -141,27 +145,17 @@ class AbonnementsController extends Controller
     }
 
     /**
-     * ACCESS CONTROL SHOW
+     * Pré-remplissage des champs d'adresse
      */
-    private function authorizeAccess(Abonnement $abonnement)
+    protected function prefillAddressFromClient(array $data, ?User $client = null): array
     {
-        if ($this->isClient() && $abonnement->user_id !== auth()->id()) {
-            abort(403);
+        if ($client) {
+            $data['rue']     = $data['rue']     ?? $client->rue     ?? '';
+            $data['quartier'] = $data['quartier'] ?? $client->quartier ?? '';
+            $data['porte']    = $data['porte']    ?? $client->porte    ?? '';
+            $data['repere']   = $data['repere']   ?? $client->repere   ?? '';
         }
-    }
 
-    /**
-     * PREFILL ADDRESS
-     */
-   protected function prefillAddressFromClient(array $data, ?Client $client = null): array
-{
-    if ($client) {
-        $data['rue'] = $data['rue'] ?? $client->rue;
-        $data['quartier'] = $data['quartier'] ?? $client->quartier;
-        $data['ville'] = $data['ville'] ?? $client->ville;
-        $data['repere'] = $data['repere'] ?? $client->repere;
+        return $data;
     }
-
-    return $data;
-}
 }

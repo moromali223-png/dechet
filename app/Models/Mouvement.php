@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class Mouvement extends Model
 {
@@ -11,6 +12,7 @@ class Mouvement extends Model
 
     protected $fillable = [
         'stock_id',
+        'produit_id', // Supprimer cette ligne si la colonne n'existe pas dans la table mouvements
         'type_mouvement',
         'quantite',
         'prix_unitaire',
@@ -24,47 +26,50 @@ class Mouvement extends Model
     ];
 
     protected $casts = [
-        'quantite' => 'decimal:2',
-        'prix_unitaire' => 'decimal:2',
-        'montant_total' => 'decimal:2',
+        'quantite'       => 'decimal:2',
+        'prix_unitaire'  => 'decimal:2',
+        'montant_total'  => 'decimal:2',
         'date_mouvement' => 'date',
     ];
 
     /*
-    |--------------------------------
-    | MUTATOR
-    |--------------------------------
+    |--------------------------------------------------------------------------
+    | Mutator
+    |--------------------------------------------------------------------------
     */
-    public function setTypeMouvementAttribute($value)
+
+    public function setTypeMouvementAttribute($value): void
     {
-        $this->attributes['type_mouvement'] = in_array($value, ['entree', 'sortie'])
-            ? $value
-            : 'entree';
+        $value = Str::lower(trim((string) $value));
+
+        if (in_array($value, ['entree', 'entrée', 'entré', 'entry'])) {
+            $this->attributes['type_mouvement'] = 'entree';
+        } elseif (in_array($value, ['sortie', 'sorti', 'exit'])) {
+            $this->attributes['type_mouvement'] = 'sortie';
+        } else {
+            $this->attributes['type_mouvement'] = 'entree';
+        }
     }
 
     /*
-    |--------------------------------
-    | ACCESSOR
-    |--------------------------------
+    |--------------------------------------------------------------------------
+    | Accessor
+    |--------------------------------------------------------------------------
     */
-    public function getTypeMouvementLabelAttribute()
+
+    public function getTypeMouvementLabelAttribute(): string
     {
         return match ($this->type_mouvement) {
+           'entree', 'entrée' => 'Entrée',
             'sortie' => 'Sortie',
-            'entree' => 'Entrée',
             default  => 'Inconnu',
         };
     }
 
-    public function getMontantFormatteAttribute()
-    {
-        return number_format($this->montant_total, 2, ',', ' ');
-    }
-
     /*
-    |--------------------------------
-    | RELATIONS
-    |--------------------------------
+    |--------------------------------------------------------------------------
+    | Relations
+    |--------------------------------------------------------------------------
     */
 
     public function stock(): BelongsTo
@@ -88,9 +93,9 @@ class Mouvement extends Model
     }
 
     /*
-    |--------------------------------
-    | SCOPES
-    |--------------------------------
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
     */
 
     public function scopeEntrees($query)

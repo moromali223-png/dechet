@@ -14,10 +14,7 @@ class Client extends Model
 
     protected $fillable = [
         'user_id',
-        'latitude',
-        'longitude',
-        'typeclient',
-        'zone_id',
+        
     ];
 
     public function user()

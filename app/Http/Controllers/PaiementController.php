@@ -13,7 +13,8 @@ class PaiementController extends Controller
     public function index()
     {
         $paiements = Paiement::with([
-            'commande.client.user',
+            'commande.user',      // Correction ici
+            'commande.produit',   // Ajouté pour plus de sécurité
             'abonnement.user',
         ])->latest()->paginate(20);
 
@@ -22,7 +23,7 @@ class PaiementController extends Controller
 
     public function create()
     {
-        $commandes = Commande::latest()->get();
+        $commandes = Commande::with('user')->latest()->get();
         $abonnements = Abonnement::with('user')->latest()->get();
 
         return view('admin.paiements.create', compact('commandes', 'abonnements'));
@@ -31,13 +32,13 @@ class PaiementController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'mode_paiement' => ['required', 'string', 'max:255'],
-            'montant' => ['required', 'numeric', 'min:0'],
-            'type_paiement' => ['nullable', 'string', 'max:255'],
+            'mode_paiement'      => ['required', 'string', 'max:255'],
+            'montant'            => ['required', 'numeric', 'min:0'],
+            'type_paiement'      => ['nullable', 'string', 'max:255'],
             'reference_paiement' => ['nullable', 'string', 'max:255'],
-            'commande_id' => ['nullable', 'exists:commandes,id'],
-            'abonnement_id' => ['nullable', 'exists:abonnements,id'],
-            'statut' => ['required', 'in:en_attente,valide,echoue'],
+            'commande_id'        => ['nullable', 'exists:commandes,id'],
+            'abonnement_id'      => ['nullable', 'exists:abonnements,id'],
+            'statut'             => ['required', 'in:en_attente,valide,echoue'],
         ]);
 
         $paiement = Paiement::create($validated);
@@ -57,33 +58,33 @@ class PaiementController extends Controller
             ->with('success', 'Paiement enregistré avec succès.');
     }
 
-    // === NOUVELLES MÉTHODES AJOUTÉES ===
-
     public function show(Paiement $paiement)
     {
-        $paiement->load('commande');
+        $paiement->load(['commande.user', 'commande.produit', 'abonnement.user']);
 
         return view('admin.paiements.show', compact('paiement'));
     }
 
     public function edit(Paiement $paiement)
     {
-        $commandes = Commande::latest()->get();
+        $commandes = Commande::with('user')->latest()->get();
+        $abonnements = Abonnement::with('user')->latest()->get();
 
-        return view('admin.paiements.edit', compact('paiement', 'commandes'));
+        return view('admin.paiements.edit', compact('paiement', 'commandes', 'abonnements'));
     }
 
     public function update(Request $request, Paiement $paiement)
     {
         $validated = $request->validate([
-            'mode_paiement' => ['required', 'string', 'max:255'],
-            'montant' => ['required', 'numeric', 'min:0'],
-            'type_paiement' => ['nullable', 'string', 'max:255'],
+            'mode_paiement'      => ['required', 'string', 'max:255'],
+            'montant'            => ['required', 'numeric', 'min:0'],
+            'type_paiement'      => ['nullable', 'string', 'max:255'],
             'reference_paiement' => ['nullable', 'string', 'max:255'],
-            'commande_id' => ['nullable', 'exists:commandes,id'],
-            'abonnement_id' => ['nullable', 'exists:abonnements,id'],
-            'statut' => ['required', 'in:en_attente,valide,echoue'],
+            'commande_id'        => ['nullable', 'exists:commandes,id'],
+            'abonnement_id'      => ['nullable', 'exists:abonnements,id'],
+            'statut'             => ['required', 'in:en_attente,valide,echoue'],
         ]);
+
         $paiement->update($validated);
 
         return redirect()->route('admin.paiements.index')

@@ -23,15 +23,15 @@
         <h4>Informations utilisateur</h4>
         <div class="mb-3">
             <label>Nom</label>
-            <input type="text" name="nom" class="form-control" value="{{ old('nom', $collecteur->user->name) }}" required>
+            <input type="text" name="nom" class="form-control" value="{{ old('nom', $collecteur->name) }}" required>
         </div>
         <div class="mb-3">
             <label>Email</label>
-            <input type="email" name="email" class="form-control" value="{{ old('email', $collecteur->user->email) }}" required>
+            <input type="email" name="email" class="form-control" value="{{ old('email', $collecteur->email) }}" required>
         </div>
         <div class="mb-3">
             <label>Téléphone</label>
-            <input type="text" name="telephone" class="form-control" value="{{ old('telephone', $collecteur->user->telephone) }}">
+            <input type="text" name="telephone" class="form-control" value="{{ old('telephone', $collecteur->telephone) }}">
         </div>
         <div class="mb-3">
             <label>Mot de passe (laisser vide pour ne pas changer)</label>
@@ -39,14 +39,10 @@
         </div>
         <div class="mb-3">
             <label>Adresse</label>
-            <input type="text" name="address" class="form-control" value="{{ old('address', $collecteur->user->address) }}">
+            <input type="text" name="address" class="form-control" value="{{ old('address', $collecteur->address) }}">
         </div>
 
         <h4>Informations Collecteur</h4>
-        <div class="mb-3">
-            <label>Numéro permis</label>
-            <input type="text" name="numpermis" class="form-control" value="{{ old('numpermis', $collecteur->numpermis) }}" required>
-        </div>
        
         <div class="mb-3">
             <label>Zone</label>

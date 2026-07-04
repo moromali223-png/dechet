@@ -20,37 +20,37 @@
 
                 <div class="col-md-6 mb-3">
                     <strong>Nom :</strong>
-                    <p>{{ $collecteur->user->name ?? 'Non défini' }}</p>
+                    <p>{{ $collecteur->name ?? 'Non défini' }}</p>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <strong>Email :</strong>
-                    <p>{{ $collecteur->user->email ?? 'Non défini' }}</p>
+                    <p>{{ $collecteur->email ?? 'Non défini' }}</p>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <strong>Téléphone :</strong>
-                    <p>{{ $collecteur->user->telephone ?? 'Non défini' }}</p>
+                    <p>{{ $collecteur->telephone ?? 'Non défini' }}</p>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <strong>Adresse :</strong>
-                    <p>{{ $collecteur->user->address ?? 'Non défini' }}</p>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <strong>Numéro permis :</strong>
-                    <p>{{ $collecteur->numpermis }}</p>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <strong>Matricule :</strong>
-                    <p>{{ $collecteur->matricul }}</p>
+                    <p>{{ $collecteur->address ?? 'Non défini' }}</p>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <strong>Zone :</strong>
                     <p>{{ $collecteur->zone->nom ?? 'Non défini' }}</p>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <strong>Statut :</strong>
+                    <p>{{ $collecteur->statut ?? 'Non défini' }}</p>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <strong>Rôle :</strong>
+                    <p>{{ $collecteur->role ?? 'Non défini' }}</p>
                 </div>
 
                 <div class="col-md-6 mb-3">

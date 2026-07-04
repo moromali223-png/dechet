@@ -41,23 +41,30 @@ class MatiereController extends Controller
         return view('agent.matieres.index', compact('matieres', 'stats'));
     }
 
-   public function show($matiere)
+  public function show($matiere)
 {
     $type_dechet = urldecode($matiere);
 
     $tries = Trie::where('type_dechet', $type_dechet)
-        ->with(['pesage.collecte.planification.abonnement.client'])
+        ->with([
+            'pesage', 
+            'pesage.collecte', 
+            'pesage.collecte.planification', 
+            'pesage.collecte.planification.abonnement', 
+            'pesage.collecte.planification.abonnement.user'  // ← Correction ici
+        ])
         ->latest()
         ->get();
 
     if ($tries->isEmpty()) {
-        abort(404, 'Aucune matière trouvée');
+        abort(404, 'Aucune matière trouvée pour ce type de déchet.');
     }
 
     $stats = [
-        'quantite_totale' => $tries->sum('quantite_trier'),
-        'nombre_tries' => $tries->count(),
-        'derniere_entree' => $tries->first()?->created_at,
+        'quantite_totale'  => $tries->sum('quantite_trier'),
+        'nombre_tries'     => $tries->count(),
+        'derniere_entree'  => $tries->first()?->created_at,
+        'poids_moyen'      => $tries->avg('quantite_trier') ?? 0,
     ];
 
     return view('agent.matieres.show', compact(

@@ -2,26 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Client;
 use App\Models\User;
 use App\Models\Zone;
-use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class ClientController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Liste des clients
      */
     public function index()
     {
-        $clients = Client::with(['user', 'zone'])->latest()->paginate(15);
+        $clients = User::with('zone')
+            ->where('role', 'client')
+            ->latest()
+            ->paginate(15);
 
         return view('admin.clients.index', compact('clients'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Formulaire création
      */
     public function create()
     {
@@ -31,48 +33,46 @@ class ClientController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Enregistrer client
      */
     public function store(Request $request)
     {
-        DB::transaction(function () use ($request) {
-            $user = User::create([
-                'name' => $request->nom,
-                'email' => $request->email,
-                'password' => bcrypt($request->mot_de_passe),
-                'telephone' => $request->telephone,
-                'statut' => $request->statut ?? 'actif',
-                'role' => 'client',
-                'address' => $request->address,
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'telephone' => 'required|string|unique:users,telephone',
+            'address' => 'nullable|string',
+            'zone_id' => 'nullable|exists:zones,id',
+            'password' => 'required|min:8|confirmed',
+        ]);
 
-            ]);
-            // creation du client lié
-            Client::create([
-                'user_id' => $user->id,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
-                'typeclient' => $request->typeclient,
-                'zone_id' => $request->zone_id,
-            ]);
-        });
+        User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'telephone' => $validated['telephone'],
+            'address' => $validated['address'] ?? null,
+            'zone_id' => $validated['zone_id'] ?? null,
+            'role' => 'client',
+            'statut' => 'actif',
+            'password' => Hash::make($validated['password']),
+        ]);
 
-        return redirect()->route('clients.index')->with('success', 'Client créé avec succès.');
+        return redirect()->route('clients.index')
+            ->with('success', 'Client créé avec succès.');
     }
 
     /**
-     * Display the specified resource.
+     * Afficher un client
      */
-    public function show(Client $client)
+    public function show(User $client)
     {
-        $client->load(['user', 'zone']);
-
         return view('admin.clients.show', compact('client'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Formulaire édition
      */
-    public function edit(Client $client)
+    public function edit(User $client)
     {
         $zones = Zone::all();
 
@@ -80,54 +80,46 @@ class ClientController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Mise à jour client
      */
-    public function update(Request $request, Client $client)
+    public function update(Request $request, User $client)
     {
-        $request->validate([
-            'nom' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'telephone' => 'required|string|max:25',
-            'address' => 'nullable|string|max:500',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'typeclient' => 'nullable|string|max:255',
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $client->id,
+            'telephone' => 'required|string|unique:users,telephone,' . $client->id,
+            'address' => 'nullable|string',
             'zone_id' => 'nullable|exists:zones,id',
-            'mot_de_passe' => 'nullable|string|min:8|confirmed',
+            'password' => 'nullable|min:8|confirmed',
         ]);
 
-        $client->user->update([
-            'name' => $request->nom,
-            'email' => $request->email,
-            'telephone' => $request->telephone,
-            'address' => $request->address,
-        ]);
-
-        // Mise à jour du client lié
         $client->update([
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'typeclient' => $request->typeclient,
-            'zone_id' => $request->zone_id,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'telephone' => $validated['telephone'],
+            'address' => $validated['address'] ?? null,
+            'zone_id' => $validated['zone_id'] ?? null,
+            'role' => 'client',
         ]);
 
-        if ($request->filled('mot_de_passe')) {
-            $client->user->update([
-                'password' => bcrypt($request->mot_de_passe),
+        if (!empty($validated['password'])) {
+            $client->update([
+                'password' => Hash::make($validated['password']),
             ]);
         }
 
-        return redirect()->route('clients.index')->with('success', 'Client mis à jour avec succès.');
+        return redirect()->route('clients.index')
+            ->with('success', 'Client mis à jour avec succès.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Supprimer client
      */
-    public function destroy(Client $client)
+    public function destroy(User $client)
     {
-        DB::transaction(function () use ($client) {
-            $client->user->delete();
-            $client->delete();
-        });
+        $client->delete();
+
+        return redirect()->route('clients.index')
+            ->with('success', 'Client supprimé avec succès.');
     }
 }

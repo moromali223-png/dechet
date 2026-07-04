@@ -72,17 +72,17 @@
 
                     <p class="mb-3">
                         <span class="text-muted">Nom</span><br>
-                        <strong>{{ $abonnement->client?->user?->name }}</strong>
+                        <strong>{{ $abonnement->user?->name }}</strong>
                     </p>
 
                     <p class="mb-3">
                         <span class="text-muted">Email</span><br>
-                        {{ $abonnement->client?->user?->email }}
+                        {{ $abonnement->user?->email }}
                     </p>
 
                     <p class="mb-0">
                         <span class="text-muted">Zone</span><br>
-                        {{ $abonnement->client?->zone?->nom }}
+                        {{ $abonnement->zone?->nom }}
                     </p>
 
                 </div>

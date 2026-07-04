@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Collecteur;
 
 use App\Http\Controllers\Controller;
-use App\Models\Collectes;
+use App\Models\Collecte;        // ← Note : Collecte (singulier)
 use App\Models\Planification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,21 +13,21 @@ class CollecteController extends Controller
     public function encours()
     {
         $user = Auth::user();
-        $collecteur = $user->collecteurs;
 
-        if (! $collecteur) {
+        if ($user->role !== 'collecteur') {
             abort(403, 'Accès refusé. Vous devez être collecteur.');
         }
 
         $tournees = Planification::with([
             'zone',
             'declaration.user',
-            'abonnement.client.user',
+            'abonnement.user',        // ← Correction : client → user
+            'collecteur',
         ])
-            ->where('collecteur_id', $collecteur->id)
-            ->whereIn('statut', ['en_route', 'en_cours'])
-            ->orderBy('ordre_passage')
-            ->get();
+        ->where('collecteur_id', $user->id)
+        ->whereIn('statut', ['en_route', 'en_cours'])
+        ->orderBy('ordre_passage')
+        ->get();
 
         return view('collecteur.collectes.encours', compact('tournees'));
     }
@@ -35,30 +35,33 @@ class CollecteController extends Controller
     public function terminees()
     {
         $user = Auth::user();
-        $collecteur = $user->collecteurs;
 
-        if (! $collecteur) {
+        if ($user->role !== 'collecteur') {
             abort(403, 'Accès refusé. Vous devez être collecteur.');
         }
 
-        $collectes = Collectes::with([
+        $collectes = Collecte::with([
             'planification.zone',
             'planification.declaration.user',
-            'planification.abonnement.client.user',
+            'planification.abonnement.user',   // ← Correction
         ])
-            ->whereHas('planification', function ($query) use ($collecteur) {
-                $query->where('collecteur_id', $collecteur->id)
-                    ->where('statut', 'terminee');
-            })
-            ->orderByDesc('created_at')
-            ->get();
+        ->whereHas('planification', function ($query) use ($user) {
+            $query->where('collecteur_id', $user->id)
+                  ->where('statut', 'terminee');
+        })
+        ->orderByDesc('created_at')
+        ->get();
 
         return view('collecteur.collectes.terminees', compact('collectes'));
     }
 
     public function start(Planification $planification)
     {
-        $this->authorizeForUser(Auth::user(), 'update', $planification);
+        $user = Auth::user();
+
+        if ($user->role !== 'collecteur' || $planification->collecteur_id !== $user->id) {
+            abort(403, 'Action non autorisée.');
+        }
 
         if ($planification->statut !== 'assignee') {
             return back()->with('error', 'Action non autorisée.');
@@ -74,7 +77,11 @@ class CollecteController extends Controller
 
     public function arrive(Planification $planification)
     {
-        $this->authorizeForUser(Auth::user(), 'update', $planification);
+        $user = Auth::user();
+
+        if ($user->role !== 'collecteur' || $planification->collecteur_id !== $user->id) {
+            abort(403, 'Action non autorisée.');
+        }
 
         if ($planification->statut !== 'en_route') {
             return back()->with('error', 'Action non autorisée.');
@@ -90,7 +97,11 @@ class CollecteController extends Controller
 
     public function finish(Request $request, Planification $planification)
     {
-        $this->authorizeForUser(Auth::user(), 'update', $planification);
+        $user = Auth::user();
+
+        if ($user->role !== 'collecteur' || $planification->collecteur_id !== $user->id) {
+            abort(403, 'Action non autorisée.');
+        }
 
         if ($planification->statut !== 'en_cours') {
             return back()->with('error', 'Action non autorisée.');
@@ -104,14 +115,14 @@ class CollecteController extends Controller
             ? $request->file('photo')->store('collectes', 'public')
             : null;
 
-        Collectes::create([
+        Collecte::create([
             'planification_id' => $planification->id,
-            'photo' => $photoPath,
-            'statut' => 'terminee',
+            'photo'            => $photoPath,
+            'statut'           => 'terminee',
         ]);
 
         $planification->update([
-            'statut' => 'terminee',
+            'statut'    => 'terminee',
             'heure_fin' => now(),
         ]);
 

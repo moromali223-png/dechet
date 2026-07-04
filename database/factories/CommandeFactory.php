@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Client;
 use App\Models\Commande;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class CommandeFactory extends Factory
 {
+    protected $model = Commande::class;
+
     /**
      * Define the model's default state.
      *
@@ -23,7 +25,7 @@ class CommandeFactory extends Factory
             'produit' => $this->faker->randomElement(['Plastique', 'Compost', 'Métal', 'Papier']),
             'quantite' => $this->faker->numberBetween(1, 100),
             'statut' => 'en_attente',
-            'client_id' => Client::factory(),
+            'client_id' => User::factory()->state(['role' => 'client']),
             'date_commande' => $this->faker->date(),
         ];
     }

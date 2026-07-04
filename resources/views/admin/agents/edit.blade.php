@@ -23,15 +23,15 @@
         <h4>Informations utilisateur</h4>
         <div class="mb-3">
             <label>Nom</label>
-            <input type="text" name="nom" class="form-control" value="{{ old('nom', $agent->user->name) }}" required>
+            <input type="text" name="nom" class="form-control" value="{{ old('nom', $agent->name) }}" required>
         </div>
         <div class="mb-3">
             <label>Email</label>
-            <input type="email" name="email" class="form-control" value="{{ old('email', $agent->user->email) }}" required>
+            <input type="email" name="email" class="form-control" value="{{ old('email', $agent->email) }}" required>
         </div>
         <div class="mb-3">
             <label>Téléphone</label>
-            <input type="text" name="telephone" class="form-control" value="{{ old('telephone', $agent->user->telephone) }}">
+            <input type="text" name="telephone" class="form-control" value="{{ old('telephone', $agent->telephone) }}">
         </div>
         <div class="mb-3">
             <label>Mot de passe (laisser vide pour ne pas changer)</label>
@@ -39,10 +39,10 @@
         </div>
         <div class="mb-3">
             <label>Adresse</label>
-            <input type="text" name="address" class="form-control" value="{{ old('address', $agent->user->address) }}">
+            <input type="text" name="address" class="form-control" value="{{ old('address', $agent->address) }}">
         </div>
 
-        <h4>Informations Agent</h4>
+        <!-- <h4>Informations Agent</h4>
         <div class="mb-3">
             <label>Matricule</label>
             <input type="text" name="matricul" class="form-control" value="{{ old('matricul', $agent->matricul) }}" required>
@@ -50,8 +50,10 @@
         <div class="mb-3">
             <label>Qualification</label>
             <input type="text" name="qualification" class="form-control" value="{{ old('qualification', $agent->qualification) }}" required>
-        </div>
-
+        </div> -->
+  <a href="{{ route('agents.index') }}" class="btn btn-secondary">
+             Retour
+        </a>
         <button type="submit" class="btn btn-success">Mettre à jour</button>
     </form>
 </div>

@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ClientFactory extends Factory
 {
+    protected $model = Client::class;
+
     /**
      * Define the model's default state.
      *
@@ -20,11 +22,15 @@ class ClientFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
-            'latitude' => $this->faker->latitude(),
-            'longitude' => $this->faker->longitude(),
-            'typeclient' => $this->faker->randomElement(['particulier', 'entreprise']),
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'email_verified_at' => now(),
+            'password' => User::factory()->make()->password,
+            'remember_token' => \Illuminate\Support\Str::random(10),
+            'telephone' => fake()->phoneNumber(),
             'zone_id' => Zone::factory(),
+            'role' => 'client',
+            'statut' => 'actif',
         ];
     }
 }

@@ -20,25 +20,25 @@
 
                 <div class="col-md-6 mb-3">
                     <strong>Nom :</strong>
-                    <p>{{ $agent->user->name }}</p>
+                    <p>{{ $agent->name }}</p>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <strong>Email :</strong>
-                    <p>{{ $agent->user->email }}</p>
+                    <p>{{ $agent->email }}</p>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <strong>Téléphone :</strong>
-                    <p>{{ $agent->user->telephone }}</p>
+                    <p>{{ $agent->telephone }}</p>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <strong>Adresse :</strong>
-                    <p>{{ $agent->user->address }}</p>
+                    <p>{{ $agent->address }}</p>
                 </div>
 
-                <div class="col-md-6 mb-3">
+                <!-- <div class="col-md-6 mb-3">
                     <strong>Matricule :</strong>
                     <p>{{ $agent->matricul }}</p>
                 </div>
@@ -46,7 +46,7 @@
                 <div class="col-md-6 mb-3">
                     <strong>Qualification :</strong>
                     <p>{{ $agent->qualification }}</p>
-                </div>
+                </div> -->
 
                 <div class="col-md-6 mb-3">
                     <strong>Créé le :</strong>

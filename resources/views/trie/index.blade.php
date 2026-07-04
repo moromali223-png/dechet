@@ -42,7 +42,7 @@
                     <tbody>
                         @forelse($tries as $tri)
                             <tr>
-                                <td><strong>#{{ $tri->id }}</strong></td>
+                                <td><strong>{{ $tri->id }}</strong></td>
                                 <td>
                                     <span class="badge bg-label-primary">{{ $tri->type_dechet }}</span>
                                 </td>
@@ -80,7 +80,7 @@
                                 </td>
                                 <td>
                                     @if($tri->pesage)
-                                        Pesage #{{ $tri->pesage->id }}
+                                        Pesage-{{ $tri->pesage->id }}
                                     @else
                                         <span class="text-muted">N/A</span>
                                     @endif

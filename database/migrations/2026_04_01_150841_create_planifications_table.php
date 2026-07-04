@@ -31,7 +31,7 @@ return new class extends Migration
 
             $table->foreignId('collecteur_id')
                 ->nullable()
-                ->constrained('collecteurs')
+                ->constrained('users')
                 ->nullOnDelete();
 
             // Optionnel : si vous voulez lier à une déclaration de déchet spécifique

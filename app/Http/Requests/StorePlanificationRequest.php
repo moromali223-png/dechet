@@ -24,7 +24,7 @@ class StorePlanificationRequest extends FormRequest
             'type_collecte' => ['required', 'string', 'max:255'],
             'statut' => ['required', Rule::in(Planification::STATUSES)],
             'zone_id' => ['required', 'exists:zones,id'],
-            'collecteur_id' => ['nullable', 'exists:collecteurs,id'],
+            'collecteur_id' => ['nullable', 'exists:users,id'],
             'declaration_id' => ['nullable', 'exists:declarations,id'],
             'abonnement_id' => ['nullable', 'exists:abonnements,id'],
             'agent_id' => ['nullable', 'exists:users,id'],

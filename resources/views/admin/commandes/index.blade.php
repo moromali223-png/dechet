@@ -35,55 +35,40 @@
                     @endif
 
                     <!-- Statistiques -->
-                    <div class="row mb-4">
-                        <div class="col-lg-3 col-sm-6 mb-2">
-                            <div class="bg-light rounded-3 p-3 h-100">
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <span class="text-muted">Total</span>
-                                    <span class="badge bg-primary">{{ $stats['total'] ?? 0 }}</span>
-                                </div>
-                                <h5 class="mb-0">{{ $stats['total'] ?? 0 }}</h5>
+                    <div class="row mb-4 g-3">
+                        <div class="col-lg-2 col-sm-6">
+                            <div class="bg-light rounded-3 p-3 h-100 text-center">
+                                <span class="text-muted">Total</span>
+                                <h4 class="mb-0 mt-1">{{ $stats['total'] ?? 0 }}</h4>
                             </div>
                         </div>
-                        <div class="col-lg-3 col-sm-6 mb-2">
-                            <div class="bg-light rounded-3 p-3 h-100">
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <span class="text-muted">En attente</span>
-                                    <span class="badge bg-warning">{{ $stats['en_attente'] ?? 0 }}</span>
-                                </div>
-                                <h5 class="mb-0">{{ $stats['en_attente'] ?? 0 }}</h5>
+                        <div class="col-lg-2 col-sm-6">
+                            <div class="bg-light rounded-3 p-3 h-100 text-center">
+                                <span class="text-muted">En attente</span>
+                                <h4 class="mb-0 mt-1 text-warning">{{ $stats['en_attente'] ?? 0 }}</h4>
                             </div>
                         </div>
-                        <div class="col-lg-3 col-sm-6 mb-2">
-                            <div class="bg-light rounded-3 p-3 h-100">
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <span class="text-muted">Acceptées</span>
-                                    <span class="badge bg-success">{{ $stats['acceptee'] ?? 0 }}</span>
-                                </div>
-                                <h5 class="mb-0">{{ $stats['acceptee'] ?? 0 }}</h5>
+                        <div class="col-lg-2 col-sm-6">
+                            <div class="bg-light rounded-3 p-3 h-100 text-center">
+                                <span class="text-muted">Acceptées</span>
+                                <h4 class="mb-0 mt-1 text-success">{{ $stats['acceptee'] ?? 0 }}</h4>
                             </div>
                         </div>
-                        <div class="col-lg-3 col-sm-6 mb-2">
-                            <div class="bg-light rounded-3 p-3 h-100">
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <span class="text-muted">Refusées</span>
-                                    <span class="badge bg-danger">{{ $stats['refusee'] ?? 0 }}</span>
-                                </div>
-                                <h5 class="mb-0">{{ $stats['refusee'] ?? 0 }}</h5>
+                        <div class="col-lg-2 col-sm-6">
+                            <div class="bg-light rounded-3 p-3 h-100 text-center">
+                                <span class="text-muted">Refusées</span>
+                                <h4 class="mb-0 mt-1 text-danger">{{ $stats['refusee'] ?? 0 }}</h4>
                             </div>
                         </div>
-                        <div class="col-lg-3 col-sm-6 mb-2">
-                            <div class="bg-light rounded-3 p-3 h-100">
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <span class="text-muted">Livrées</span>
-                                    <span class="badge bg-secondary">{{ $stats['livree'] ?? 0 }}</span>
-                                </div>
-                                <h5 class="mb-0">{{ $stats['livree'] ?? 0 }}</h5>
+                        <div class="col-lg-2 col-sm-6">
+                            <div class="bg-light rounded-3 p-3 h-100 text-center">
+                                <span class="text-muted">Livrées</span>
+                                <h4 class="mb-0 mt-1 text-primary">{{ $stats['livree'] ?? 0 }}</h4>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Filtres -->
+                    <!-- Filtre -->
                     <div class="row mb-3">
                         <div class="col-md-3">
                             <select class="form-select" id="statutFilter">
@@ -117,46 +102,36 @@
                                     <td class="fw-semibold">{{ $commande->code_commande }}</td>
                                     
                                     <td>
-                                        {{ $commande->client?->nom ?? $commande->client?->user?->name ?? 'N/A' }}
+                                        {{ $commande->user?->name ?? 'Client supprimé' }}
                                     </td>
                                     
-                                    <!-- Correction principale ici -->
                                     <td>
-                                        {{ $commande->produitRelation?->nom ?? $commande->produit ?? 'N/A' }}
+                                        {{ $commande->produit?->nom ?? 'Produit supprimé' }}
                                     </td>
                                     
-                                    <td>{{ $commande->quantite }}</td>
+                                    <td>{{ $commande->quantite }} {{ $commande->produit?->unite_mesure ?? '' }}</td>
                                     
-                                    <!-- Montant sécurisé -->
                                     <td>
-                                        @php
-                                           
-                                            $prixUnitaire = $commande->produitRelation?->prix_unitaire ?? 0;
-                                            $montant = $commande->montant_total ?? ($commande->quantite * $prixUnitaire);
-                                        @endphp
-                                        {{ number_format($montant, 2) }} FCFA
+                                        <strong>
+                                            {{ number_format($commande->montant_total ?? 
+                                                ($commande->quantite * ($commande->produit?->prix_unitaire ?? 0)), 2) }} FCFA
+                                        </strong>
                                     </td>
                                     
-                                    <td>{{ $commande->created_at?->format('d/m/Y') ?? 'N/A' }}</td>
+                                    <td>{{ $commande->date_commande?->format('d/m/Y H:i') ?? $commande->created_at?->format('d/m/Y') }}</td>
                                     
                                     <td>
                                         @php
                                             $badgeClass = match ($commande->statut) {
-                                                'en_attente' => 'bg-warning text-dark',
+                                                'en_attente' => 'bg-warning',
                                                 'acceptee'   => 'bg-success',
                                                 'refusee'    => 'bg-danger',
-                                                'livree'     => 'bg-info',
+                                                'livree'     => 'bg-primary',
                                                 default      => 'bg-secondary',
                                             };
                                         @endphp
                                         <span class="badge {{ $badgeClass }}">
-                                            @switch($commande->statut)
-                                                @case('en_attente') En attente @break
-                                                @case('acceptee')   Acceptée   @break
-                                                @case('refusee')    Refusée    @break
-                                                @case('livree')     Livrée     @break
-                                                @default {{ $commande->statut }}
-                                            @endswitch
+                                            {{ $commande->getStatutFormateAttribute() ?? ucfirst($commande->statut) }}
                                         </span>
                                     </td>
                                     
@@ -173,7 +148,7 @@
                                                 </li>
                                                 @if($commande->statut === 'en_attente')
                                                 <li>
-                                                    <form method="POST" action="{{ route('admin.commandes.accepter', $commande->id) }}">
+                                                    <form method="POST" action="{{ route('admin.commandes.accepter', $commande) }}">
                                                         @csrf
                                                         <button type="submit" class="dropdown-item text-success">
                                                             <i class="bx bx-check me-1"></i>Accepter
@@ -181,7 +156,7 @@
                                                     </form>
                                                 </li>
                                                 <li>
-                                                    <form method="POST" action="{{ route('admin.commandes.refuser', $commande->id) }}">
+                                                    <form method="POST" action="{{ route('admin.commandes.refuser', $commande) }}">
                                                         @csrf
                                                         <button type="submit" class="dropdown-item text-danger">
                                                             <i class="bx bx-x me-1"></i>Refuser
@@ -195,9 +170,9 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="8" class="text-center py-4">
-                                        <i class="bx bx-shopping-bag display-1 text-muted"></i>
-                                        <h5 class="mt-3">Aucune commande</h5>
+                                    <td colspan="8" class="text-center py-5 text-muted">
+                                        <i class="bx bx-shopping-bag display-1"></i>
+                                        <h5 class="mt-3">Aucune commande trouvée</h5>
                                     </td>
                                 </tr>
                                 @endforelse

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Agent;
 
 use App\Http\Controllers\Controller;
+use App\Models\Collecte;
 use App\Models\Pesage;
 use Illuminate\Http\Request;
 
@@ -10,8 +11,11 @@ class PesageController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pesage::with(['collecte.planification.abonnement.client']);
+        $query = Pesage::with([
+            'collecte.planification.abonnement.user',   // Correction : client → user
+        ]);
 
+        // Filtres
         if ($request->filled('date_debut')) {
             $query->whereDate('created_at', '>=', $request->date_debut);
         }
@@ -20,23 +24,16 @@ class PesageController extends Controller
             $query->whereDate('created_at', '<=', $request->date_fin);
         }
 
-        if ($request->filled('client')) {
-            $query->whereHas('collecte.planification.abonnement.client', function ($q) use ($request) {
-                $q->where('nom', 'like', '%' . $request->client . '%');
-            });
-        }
-
         if ($request->filled('statut')) {
             $query->where('statut', $request->statut);
         }
 
         if ($request->filled('search')) {
             $search = $request->search;
-
             $query->where(function ($q) use ($search) {
-                $q->where('description', 'like', '%' . $search . '%')
-                  ->orWhereHas('collecte.planification.abonnement.client', function ($subQ) use ($search) {
-                      $subQ->where('nom', 'like', '%' . $search . '%');
+                $q->where('description', 'like', "%{$search}%")
+                  ->orWhereHas('collecte.planification.abonnement.user', function ($subQ) use ($search) {
+                      $subQ->where('name', 'like', "%{$search}%");
                   });
             });
         }
@@ -45,9 +42,9 @@ class PesageController extends Controller
 
         $stats = [
             'total_pesages' => Pesage::count(),
-            'poids_total' => Pesage::sum('poids'),
+            'poids_total'   => Pesage::sum('poids'),
             'pesages_today' => Pesage::whereDate('created_at', today())->count(),
-            'poids_today' => Pesage::whereDate('created_at', today())->sum('poids'),
+            'poids_today'   => Pesage::whereDate('created_at', today())->sum('poids'),
         ];
 
         return view('agent.pesages.index', compact('pesages', 'stats'));
@@ -55,7 +52,9 @@ class PesageController extends Controller
 
     public function create()
     {
-        $collectes = \App\Models\Collectes::with('planification.abonnement.client')
+        $collectes = Collecte::with([
+                'planification.abonnement.user'   // Correction ici aussi
+            ])
             ->whereDoesntHave('pesages')
             ->orWhereHas('pesages', function ($query) {
                 $query->where('statut', '!=', 'termine');
@@ -69,17 +68,17 @@ class PesageController extends Controller
     {
         $request->validate([
             'id_collecte' => 'required|exists:collectes,id',
-            'poids' => 'required|numeric|min:0',
-            'unite' => 'required|string|max:10',
+            'poids'       => 'required|numeric|min:0',
+            'unite'       => 'required|string|max:10',
             'description' => 'nullable|string|max:255',
         ]);
 
         Pesage::create([
             'id_collecte' => $request->id_collecte,
-            'poids' => $request->poids,
-            'unite' => $request->unite,
+            'poids'       => $request->poids,
+            'unite'       => $request->unite,
             'description' => $request->description,
-            'statut' => 'termine',
+            'statut'      => 'termine',
         ]);
 
         return redirect()->route('agent.pesages.index')
@@ -89,7 +88,7 @@ class PesageController extends Controller
     public function show(Pesage $pesage)
     {
         $pesage->load([
-            'collecte.planification.abonnement.client',
+            'collecte.planification.abonnement.user',   // Correction
             'tries'
         ]);
 
@@ -104,15 +103,13 @@ class PesageController extends Controller
     public function update(Request $request, Pesage $pesage)
     {
         $request->validate([
-            'poids' => 'required|numeric|min:0',
-            'unite' => 'required|string|max:10',
+            'poids'       => 'required|numeric|min:0',
+            'unite'       => 'required|string|max:10',
             'description' => 'nullable|string|max:255',
-            'statut' => 'required|string|in:en_cours,termine',
+            'statut'      => 'required|string|in:en_cours,termine',
         ]);
 
-        $pesage->update(
-            $request->only(['poids', 'unite', 'description', 'statut'])
-        );
+        $pesage->update($request->only(['poids', 'unite', 'description', 'statut']));
 
         return redirect()->route('agent.pesages.index')
             ->with('success', 'Pesage mis à jour avec succès.');

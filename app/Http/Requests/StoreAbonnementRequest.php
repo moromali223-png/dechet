@@ -31,7 +31,7 @@ class StoreAbonnementRequest extends FormRequest
         ];
 
         if (auth()->user()->role === 'admin') {
-            $rules['client_id'] = ['required', 'exists:clients,id'];
+            $rules['client_id'] = ['required', 'exists:users,id'];
         }
 
         return $rules;

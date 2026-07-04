@@ -18,9 +18,11 @@ class Declaration extends Model
         'statut',
         'user_id',
         'abonnement_id',
+        'planification_id',   // ajouté pour cohérence
     ];
 
     protected $casts = [
+        'poids_estime' => 'decimal:2',
         'statut' => 'string',
     ];
 
@@ -29,8 +31,14 @@ class Declaration extends Model
         'valide' => 'Validée',
         'rejete' => 'Rejetée',
         'brouillon' => 'Brouillon',
-        // plus tard : 'planifiee', etc.
+        'planifiee' => 'Planifiée',
     ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relations
+    |--------------------------------------------------------------------------
+    */
 
     public function user(): BelongsTo
     {
@@ -42,8 +50,40 @@ class Declaration extends Model
         return $this->belongsTo(Abonnement::class);
     }
 
-    public function planification(): HasOne
+    public function planification(): BelongsTo
     {
-        return $this->hasOne(Planification::class);
+        return $this->belongsTo(Planification::class);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
+
+    public function scopeEnAttente($query)
+    {
+        return $query->where('statut', 'en_attente');
+    }
+
+    public function scopeValide($query)
+    {
+        return $query->where('statut', 'valide');
+    }
+
+    public function scopeRejete($query)
+    {
+        return $query->where('statut', 'rejete');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Accessors
+    |--------------------------------------------------------------------------
+    */
+
+    public function getStatutFormateAttribute(): string
+    {
+        return self::STATUTS[$this->statut] ?? $this->statut;
     }
 }

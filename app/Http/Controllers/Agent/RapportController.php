@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Agent;
 
 use App\Http\Controllers\Controller;
-use App\Models\Collectes;
+use App\Models\Collecte;      // ← Correction principale
 use App\Models\Pesage;
 use App\Models\Produit;
 use App\Models\Stock;
 use App\Models\Trie;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Request;   // ← C'est cette ligne qui manquait !
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class RapportController extends Controller
@@ -25,17 +25,16 @@ class RapportController extends Controller
 
         $data = [
             'date' => $date,
-            'collectes' => Collectes::whereDate('created_at', $date)->count(),
-            'pesages' => Pesage::whereDate('created_at', $date)->get(),
-            'tries' => Trie::whereDate('created_at', $date)->get(),
-            'produits' => Produit::whereDate('created_at', $date)->get(),
+            'collectes' => Collecte::whereDate('created_at', $date)->count(),
+            'pesages'   => Pesage::whereDate('created_at', $date)->get(),
+            'tries'     => Trie::whereDate('created_at', $date)->get(),
+            'produits'  => Produit::whereDate('created_at', $date)->get(),
             'poids_total' => Pesage::whereDate('created_at', $date)->sum('poids'),
             'quantite_triee' => Trie::whereDate('created_at', $date)->sum('quantite_trier'),
         ];
 
         if ($request->get('format') === 'pdf') {
             $pdf = Pdf::loadView('agent.rapports.journalier_pdf', $data);
-
             return $pdf->download("rapport-journalier-{$date}.pdf");
         }
 
@@ -48,7 +47,7 @@ class RapportController extends Controller
 
         $data = [
             'mois' => $mois,
-            'collectes' => Collectes::whereYear('created_at', substr($mois, 0, 4))
+            'collectes' => Collecte::whereYear('created_at', substr($mois, 0, 4))
                 ->whereMonth('created_at', substr($mois, 5, 2))->count(),
             'pesages' => Pesage::whereYear('created_at', substr($mois, 0, 4))
                 ->whereMonth('created_at', substr($mois, 5, 2))->get(),
@@ -61,7 +60,6 @@ class RapportController extends Controller
 
         if ($request->get('format') === 'pdf') {
             $pdf = Pdf::loadView('agent.rapports.mensuel_pdf', $data);
-
             return $pdf->download("rapport-mensuel-{$mois}.pdf");
         }
 
@@ -74,10 +72,16 @@ class RapportController extends Controller
         $month = substr($mois, 5, 2);
 
         return [
-            'poids_total' => Pesage::whereYear('created_at', $year)->whereMonth('created_at', $month)->sum('poids'),
-            'quantite_triee' => Trie::whereYear('created_at', $year)->whereMonth('created_at', $month)->sum('quantite_trier'),
-            'produits_fabriqués' => Produit::whereYear('created_at', $year)->whereMonth('created_at', $month)->count(),
-            'valeur_stock' => Stock::sum(DB::raw('quantite_disponible * prix_unitaire')),
+            'poids_total'       => Pesage::whereYear('created_at', $year)
+                                        ->whereMonth('created_at', $month)
+                                        ->sum('poids'),
+            'quantite_triee'    => Trie::whereYear('created_at', $year)
+                                        ->whereMonth('created_at', $month)
+                                        ->sum('quantite_trier'),
+            'produits_fabriqués'=> Produit::whereYear('created_at', $year)
+                                        ->whereMonth('created_at', $month)
+                                        ->count(),
+            'valeur_stock'      => Stock::sum(DB::raw('quantite_disponible * prix_unitaire')),
         ];
     }
 }

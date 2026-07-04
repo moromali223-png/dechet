@@ -175,12 +175,12 @@
                         <div>Inventaire</div>
                     </a>
                 </li>
-                <li class="menu-item {{ request()->routeIs('stock-entree.*') ? 'active' : '' }}">
+                <!-- <li class="menu-item {{ request()->routeIs('stock-entree.*') ? 'active' : '' }}">
                     <a href="{{ route('stock-entree.create') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-plus-circle"></i>
                         <div>Entrée en stock</div>
                     </a>
-                </li>
+                </li> -->
                 <li class="menu-item {{ request()->routeIs('mouvements.*') ? 'active' : '' }}">
                     <a href="{{ route('mouvements.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-transfer"></i>

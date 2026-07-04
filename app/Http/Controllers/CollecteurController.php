@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Collecteur;
 use App\Models\User;
 use App\Models\Zone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;   // ← Import OBLIGATOIRE
 
 class CollecteurController extends Controller
 {
     /**
-     * Afficher la liste des collecteurs avec pagination
+     * Liste des collecteurs
      */
     public function index()
     {
-        $collecteurs = Collecteur::with(['user', 'zone'])
+        $collecteurs = User::where('role', 'collecteur')
+            ->with('zone')
             ->latest()
             ->paginate(15);
 
@@ -28,90 +29,76 @@ class CollecteurController extends Controller
     public function create()
     {
         $zones = Zone::all();
-
         return view('admin.collecteurs.create', compact('zones'));
     }
 
     /**
-     * Enregistrer un nouveau collecteur et son utilisateur
+     * Enregistrement d'un collecteur
      */
     public function store(Request $request)
     {
-        DB::transaction(function () use ($request) {
-            // Création de l'utilisateur
-            $user = User::create([
-                'name' => $request->nom,
-                'email' => $request->email,
-                'password' => bcrypt($request->mot_de_passe),
-                'telephone' => $request->telephone,
-                'statut' => $request->statut ?? 'actif',
-                'role' => 'collecteur',
-                'address' => $request->address,
-            ]);
-            $lastCollecteur = Collecteur::latest()->first();
-            $number = $lastCollecteur ? $lastCollecteur->id + 1 : 1;
-            $matricules = 'COL-'.str_pad($number, 4, '0', STR_PAD_LEFT);
+        $validated = $request->validate([
+            'nom'                  => 'required|string|max:255',
+            'email'                => 'required|email|unique:users,email',
+            'telephone'            => 'nullable|string|max:20',
+            'address'              => 'nullable|string|max:255',
+            'zone_id'              => 'nullable|exists:zones,id',
+            'password'             => 'required|min:8|confirmed',
+        ]);
 
-            // Création du collecteur lié
-            Collecteur::create([
-                'user_id' => $user->id,
-                'numpermis' => $request->numpermis,
-                'matricul' => $matricules,
-                'zone_id' => $request->zone_id,
-            ]);
-
-        });
+        User::create([
+            'name'       => $validated['nom'],
+            'email'      => $validated['email'],
+            'telephone'  => $validated['telephone'] ?? null,
+            'address'    => $validated['address'] ?? null,
+            'zone_id'    => $validated['zone_id'] ?? null,
+            'role'       => 'collecteur',
+            'statut'     => 'actif',
+            'password'   => Hash::make($validated['password']),   // ← Correction ici
+        ]);
 
         return redirect()->route('collecteurs.index')
             ->with('success', 'Collecteur créé avec succès !');
     }
 
     /**
-     * Afficher un collecteur
+     * Affichage
      */
-    public function show(Collecteur $collecteur)
+    public function show(User $collecteur)
     {
-        $collecteur->load(['user', 'zone']);
-
         return view('admin.collecteurs.show', compact('collecteur'));
     }
 
     /**
      * Formulaire d'édition
      */
-    public function edit(Collecteur $collecteur)
+    public function edit(User $collecteur)
     {
         $zones = Zone::all();
-
         return view('admin.collecteurs.edit', compact('collecteur', 'zones'));
     }
 
     /**
-     * Mettre à jour un collecteur et son utilisateur
+     * Mise à jour
      */
-    public function update(Request $request, Collecteur $collecteur)
+    public function update(Request $request, User $collecteur)
     {
-
         DB::transaction(function () use ($request, $collecteur) {
-            // Mise à jour de l'utilisateur
-            $collecteur->user->update([
-                'name' => $request->nom,
-                'email' => $request->email,
-                'telephone' => $request->telephone,
-                'address' => $request->address,
-                'statut' => $request->statut ?? $collecteur->user->statut,
-            ]);
 
-            // Mise à jour du collecteur
             $collecteur->update([
-                'numpermis' => $request->numpermis,
-                'zone_id' => $request->zone_id,
+                'name'      => $request->nom,
+                'email'     => $request->email,
+                'telephone' => $request->telephone,
+                'address'   => $request->address,
+                'statut'    => $request->statut ?? $collecteur->statut,
+                'zone_id'   => $request->zone_id,
+                'role'      => 'collecteur',
+                'numpermis' => $request->numpermis ?? $collecteur->numpermis,
             ]);
 
-            // Mise à jour du mot de passe si fourni
             if ($request->filled('mot_de_passe')) {
-                $collecteur->user->update([
-                    'password' => bcrypt($request->mot_de_passe),
+                $collecteur->update([
+                    'password' => Hash::make($request->mot_de_passe),
                 ]);
             }
         });
@@ -121,13 +108,11 @@ class CollecteurController extends Controller
     }
 
     /**
-     * Supprimer un collecteur et son utilisateur
+     * Suppression
      */
-    public function destroy(Collecteur $collecteur)
+    public function destroy(User $collecteur)
     {
-        DB::transaction(function () use ($collecteur) {
-            $collecteur->user->delete(); // supprime l'utilisateur et donc le collecteur si cascade
-        });
+        $collecteur->delete();
 
         return redirect()->route('collecteurs.index')
             ->with('success', 'Collecteur supprimé avec succès !');

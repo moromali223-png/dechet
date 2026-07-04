@@ -3,6 +3,7 @@
 @section('title', 'Liste des Clients')
 
 @section('content')
+
 <div class="container-fluid px-2">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -12,54 +13,43 @@
                 Gestion des clients enregistrés dans le système.
             </p>
         </div>
+
         <a href="{{ route('clients.create') }}" class="btn btn-primary">
-            <i class="bx bx-plus me-1"></i>
             Ajouter un client
         </a>
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0">
-            <i class="bx bx-check-circle me-2"></i>
+        <div class="alert alert-success">
             {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
-    <div class="card border-0 shadow-lg rounded-2">
+    <div class="card shadow-sm border-0">
         <div class="card-body p-0">
 
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
+
                     <thead class="table-light">
                         <tr>
                             <th>Nom</th>
                             <th>Email</th>
                             <th>Téléphone</th>
                             <th>Zone</th>
-                            <th>Type Client</th>
-                            <th>Longitude</th>
-                            <!-- <th>Latitude</th> -->
-                            <th class="text-center">Actions</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         @forelse($clients as $client)
                             <tr>
-                                <td><strong>{{ $client->user->name }}</strong></td>
-                                <td>{{ $client->user->email }}</td>
-                                <td>{{ $client->user->telephone }}</td>
+                                <td>{{ $client->name }}</td>
+                                <td>{{ $client->email }}</td>
+                                <td>{{ $client->telephone }}</td>
                                 <td>{{ $client->zone->nom ?? 'Non défini' }}</td>
-                                <td>
-                                    <span class="badge bg-info">
-                                        {{ $client->typeclient }}
-                                    </span>
-                                </td>
-                                <td>{{ $client->longitude }}</td>
-                                <!-- <td>{{ $client->latitude }}</td> -->
 
-                                <td class="text-center">
+                                  <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center gap-2 flex-nowrap">
                                         
                                         <!-- Voir -->
@@ -93,21 +83,20 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-5">
-                                    <i class="bx bx-user-x display-4 text-muted"></i>
-                                    <p class="mt-3 text-muted">Aucun client trouvé</p>
-                                </td>
+                                <td colspan="5" class="text-center">Aucun client trouvé</td>
                             </tr>
                         @endforelse
                     </tbody>
+
                 </table>
             </div>
 
-            <div class="p-4">
+            <div class="p-3">
                 {{ $clients->links() }}
             </div>
 
         </div>
     </div>
 </div>
+
 @endsection

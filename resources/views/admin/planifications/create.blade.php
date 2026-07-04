@@ -165,7 +165,7 @@
                         <option value="">-- Sélectionner un collecteur --</option>
                         @foreach($collecteurs ?? [] as $collecteur)
                             <option value="{{ $collecteur->id }}">
-                                {{ optional($collecteur->user)->name ?? ('Collecteur #' . $collecteur->id) }}
+                                {{ optional($collecteur)->name ?? ('Collecteur #' . $collecteur->id) }}
                             </option>
                         @endforeach
                     </select>

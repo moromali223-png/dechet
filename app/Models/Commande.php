@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Commande extends Model
 {
@@ -13,59 +15,52 @@ class Commande extends Model
 
     protected $fillable = [
         'code_commande',
-        'produit',       // garder si colonne existe
+        'user_id',
         'produit_id',
         'quantite',
         'prix_unitaire',
         'montant_total',
         'statut',
-        'client_id',
         'date_commande',
     ];
 
     protected $casts = [
         'quantite' => 'integer',
+        'prix_unitaire' => 'decimal:2',
         'montant_total' => 'decimal:2',
         'date_commande' => 'datetime',
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | RELATIONS
-    |--------------------------------------------------------------------------
-    */
+    public const STATUTS = [
+        'en_attente' => 'En attente',
+        'acceptee' => 'Acceptée',
+        'refusee' => 'Refusée',
+        'en_preparation' => 'En préparation',
+        'livree' => 'Livrée',
+        'annulee' => 'Annulée',
+    ];
 
-    public function client()
-{
-    return $this->belongsTo(Client::class);
-}
+    // ================= RELATIONS =================
 
-// Relation principale
-// Dans App\Models\Commande.php
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+   
+    public function produit(): BelongsTo
+    {
+        return $this->belongsTo(Produit::class);
+    }
 
-public function produitRelation()
-{
-    return $this->belongsTo(Produit::class, 'produit_id');
-}
-
-/**
- * Alias important pour éviter le conflit avec la colonne "produit"
- */
-public function produit()
-{
-    return $this->produitRelation();
-}
+    public function paiements(): HasMany
+    {
+        return $this->hasMany(Paiement::class);
+    }
 
 
-public function paiements()
-{
-    return $this->hasMany(Paiement::class);
-}
-    /*
-    |--------------------------------------------------------------------------
-    | SCOPES
-    |--------------------------------------------------------------------------
-    */
+        // Dans class Commande extends Model
+   
+    // ================= SCOPES =================
 
     public function scopeEnAttente($query)
     {
@@ -77,13 +72,25 @@ public function paiements()
         return $query->where('statut', 'acceptee');
     }
 
-    public function scopeRefusee($query)
-    {
-        return $query->where('statut', 'refusee');
-    }
-
     public function scopeLivree($query)
     {
         return $query->where('statut', 'livree');
+    }
+
+    public function scopeByUser($query, $userId)
+    {
+        return $query->where('user_id', $userId);
+    }
+
+    // ================= ACCESSORS =================
+
+    public function getStatutFormateAttribute(): string
+    {
+        return self::STATUTS[$this->statut] ?? ucfirst($this->statut);
+    }
+
+    public function getMontantTotalFormateAttribute(): string
+    {
+        return number_format($this->montant_total ?? 0, 2) . ' FCFA';
     }
 }

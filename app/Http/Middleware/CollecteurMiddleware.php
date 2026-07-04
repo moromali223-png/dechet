@@ -8,15 +8,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CollecteurMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! auth()->check() || auth()->user()->role !== 'collecteur') {
-            abort(403, 'Accès refusé. Vous devez être collecteur.');
+        if (! auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $user = auth()->user();
+
+        if ($user->role !== 'collecteur') {
+            abort(403, 'Accès refusé. Vous devez être connecté en tant que collecteur.');
         }
 
         return $next($request);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Commande;
 use App\Models\Paiement;
+use App\Models\Mouvement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -38,29 +39,26 @@ class CommandeAdminController extends Controller
 
         return view('admin.commandes.show', compact('commande'));
     }
-
-    public function accepter(Commande $commande)
+public function accepter(Commande $commande)
 {
     if ($commande->statut !== 'en_attente') {
-        return back()->with(
-            'error',
-            'Cette commande ne peut pas être acceptée.'
-        );
+        return back()->with('error', 'Cette commande ne peut plus être acceptée.');
     }
 
     try {
 
         DB::transaction(function () use ($commande) {
 
-            $commande->load('produitRelation.stock');
+            $commande->load('produitRelation');
 
-            $produit = $commande->produitRelation;
-
-            if (!$produit) {
+            if (!$commande->produitRelation) {
                 throw new \Exception('Produit introuvable.');
             }
 
-            $stock = $produit->stock;
+            $stock = $commande->produitRelation
+                ->stock()
+                ->lockForUpdate()
+                ->first();
 
             if (!$stock) {
                 throw new \Exception('Stock introuvable.');
@@ -70,13 +68,31 @@ class CommandeAdminController extends Controller
                 throw new \Exception('Stock insuffisant.');
             }
 
+            // Déduction du stock uniquement ici
             $stock->decrement(
                 'quantite_disponible',
                 $commande->quantite
             );
 
+            // Mise à jour du statut
             $commande->update([
                 'statut' => 'acceptee'
+            ]);
+
+            // Historique du mouvement
+            Mouvement::create([
+                'stock_id'        => $stock->id,
+                'produit_id'      => $commande->produit_id,
+                'commande_id'     => $commande->id,
+                'type_mouvement'  => 'sortie',
+                'quantite'        => $commande->quantite,
+                'prix_unitaire'   => $commande->prix_unitaire,
+                'montant_total'   => $commande->montant_total,
+                'source'          => 'Commande client',
+                'description'     => 'Commande acceptée - ' . $commande->code_commande,
+                'user_id'         => auth()->id(),
+                'date_mouvement'  => now()->toDateString(),
+                'heure_mouvement' => now()->format('H:i:s'),
             ]);
 
             Paiement::create([
@@ -85,19 +101,15 @@ class CommandeAdminController extends Controller
                 'montant'       => $commande->montant_total,
                 'statut'        => 'valide',
             ]);
+
         });
 
-        return back()->with(
-            'success',
-            'Commande acceptée avec succès.'
-        );
+        return back()->with('success', 'Commande acceptée avec succès.');
 
     } catch (\Exception $e) {
 
-        return back()->with(
-            'error',
-            $e->getMessage()
-        );
+        return back()->with('error', $e->getMessage());
+
     }
 }
 

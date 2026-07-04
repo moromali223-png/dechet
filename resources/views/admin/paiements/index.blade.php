@@ -57,16 +57,15 @@
                             <tr>
                                 <td><strong>{{ $paiement->id }}</strong></td>
 
-                                <td>
-                                    @if($paiement->commande && $paiement->commande->client)
-                                        {{ $paiement->commande->client->user->name ?? $paiement->commande->client->name ?? 'Client inconnu' }}
-                                    @elseif($paiement->abonnement && $paiement->abonnement->client)
-                                        {{ $paiement->abonnement->client->user->name ?? $paiement->abonnement->client->name ?? 'Client inconnu' }}
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-
+                              <td>
+    @if($paiement->commande && $paiement->commande->user)
+        {{ $paiement->commande->user->name ?? $paiement->commande->user->username ?? 'Utilisateur inconnu' }}
+    @elseif($paiement->abonnement && $paiement->abonnement->user)
+        {{ $paiement->abonnement->user->name ?? $paiement->abonnement->user->username ?? 'Utilisateur inconnu' }}
+    @else
+        <span class="text-muted">-</span>
+    @endif
+</td>
                                 <td>
                                     {{ $paiement->commande->code_commande ?? '-' }}
                                 </td>

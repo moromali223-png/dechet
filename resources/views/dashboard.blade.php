@@ -12,7 +12,7 @@
     <div class="row align-items-center g-4">
         <!-- Section de bienvenue -->
         <div class="col-lg-6 col-12">
-            <div class="welcome-section">
+            <div class="welcome-section"@
                 <h1 class="welcome-title">
                     Bonjour, {{ auth()->user()->name ?? 'Utilisateur' }}
                 </h1>

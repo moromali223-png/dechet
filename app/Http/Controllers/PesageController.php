@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Collectes;
+use App\Models\Collecte;
 use App\Models\Pesage;   // ← Important : on utilise Collectes
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,7 +29,7 @@ class PesageController extends Controller
      */
     public function create(): View
     {
-        $collectes = Collectes::all();
+        $collectes = Collecte::all();
 
         return view('pesages.create', compact('collectes'));
     }
@@ -78,7 +78,7 @@ class PesageController extends Controller
      */
     public function edit(Pesage $pesage): View
     {
-        $collectes = Collectes::all();
+        $collectes = Collecte::all();
 
         return view('pesages.edit', compact('pesage', 'collectes'));
     }

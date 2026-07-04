@@ -15,7 +15,7 @@ class AssignAffectationRequest extends FormRequest
     {
         return [
             'agent_id' => ['required', 'exists:users,id'],
-            'collecteur_id' => ['required', 'exists:collecteurs,id'],
+            'collecteur_id' => ['required', 'exists:users,id'],
             'ordre_passage' => ['nullable', 'integer', 'min:1'],
             'duree_estimee' => ['nullable', 'integer', 'min:1'],
             'priorite' => ['nullable', 'integer', 'between:1,5'],

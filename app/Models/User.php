@@ -2,23 +2,17 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -27,24 +21,14 @@ class User extends Authenticatable
         'statut',
         'role',
         'address',
-
+        'zone_id',           // ← ajouté
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -52,15 +36,29 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-
-    public function collecteurs()
+    public function hasRole(string $role): bool
     {
-        return $this->hasOne(Collecteur::class);
+        return $this->role === $role;
     }
 
-    public function client()
+    public function getNomAttribute(): string
     {
-        return $this->hasOne(Client::class);
+        return $this->name;
+    }
+
+    public function getUserAttribute(): self
+    {
+        return $this;
+    }
+    /*
+    |--------------------------------------------------------------------------
+    | Relations
+    |--------------------------------------------------------------------------
+    */
+
+    public function zone(): BelongsTo
+    {
+        return $this->belongsTo(Zone::class);
     }
 
     public function abonnements(): HasMany
@@ -81,5 +79,31 @@ class User extends Authenticatable
     public function mouvements(): HasMany
     {
         return $this->hasMany(Mouvement::class);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
+
+    public function scopeClients($query)
+    {
+        return $query->where('role', 'client');
+    }
+
+    public function scopeAgents($query)
+    {
+        return $query->where('role', 'agent');
+    }
+
+    public function scopeCollecteurs($query)
+    {
+        return $query->where('role', 'collecteur');
+    }
+
+    public function scopeAdministrateurs($query)
+    {
+        return $query->where('role', 'administrateur');
     }
 }

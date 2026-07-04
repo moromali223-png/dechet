@@ -3,81 +3,127 @@
 namespace App\Http\Controllers\Collecteur;
 
 use App\Http\Controllers\Controller;
-use App\Models\Client;
-use App\Models\Collectes;
+use App\Models\Collecte;
 use App\Models\Planification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ZoneController extends Controller
 {
     public function index(Request $request)
     {
         $user = Auth::user();
-        $collecteur = $user->collecteurs;
 
-        if (! $collecteur) {
-            abort(403, 'Accès refusé. Vous devez être collecteur.');
-        }
+        abort_unless($user && $user->role === 'collecteur', 403);
 
-        $zone = $collecteur->zone;
+        $zone = $user->zone;
 
-        if (! $zone) {
+        /*
+        |--------------------------------------------------------------------------
+        | Si aucune zone n'est affectée
+        |--------------------------------------------------------------------------
+        */
+        if (!$zone) {
+
             return view('collecteur.zone.index', [
-                'collecteur' => $collecteur,
-                'zone' => null,
-                'stats' => collect(),
-                'totalCollectes' => 0,
-                'collectesAujourdhui' => 0,
-                'clients' => collect(),
-                'recentCollectes' => collect(),
+                'user'                  => $user,
+                'zone'                  => null,
+                'stats'                 => collect(),
+                'totalCollectes'        => 0,
+                'collectesAujourdhui'   => 0,
+                'clients'               => new LengthAwarePaginator([], 0, 15),
+                'recentCollectes'       => collect(),
             ]);
         }
 
-        // Statistiques
-        $stats = Planification::where('collecteur_id', $collecteur->id)
+        /*
+        |--------------------------------------------------------------------------
+        | Statistiques
+        |--------------------------------------------------------------------------
+        */
+
+        $stats = Planification::where('collecteur_id', $user->id)
             ->selectRaw('statut, COUNT(*) as total')
             ->groupBy('statut')
             ->pluck('total', 'statut');
 
-        $totalCollectes = Collectes::whereHas('planification', fn ($q) => $q->where('collecteur_id', $collecteur->id)
-        )->count();
+        $totalCollectes = Collecte::whereHas('planification', function ($q) use ($user) {
+            $q->where('collecteur_id', $user->id);
+        })->count();
 
-        $collectesAujourdhui = Collectes::whereHas('planification', fn ($q) => $q->where('collecteur_id', $collecteur->id)
-        )->whereDate('created_at', today())->count();
+        $collectesAujourdhui = Collecte::whereHas('planification', function ($q) use ($user) {
+            $q->where('collecteur_id', $user->id);
+        })
+        ->whereDate('created_at', today())
+        ->count();
 
-        // Clients de la zone
-      $clients = Client::with('user')
-    ->where('zone_id', $zone->id)
-    ->when($request->search, function ($query, $search) {
-        $query->whereHas('user', function ($q) use ($search) {
-            $q->where('name', 'LIKE', "%{$search}%")
-              ->orWhere('email', 'LIKE', "%{$search}%");
-        });
-    })
-    ->paginate(15);
+        /*
+        |--------------------------------------------------------------------------
+        | Clients
+        |--------------------------------------------------------------------------
+        */
 
-$clients->getCollection()->transform(function ($client) {
-    $client->derniereCollecte = Collectes::whereHas('planification.abonnement', function ($q) use ($client) {
-        $q->where('user_id', $client->user_id);
-    })
-    ->latest('created_at')
-    ->first();
+        $clients = User::query()
+            ->where('role', 'client')
+            ->where('zone_id', $zone->id)
+            ->when($request->filled('search'), function ($query) use ($request) {
 
-    return $client;
-});
+                $search = $request->search;
 
-        // Dernières collectes
-        $recentCollectes = Collectes::with(['planification.abonnement.client.user'])
-            ->whereHas('planification', fn ($q) => $q->where('collecteur_id', $collecteur->id)
+                $query->where(function ($q) use ($search) {
+
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('telephone', 'like', "%{$search}%");
+
+                });
+
+            })
+            ->orderBy('name')
+            ->paginate(15);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dernière collecte de chaque client
+        |--------------------------------------------------------------------------
+        */
+
+        $clients->getCollection()->transform(function ($client) {
+
+            $client->derniereCollecte = Collecte::whereHas(
+                'planification.abonnement',
+                function ($q) use ($client) {
+                    $q->where('user_id', $client->id);
+                }
             )
-            ->where('created_at', '>=', now()->subDays(30))
+            ->latest()
+            ->first();
+
+            return $client;
+
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Collectes récentes
+        |--------------------------------------------------------------------------
+        */
+
+        $recentCollectes = Collecte::with([
+                'planification.zone',
+                'planification.abonnement.user'
+            ])
+            ->whereHas('planification', function ($q) use ($user) {
+                $q->where('collecteur_id', $user->id);
+            })
             ->latest()
             ->take(10)
             ->get();
 
         return view('collecteur.zone.index', compact(
-            'collecteur',
+            'user',
             'zone',
             'stats',
             'totalCollectes',
@@ -87,15 +133,15 @@ $clients->getCollection()->transform(function ($client) {
         ));
     }
 
-    public function showClient(Client $client)
-{
-    $client->load([
-        'user',
-        'zone',
-        'abonnements',
-    ]);
+    public function showClient(User $client)
+    {
+        abort_unless($client->role === 'client', 404);
 
-    return view('collecteur.zone.show-client', compact('client'));
-}
-}
+        $client->load([
+            'zone',
+            'abonnements'
+        ]);
 
+        return view('collecteur.zone.show-client', compact('client'));
+    }
+}

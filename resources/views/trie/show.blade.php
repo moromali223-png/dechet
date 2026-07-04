@@ -57,7 +57,7 @@
                         </tr>
                         <tr>
                             <th>Valeur estimée:</th>
-                            <td>{{ $tri->valeur_estimee ? $tri->valeur_estimee . ' €' : 'Non définie' }}</td>
+                            <td>{{ $tri->valeur_estimee ? $tri->valeur_estimee . ' FCCFA' : 'Non définie' }}</td>
                         </tr>
                         <tr>
                             <th>Notes:</th>

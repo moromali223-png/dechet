@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Client;
 use App\Models\Commande;
 use App\Models\Produit;
 use Illuminate\Http\Request;
@@ -22,16 +21,17 @@ class CommandeClientController extends Controller
             ->whereHas('stock', function ($query) {
                 $query->where('quantite_disponible', '>', 0);
             })
+            ->with('stock')
             ->latest()
             ->get()
             ->groupBy(fn ($produit) => strtolower(trim($produit->nom)))
             ->map(fn ($group) =>
-                $group->first(fn ($produit) => !empty($produit->photo))
+                $group->firstWhere('photo', '!=', null)
                 ?? $group->first()
             )
             ->values();
 
-        $page = request()->get('page', 1);
+        $page = request()->integer('page', 1);
         $perPage = 12;
 
         $produits = new LengthAwarePaginator(
@@ -40,7 +40,7 @@ class CommandeClientController extends Controller
             $perPage,
             $page,
             [
-                'path' => request()->url(),
+                'path'  => request()->url(),
                 'query' => request()->query(),
             ]
         );
@@ -49,104 +49,102 @@ class CommandeClientController extends Controller
     }
 
     /**
-     * Enregistrer une commande client.
+     * Enregistrer une commande.
      */
-    public function commander(Request $request, Produit $produit)
-    {
-        $request->validate([
-            'quantite' => ['required', 'integer', 'min:1'],
-        ]);
+  public function commander(Request $request, Produit $produit)
+{
+    $validated = $request->validate([
+        'quantite' => ['required', 'integer', 'min:1'],
+    ]);
 
-        $client = Client::where('user_id', auth()->id())
-            ->firstOrFail();
+    $user = auth()->user();
 
-        $result = DB::transaction(function () use ($request, $produit, $client) {
+    $result = DB::transaction(function () use ($validated, $produit, $user) {
 
-            $produit = Produit::with('stock')
-                ->lockForUpdate()
-                ->findOrFail($produit->id);
+        $produit = Produit::with('stock')
+            ->lockForUpdate()
+            ->findOrFail($produit->id);
 
-            $stock = $produit->stock;
+        $stock = $produit->stock;
 
-            if (!$stock) {
-                return [
-                    'error' => 'Aucun stock disponible pour ce produit.'
-                ];
-            }
-
-            if ($stock->quantite_disponible < $request->quantite) {
-                return [
-                    'error' => 'La quantité demandée dépasse le stock disponible.'
-                ];
-            }
-
-            $montantTotal = $produit->prix_unitaire * $request->quantite;
-
-            Commande::create([
-                'code_commande' => 'CMD-' . strtoupper(Str::random(8)),
-                'produit'       => $produit->nom,
-                'produit_id'    => $produit->id,
-                'quantite'      => $request->quantite,
-                'statut'        => 'en_attente',
-                'client_id'     => $client->id,
-                'date_commande' => now(),
-                'montant_total' => $montantTotal,
-            ]);
-
-            return [
-                'success' => true
-            ];
-        });
-
-        if (isset($result['error'])) {
-            return back()->with('error', $result['error']);
+        if (!$stock) {
+            return ['error' => 'Aucun stock disponible pour ce produit.'];
         }
 
-        return redirect()
-            ->route('client.commandes.index')
-            ->with(
-                'success',
-                'Votre commande a été enregistrée et est en attente de validation.'
-            );
+        // Vérification uniquement
+        if ($stock->quantite_disponible < $validated['quantite']) {
+            return ['error' => 'Stock insuffisant.'];
+        }
+
+        $montantTotal = $produit->prix_unitaire * $validated['quantite'];
+
+        Commande::create([
+            'code_commande' => 'CMD-' . strtoupper(Str::random(8)),
+            'user_id'       => $user->id,
+            'produit_id'    => $produit->id,
+            'quantite'      => $validated['quantite'],
+            'prix_unitaire' => $produit->prix_unitaire,
+            'montant_total' => $montantTotal,
+            'statut'        => 'en_attente',
+            'date_commande' => now(),
+        ]);
+
+        // IMPORTANT :
+        // On ne diminue PAS le stock ici.
+        // Le stock sera diminué uniquement lorsque
+        // l'administrateur acceptera la commande.
+
+        return ['success' => true];
+    });
+
+    if (isset($result['error'])) {
+        return back()->with('error', $result['error']);
     }
 
+    return redirect()
+        ->route('client.commandes.index')
+        ->with('success', 'Commande envoyée avec succès. Elle est en attente de validation.');
+}
     /**
      * Afficher un produit.
      */
     public function showProduit(Produit $produit)
     {
+        $produit->load('stock');
+
         return view('client.produits.show', compact('produit'));
     }
 
     /**
-     * Afficher le détail d'une commande.
+     * Afficher une commande.
      */
     public function showCommande(Commande $commande)
     {
-        $client = Client::where('user_id', auth()->id())
-            ->firstOrFail();
-
-        abort_if($commande->client_id !== $client->id, 403);
+        abort_if(
+            $commande->user_id !== auth()->id(),
+            403,
+            'Accès non autorisé.'
+        );
 
         $commande->load([
-            'produitRelation',
-            'paiements'
+            'produit',
+            'paiements',
         ]);
 
         return view('client.commandes.show', compact('commande'));
     }
 
     /**
-     * Liste des commandes du client.
+     * Historique des commandes du client.
      */
     public function mesCommandes()
     {
-        $client = Client::where('user_id', auth()->id())
-            ->firstOrFail();
-
-        $commandes = Commande::with('produitRelation')
-            ->where('client_id', $client->id)
-            ->latest()
+        $commandes = Commande::with([
+                'produit',
+                'paiements',
+            ])
+            ->where('user_id', auth()->id())
+            ->latest('date_commande')
             ->paginate(10);
 
         return view('client.commandes.index', compact('commandes'));

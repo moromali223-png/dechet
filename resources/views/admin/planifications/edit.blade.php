@@ -91,7 +91,7 @@
             <select class="form-control" id="collecteur_id" name="collecteur_id" required>
                 @foreach($collecteurs as $collecteur)
                 <option value="{{ $collecteur->id }}" {{ $planification->collecteur_id == $collecteur->id ? 'selected' : '' }}>
-                    {{ $collecteur->user->name ?? $collecteur->nom_collecteur ?? 'Collecteur #' . $collecteur->id }}
+                    {{ $collecteur->name ?? $collecteur->nom_collecteur ?? 'Collecteur #' . $collecteur->id }}
                 </option>
                 @endforeach
             </select>

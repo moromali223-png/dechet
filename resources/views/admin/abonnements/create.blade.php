@@ -63,14 +63,12 @@
                                 -- Sélectionner un client --
                             </option>
 
-                            @foreach($clients as $client)
-                                <option
-                                    value="{{ $client->id }}"
-                                    {{ old('client_id') == $client->id ? 'selected' : '' }}
-                                >
-                                    {{ $client->user->name ?? 'Client' }}
-                                </option>
-                            @endforeach
+                           @foreach($clients as $client)
+<option value="{{ $client->id }}"
+    {{ old('client_id') == $client->id ? 'selected' : '' }}>
+    {{ $client->name }}
+</option>
+@endforeach
 
                         </select>
 

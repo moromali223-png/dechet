@@ -14,17 +14,18 @@ class TourneeController extends Controller
         $query = Planification::with([
             'zone',
             'agent',
-            'collecteur.user',
+            'collecteur',
             'declaration.user',
-            'abonnement.client.user',
+            'abonnement.user',
+            'abonnement.user.zone',
         ])
-            ->whereDate('date_prevue', today())
-            ->whereIn('statut', [
-                'planifiee',
-                'assignee',
-                'en_route',
-                'en_cours',
-            ]);
+        ->whereDate('date_prevue', today())
+        ->whereIn('statut', [
+            'planifiee',
+            'assignee',
+            'en_route',
+            'en_cours',
+        ]);
 
         /*
         |--------------------------------------------------------------------------
@@ -33,8 +34,8 @@ class TourneeController extends Controller
         */
 
         // Collecteur : uniquement ses tournées
-        if ($user->role === 'collecteur' && $user->collecteur) {
-            $query->where('collecteur_id', $user->collecteur->id);
+        if ($user->role === 'collecteur') {
+            $query->where('collecteur_id', $user->id);
         }
 
         // Agent : uniquement ses tournées
@@ -42,14 +43,14 @@ class TourneeController extends Controller
             $query->where('agent_id', $user->id);
         }
 
-        // Admin : voit toutes les tournées
-        // Aucun filtre supplémentaire nécessaire
+        // Admin : toutes les tournées
 
         /*
         |--------------------------------------------------------------------------
-        | Filtres optionnels
+        | Filtres
         |--------------------------------------------------------------------------
         */
+
         if ($request->filled('statut')) {
             $query->where('statut', $request->statut);
         }
@@ -60,9 +61,10 @@ class TourneeController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Tri professionnel
+        | Tri
         |--------------------------------------------------------------------------
         */
+
         $tournees = $query
             ->orderByDesc('priorite')
             ->orderBy('ordre_passage')
@@ -70,7 +72,6 @@ class TourneeController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        // Si c'est un collecteur, on utilise la vue simplifiée du dossier collecteurfiles
         if ($user->role === 'collecteur') {
             return view('collecteur.tournees', compact('tournees'));
         }

@@ -17,8 +17,8 @@ return new class extends Migration
 
             // Clé étrangère vers Client (comme tu l'as demandé)
             $table->foreignId('client_id')
-                ->constrained('clients')     // nom de la table = clients (pluriel)
-                ->onDelete('cascade');       // Si client supprimé, ses commandes aussi
+                ->constrained('users')
+                ->onDelete('cascade');
 
             $table->date('date_commande')->nullable(); // Date de la commande
 

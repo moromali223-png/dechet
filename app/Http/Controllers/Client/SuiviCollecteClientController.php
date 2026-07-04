@@ -11,35 +11,30 @@ class SuiviCollecteClientController extends Controller
     public function index(Request $request)
     {
         $clientUserId = auth()->id();
-      $type = $request->get('type', 'toutes');
+        $type = $request->get('type', 'toutes');
 
-$query = Planification::with([
-    'zone',
-    'collecteur.user',
-    'collecte',
-    'abonnement.client.user',
-])->whereHas('abonnement.client', function ($q) use ($clientUserId) {
-    $q->where('user_id', $clientUserId);
-});
+        $query = Planification::with([
+            'zone',
+            'collecteur',           // User
+            'collecte',
+            'abonnement.user',      // ← Correction principale
+        ])
+        ->whereHas('abonnement', function ($q) use ($clientUserId) {
+            $q->where('user_id', $clientUserId);
+        });
 
-$query->when($type !== 'toutes', function ($q) use ($type) {
+        $query->when($type !== 'toutes', function ($q) use ($type) {
 
-    if ($type === 'en_cours') {
-        $q->whereIn('statut', ['assignee', 'en_route', 'en_cours']);
-    }
-
-    elseif ($type === 'terminee') {
-        $q->where('statut', 'terminee');
-    }
-
-    elseif ($type === 'annulee') {
-        $q->where('statut', 'annulee');
-    }
-
-    else {
-        $q->where('statut', $type);
-    }
-});
+            if ($type === 'en_cours') {
+                $q->whereIn('statut', ['assignee', 'en_route', 'en_cours']);
+            } elseif ($type === 'terminee') {
+                $q->where('statut', 'terminee');
+            } elseif ($type === 'annulee') {
+                $q->where('statut', 'annulee');
+            } else {
+                $q->where('statut', $type);
+            }
+        });
 
         $collectes = $query->latest('date_prevue')->paginate(10);
 
@@ -52,11 +47,11 @@ $query->when($type !== 'toutes', function ($q) use ($type) {
 
         $planification = Planification::with([
             'zone',
-            'collecteur.user',
+            'collecteur',
             'collecte',
-            'abonnement.client.user',
+            'abonnement.user',
         ])
-        ->whereHas('abonnement.client', function ($q) use ($clientUserId) {
+        ->whereHas('abonnement', function ($q) use ($clientUserId) {
             $q->where('user_id', $clientUserId);
         })
         ->findOrFail($id);

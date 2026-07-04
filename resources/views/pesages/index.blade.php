@@ -29,8 +29,8 @@
                     <tbody>
                         @forelse($pesages as $pesage)
                             <tr>
-                                <td><strong>#{{ $pesage->id }}</strong></td>
-                                <td>Collecte #{{ $pesage->id_collecte }}</td>
+                                <td><strong>{{ $pesage->id }}</strong></td>
+                                <td>Collecte-{{ $pesage->id_collecte }}</td>
                                 <td><strong>{{ number_format($pesage->poids, 2) }}</strong></td>
                                 <td>{{ $pesage->unite }}</td>
                                 <td>

@@ -181,62 +181,61 @@
         </td>
 
         <!-- ACTIONS -->
-        <td class="text-center pe-4">
+        <!-- ACTIONS -->
+<td class="text-center pe-4">
 
-            @if($tournee->statut === 'assignee')
+    @if($tournee->statut === 'planifiee')
 
-                <form method="POST"
-                      action="{{ route('collecteur.start', $tournee) }}"
-                      class="d-inline">
+        <span class="badge bg-secondary">
+            En attente d'assignation
+        </span>
 
-                    @csrf
+    @elseif($tournee->statut === 'assignee')
 
-                    <button type="submit"
-                            class="btn btn-warning btn-sm">
+        <form method="POST"
+              action="{{ route('collecteur.start', $tournee) }}"
+              class="d-inline">
+            @csrf
+            <button type="submit" class="btn btn-warning btn-sm">
+                Démarrer
+            </button>
+        </form>
 
-                        Démarrer
+    @elseif($tournee->statut === 'en_route')
 
-                    </button>
+        <form method="POST"
+              action="{{ route('collecteur.arrive', $tournee) }}"
+              class="d-inline">
+            @csrf
+            <button type="submit" class="btn btn-primary btn-sm">
+                Arrivé
+            </button>
+        </form>
 
-                </form>
+    @elseif($tournee->statut === 'en_cours')
 
-            @elseif($tournee->statut === 'en_route')
+        <button type="button"
+                class="btn btn-success btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#finishModal{{ $tournee->id }}">
+            Collecter
+        </button>
 
-                <form method="POST"
-                      action="{{ route('collecteur.arrive', $tournee) }}"
-                      class="d-inline">
+    @elseif($tournee->statut === 'terminee')
 
-                    @csrf
+        <span class="badge bg-success">
+            ✔ Terminée
+        </span>
 
-                    <button type="submit"
-                            class="btn btn-primary btn-sm">
+    @else
 
-                        Arrivé
+        <span class="badge bg-danger">
+            Statut inconnu
+        </span>
 
-                    </button>
+    @endif
 
-                </form>
-
-            @elseif($tournee->statut === 'en_cours')
-
-                <button type="button"
-                        class="btn btn-success btn-sm"
-                        data-bs-toggle="modal"
-                        data-bs-target="#finishModal{{ $tournee->id }}">
-
-                    Collecter
-
-                </button>
-
-            @else
-
-                <span class="badge bg-label-success">
-                    ✔ Terminée
-                </span>
-
-            @endif
-
-        </td>
+</td>
 
     </tr>
 

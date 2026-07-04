@@ -54,7 +54,7 @@
 
     <td>
         <strong>
-            {{ $abonnement->client?->user?->name ?? $abonnement->user?->name }}
+            {{ $abonnement->user?->name ?? $abonnement->user?->name }}
         </strong>
     </td>
 

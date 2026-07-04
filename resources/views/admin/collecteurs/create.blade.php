@@ -86,28 +86,23 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Mot de passe</label>
-                    <input type="password" 
-                           name="mot_de_passe" 
-                           class="form-control @error('mot_de_passe') is-invalid @enderror" 
-                           required>
-                    @error('mot_de_passe')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+    <label class="form-label">Mot de passe</label>
+    <input type="password"
+           name="password"
+           class="form-control @error('password') is-invalid @enderror"
+           required>
+    @error('password')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
 
-                <!-- Confirmation du mot de passe -->
-                <div class="col-md-6">
-                    <label class="form-label">Confirmer le mot de passe</label>
-                    <input type="password" 
-                           name="password_confirmation" 
-                           class="form-control @error('password_confirmation') is-invalid @enderror" 
-                           required>
-                    @error('password_confirmation')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
+<div class="col-md-6">
+    <label class="form-label">Confirmer le mot de passe</label>
+    <input type="password"
+           name="password_confirmation"
+           class="form-control @error('password_confirmation') is-invalid @enderror"
+           required>
+</div>
                 <div class="col-12">
                     <label class="form-label">Adresse</label>
                     <input type="text" 
@@ -128,7 +123,7 @@
                     </h5>
                 </div>
 
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <label class="form-label">Numéro de permis</label>
                     <input type="text" 
                            name="numpermis" 
@@ -138,9 +133,9 @@
                     @error('numpermis')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                </div>
+                </div> -->
 
-                <div class="col-md-6">
+                <div class="col-12">
                     <label class="form-label">Zone</label>
                     <select name="zone_id" 
                             class="form-select @error('zone_id') is-invalid @enderror">

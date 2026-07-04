@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Collectes extends Model
+class Collecte extends Model
 {
     protected $table = 'collectes';
 
@@ -18,10 +18,23 @@ class Collectes extends Model
         'statut',
         'heure_depart',
         'heure_fin',
+        // Ajoute d'autres champs si nécessaire (poids_total, etc.)
     ];
+
+    protected $casts = [
+        'heure_depart' => 'datetime',
+        'heure_fin'    => 'datetime',
+    ];
+
+    // ====================== RELATIONS ======================
     public function planification(): BelongsTo
     {
         return $this->belongsTo(Planification::class);
+    }
+
+    public function user(): BelongsTo   // Le collecteur qui a réalisé la collecte
+    {
+        return $this->belongsTo(User::class, 'collecteur_id'); // si tu as cette colonne
     }
 
     public function pesage(): HasOne
@@ -29,27 +42,19 @@ class Collectes extends Model
         return $this->hasOne(Pesage::class, 'id_collecte');
     }
 
-    /**
-     * Relation pour la vue détails (show) qui attend un ensemble de pesages
-     */
     public function pesages(): HasMany
     {
         return $this->hasMany(Pesage::class, 'id_collecte');
     }
 
-    /**
-     * Accès direct au client via Planification → Abonnement
-     */
+    // ====================== ACCESSORS ======================
     public function getClientAttribute()
     {
-        return $this->planification?->abonnement?->client;
+        return $this->planification?->abonnement?->user;
     }
 
-    /**
-     * Accès direct à l'utilisateur du client (très pratique dans les vues)
-     */
     public function getUserAttribute()
     {
-        return $this->client?->user;
+        return $this->planification?->abonnement?->user;
     }
 }

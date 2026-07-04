@@ -101,7 +101,7 @@
 
                                 <!-- ID -->
                                 <td class="fw-bold text-primary">
-                                    #{{ $produit->id }}
+                                    {{ $produit->id }}
                                 </td>
 
                                 <!-- PHOTO -->

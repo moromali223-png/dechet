@@ -37,8 +37,7 @@
                             <th>Email</th>
                             <!-- <th>Téléphone</th> -->
                             <th>Adresse</th>
-                            <th>Matricule</th>
-                            <th>Qualification</th>
+                            
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -46,19 +45,11 @@
                     <tbody>
                         @forelse($agents as $agent)
                             <tr>
-                                <td><strong>{{ $agent->user->name }}</strong></td>
-                                <td>{{ $agent->user->email }}</td>
-                                <!-- <td>{{ $agent->user->telephone }}</td> -->
-                                <td>{{ $agent->user->address ?? 'Non renseignée' }}</td>
-                                <td>
-                                    <strong>{{ $agent->matricul }}</strong>
-                                </td>
-                                <td>
-                                    <span class="badge bg-info">
-                                        {{ $agent->qualification }}
-                                    </span>
-                                </td>
-
+                                <td><strong>{{ $agent->name }}</strong></td>
+                                <td>{{ $agent->email }}</td>
+                                <!-- <td>{{ $agent->telephone }}</td> -->
+                                <td>{{ $agent->address ?? 'Non renseignée' }}</td>
+                               
                                 <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center gap-2 flex-nowrap">
                                         
