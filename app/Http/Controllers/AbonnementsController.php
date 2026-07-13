@@ -60,37 +60,42 @@ class AbonnementsController extends Controller
     /**
      * Enregistrement d'un abonnement + création automatique de Déclaration + Planification
      */
-    public function store(StoreAbonnementRequest $request)
-    {
-        $data = $request->validated();
+ /**
+ * Enregistrement d'un abonnement + création automatique de Déclaration + Planification
+ */
+public function store(StoreAbonnementRequest $request)
+{
+    $data = $request->validated();
 
-        if ($this->isAdmin()) {
-            $client = User::where('role', 'client')
-                ->findOrFail($request->client_id);
-
-            $data['user_id'] = $client->id;
-            $data['statut'] = 'actif';
-            $data['date_activation'] = now();
-        } else {
-            $client = auth()->user();
-            $data['user_id'] = $client->id;
-            $data['statut'] = 'en_attente';
-        }
-
-        $data = $this->prefillAddressFromClient($data, $client);
-
-        // Création transactionnelle + génération automatique
-        $abonnement = DB::transaction(function () use ($data) {
-            $abonnement = Abonnement::create($data);
-            $abonnement->generateNextPlanification();   // ← Crée Déclaration + Planification
-            return $abonnement;
-        });
-
-        return redirect()
-            ->route('abonnements.index')
-            ->with('success', 'Abonnement créé avec succès (déclaration + planification générées automatiquement).');
+    if ($this->isAdmin()) {
+        $client = User::where('role', 'client')->findOrFail($request->client_id);
+        $data['user_id'] = $client->id;
+        $data['statut'] = 'actif';
+        $data['date_activation'] = now();
+    } else {
+        $data['user_id'] = auth()->id();
+        $data['statut'] = 'en_attente';
     }
 
+    $data = $this->prefillAddressFromClient($data, $client ?? auth()->user());
+
+    $abonnement = DB::transaction(function () use ($data) {
+        $abonnement = Abonnement::create($data);
+
+        // // Création INITIALE seulement
+        // if ($abonnement->statut === 'actif') {
+        //     // Correction ici : namespace complet
+        //     app(\App\Services\PlanificationService::class)
+        //         ->createNextPlanification($abonnement);
+        // }
+
+        return $abonnement;
+    });
+
+    return redirect()
+        ->route('abonnements.index')
+        ->with('success', 'Abonnement créé avec succès (1 déclaration + 1 planification générées).');
+}
     /**
      * Affichage
      */

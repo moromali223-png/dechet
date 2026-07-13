@@ -68,7 +68,7 @@
 
                             <div class="fw-bold">
 
-                                {{ optional($planification->abonnement?->client?->user)->name ?? 'N/A' }}
+                                {{ optional($planification->abonnement?->user)->name ?? 'N/A' }}
 
                             </div>
 
@@ -82,7 +82,7 @@
 
                             <div>
 
-                                {{ optional($planification->abonnement?->client?->user)->email ?? 'N/A' }}
+                                {{ optional($planification->abonnement?->user)->email ?? 'N/A' }}
 
                             </div>
 

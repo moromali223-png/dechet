@@ -1,9 +1,5 @@
-<!-- =======================================================
-   SIDEBAR ADMINISTRATEUR ECOFLUX - VERSION PROFESSIONNELLE
-======================================================== -->
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
 
-    <!-- Logo -->
     <div class="app-brand demo d-flex justify-content-center mb-3">
         <a href="{{ route('dashboard') }}" class="app-brand-link">
             <span class="app-brand-logo">
@@ -26,22 +22,24 @@
         $isContractsOpen = request()->routeIs('abonnements.*') || request()->routeIs('admin.declarations.*');
         $isPlanificationOpen = request()->routeIs('planifications.*') || request()->routeIs('tournees.*') || request()->routeIs('affectations.*') || request()->routeIs('suivi_collecte.*') || request()->routeIs('zones.*');
         $isTraitementOpen = request()->routeIs('pesages.*') || request()->routeIs('tries.*');
-        $isStockOpen = request()->routeIs('admin.produits.*') || request()->routeIs('inventaire.*') || request()->routeIs('stock-entree.*') || request()->routeIs('mouvements.*') || request()->routeIs('alertes.*');
-        $isVentesOpen = request()->routeIs('admin.commandes.*') || request()->routeIs('admin.paiements.*');
+        
+        // CORRECTION ICI : Remplacement de admin.produits.* par produits.* (au pluriel)
+        $isStockOpen = request()->routeIs('produits.*') || request()->routeIs('inventaire.*') || request()->routeIs('stock-entree.*') || request()->routeIs('mouvements.*') || request()->routeIs('alertes.*');
+        
+        // CORRECTION ICI : Suppression du "admin." pour correspondre aux vrais noms de vos routes
+        $isVentesOpen = request()->routeIs('commandes.*') || request()->routeIs('paiements.*');
     @endphp
 
     <ul class="menu-inner py-1">
 
-        <!-- Dashboard -->
         <li class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <a href="{{ route('dashboard') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-tachometer"></i>
                 <div>Tableau de bord</div>
             </a>
-        </li>
+        </li >
 
-         <!-- ==================== GESTION DES UTILISATEURS ==================== -->
-        <li class="menu-item {{ $isUserOpen ? 'active open' : '' }}">
+         <li class="menu-item {{ $isUserOpen ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-group"></i>
                 <div>Gestion des utilisateurs</div>
@@ -68,8 +66,7 @@
             </ul>
         </li>
 
-          <!-- ==================== CONTRATS & DÉCLARATIONS ==================== -->
-        <li class="menu-item {{ $isContractsOpen ? 'active open' : '' }}">
+          <li class="menu-item {{ $isContractsOpen ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx bx-edit"></i>
                 <div>Contrats & Déclarations</div>
@@ -94,7 +91,6 @@
             <span class="menu-header-text">Operations</span>
         </li>
 
-        <!-- ==================== COLLECTE & PLANIFICATION ==================== -->
         <li class="menu-item {{ $isPlanificationOpen ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-recycle"></i>
@@ -107,18 +103,19 @@
                         <div>Planifications</div>
                     </a>
                 </li>
-                <li class="menu-item {{ request()->routeIs('tournees.*') ? 'active' : '' }}">
-                    <a href="{{ route('tournees.index') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-trip"></i>
-                        <div>Tournées du jour</div>
-                    </a>
-                </li>
                 <li class="menu-item {{ request()->routeIs('affectations.*') ? 'active' : '' }}">
                     <a href="{{ route('affectations.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-user-check"></i>
                         <div>Affectations</div>
                     </a>
                 </li>
+                <li class="menu-item {{ request()->routeIs('tournees.*') ? 'active' : '' }}">
+                    <a href="{{ route('tournees.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-trip"></i>
+                        <div>Tournées du jour</div>
+                    </a>
+                </li>
+                
                 <li class="menu-item {{ request()->routeIs('suivi_collecte.*') ? 'active' : '' }}">
                     <a href="{{ route('suivi_collecte.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-show-alt"></i>
@@ -134,7 +131,6 @@
             </ul>
         </li>
 
-        <!-- ==================== TRAITEMENT ==================== -->
         <li class="menu-item {{ $isTraitementOpen ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-layer"></i>
@@ -156,14 +152,13 @@
             </ul>
         </li>
 
-        <!-- ==================== GESTION DU STOCK ==================== -->
         <li class="menu-item {{ $isStockOpen ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-package"></i>
                 <div>Gestion du stock</div>
             </a>
             <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('admin.produits.*') ? 'active' : '' }}">
+                <li class="menu-item {{ request()->routeIs('produits.*') ? 'active' : '' }}">
                     <a href="{{ route('produits.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-box"></i>
                         <div>Produits</div>
@@ -175,12 +170,6 @@
                         <div>Inventaire</div>
                     </a>
                 </li>
-                <!-- <li class="menu-item {{ request()->routeIs('stock-entree.*') ? 'active' : '' }}">
-                    <a href="{{ route('stock-entree.create') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-plus-circle"></i>
-                        <div>Entrée en stock</div>
-                    </a>
-                </li> -->
                 <li class="menu-item {{ request()->routeIs('mouvements.*') ? 'active' : '' }}">
                     <a href="{{ route('mouvements.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-transfer"></i>
@@ -196,20 +185,19 @@
             </ul>
         </li>
 
-        <!-- ==================== VENTES & PAIEMENTS ==================== -->
         <li class="menu-item {{ $isVentesOpen ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-shopping-bag"></i>
                 <div>Ventes & Paiements</div>
             </a>
             <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('admin.commandes.*') ? 'active' : '' }}">
+                <li class="menu-item {{ request()->routeIs('commandes.*') ? 'active' : '' }}">
                     <a href="{{ route('commandes.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-cart"></i>
                         <div>Commandes</div>
                     </a>
                 </li>
-                <li class="menu-item {{ request()->routeIs('admin.paiements.*') ? 'active' : '' }}">
+                <li class="menu-item {{ request()->routeIs('paiements.*') ? 'active' : '' }}">
                     <a href="{{ route('paiements.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-credit-card"></i>
                         <div>Paiements</div>
@@ -217,8 +205,7 @@
                 </li>
             </ul>
         </li>
-
-        <!-- ==================== RAPPORTS ==================== -->
+ 
         <li class="menu-item {{ request()->routeIs('admin.rapports.*') ? 'active' : '' }}">
             <a href="{{ route('rapports.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-bar-chart-alt-2"></i>
@@ -226,7 +213,6 @@
             </a>
         </li>
 
-        <!-- ==================== CONFIGURATION ==================== -->
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Configuration</span>
         </li>

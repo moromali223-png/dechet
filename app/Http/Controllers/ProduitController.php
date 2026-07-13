@@ -56,37 +56,23 @@ class ProduitController extends Controller
         return view('produits.edit', compact('produit'));
     }
 
-    public function update(Request $request, Produit $produit)
-    {
-        $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'type' => 'required|string|max:100',
-            'unite_mesure' => 'required|string|max:20',
-            'prix_unitaire' => 'required|numeric|min:0',
-            'description' => 'nullable|string',
-            'statut' => 'required|in:actif,inactif',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-        ]);
+   public function update(Request $request, Produit $produit)
+{
+    $validated = $request->validate([
+        'nom'           => 'required|string|max:255',
+        'type'          => 'nullable|string|max:100',
+        'unite_mesure'  => 'required|string|max:20',
+        'prix_unitaire' => 'required|numeric|min:0',
+        'description'   => 'nullable|string',
+        'statut'        => 'required|in:actif,inactif',
+    ]);
 
-        if ($request->hasFile('photo')) {
+    $produit->update($validated);
 
-            if ($produit->photo &&
-                Storage::disk('public')->exists($produit->photo)) {
-
-                Storage::disk('public')->delete($produit->photo);
-            }
-
-            $validated['photo'] = $request->file('photo')
-                ->store('produits', 'public');
-        }
-
-        $produit->update($validated);
-
-        return redirect()
-            ->route('produits.index')
-            ->with('success', 'Produit mis à jour avec succès.');
-    }
-
+    return redirect()
+    ->route('produits.index')
+    ->with('success', 'Produit mis à jour avec succès.');
+}
     public function destroy(Produit $produit)
     {
         if ($produit->photo &&

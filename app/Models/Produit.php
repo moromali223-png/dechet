@@ -19,7 +19,7 @@ class Produit extends Model
         'description',
         'statut',
         'photo',
-        'trie_id',
+        
     ];
 
     protected $casts = [
@@ -62,10 +62,10 @@ class Produit extends Model
         return $this->hasMany(LigneCommande::class);
     }
 
-    public function trie()
-    {
-        return $this->belongsTo(Trie::class);
-    }
+    // public function trie()
+    // {
+    //     return $this->belongsTo(Trie::class);
+    // }
 
     /*
     |--------------------------------------------------------------------------

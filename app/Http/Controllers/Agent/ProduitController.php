@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Agent;
 use App\Http\Controllers\Controller;
 use App\Models\Produit;
 use Illuminate\Http\Request;
-
+use App\Models\Trie;   // ← Ajoute cette ligne
 class ProduitController extends Controller
 {
     /**
@@ -91,31 +91,38 @@ public function store(Request $request)
     /**
      * EDIT
      */
-    public function edit(Produit $produit)
-    {
-        return view('agent.produits.edit', compact('produit'));
-    }
-
+    /**
+ * EDIT
+ */
+public function edit(Produit $produit)
+{
+    return view('agent.produits.edit', compact('produit'));
+}
     /**
      * UPDATE
      */
-    public function update(Request $request, Produit $produit)
-    {
-        $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'type' => 'required|string|max:255',
-            'unite_mesure' => 'required|string|max:50',
-            'description' => 'nullable|string',
-            'prix_unitaire' => 'nullable|numeric|min:0',
-            'statut' => 'required|in:actif,termine,stocke',
-        ]);
+    /**
+ * UPDATE
+ */
+/**
+ * UPDATE
+ */
+public function update(Request $request, Produit $produit)
+{
+    $validated = $request->validate([
+        'nom'           => 'required|string|max:255',
+        'unite_mesure'  => 'required|string|max:50',
+        'prix_unitaire' => 'nullable|numeric|min:0',
+        'statut'        => 'required|in:en_production,termine,stocke',
+        'description'   => 'nullable|string|max:1000',
+    ]);
 
-        $produit->update($validated);
+    $produit->update($validated);
 
-        return redirect()
-            ->route('agent.produits.index')
-            ->with('success', 'Produit mis à jour avec succès.');
-    }
+    return redirect()
+        ->route('agent.produits.index')
+        ->with('success', 'Produit mis à jour avec succès.');
+}
 
     /**
      * DELETE

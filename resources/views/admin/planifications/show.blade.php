@@ -16,7 +16,7 @@
             <p><strong>Collecteur:</strong> {{ $planification->collecteur->user->name ?? $planification->collecteur->nom_collecteur ?? 'N/A' }}</p>
             <p><strong>Déclaration:</strong> {{ $planification->declaration->id ?? 'N/A' }}</p>
         </div>
-    </div>
+    <div class="d-flex gap-2 mb-4 mt-3">  <!-- Ajoute ici les classes de marge -->
     <a href="{{ route('planifications.index') }}" class="btn btn-secondary">Retour</a>
     <a href="{{ route('planifications.edit', $planification) }}" class="btn btn-warning">Éditer</a>
 </div>
